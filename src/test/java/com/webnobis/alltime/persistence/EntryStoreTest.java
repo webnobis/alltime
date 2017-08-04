@@ -8,11 +8,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,23 +33,7 @@ public class EntryStoreTest {
 
 	private static final String CONTENT = EntryStoreTest.class.getName();
 
-	private static final Entry ENTRY = new Entry() {
-
-		@Override
-		public LocalDate getDay() {
-			return DAY;
-		}
-
-		@Override
-		public EntryType getType() {
-			return EntryType.GT;
-		}
-
-		@Override
-		public LocalTime getStart() {
-			return null;
-		}
-	};
+	private static final Entry ENTRY = new Entry1();
 
 	private Path tmpFolder;
 
@@ -63,7 +49,7 @@ public class EntryStoreTest {
 		juneFile = tmpFolder.resolve(JUNE_FILE);
 		julyFile = tmpFolder.resolve(JULY_FILE);
 
-		store = new EntryStore(tmpFolder, () -> DAY, line -> ENTRY, entry -> CONTENT);
+		store = new EntryStore(tmpFolder, line -> ENTRY, entry -> CONTENT);
 	}
 
 	@After
@@ -88,29 +74,50 @@ public class EntryStoreTest {
 		assertEquals(Collections.singletonList(ENTRY), store.getLastEntries(Integer.MAX_VALUE));
 
 		{
-			Entry e = new Entry() {
-
-				@Override
-				public LocalDate getDay() {
-					return DAY.minusDays(1);
-				}
-
-				@Override
-				public EntryType getType() {
-					return null;
-				}
-
-				@Override
-				public LocalTime getStart() {
-					return null;
-				}
-
-			};
+			Entry e = new Entry2();
 			store.storeEntry(e);
 			assertTrue(Files.exists(juneFile));
 
 			assertEquals(Arrays.asList(ENTRY, ENTRY), store.getLastEntries(Integer.MAX_VALUE));
 		}
+	}
+
+	private static class Entry1 implements Entry {
+
+		@Override
+		public LocalDate getDay() {
+			return DAY;
+		}
+
+		@Override
+		public EntryType getType() {
+			return EntryType.GT;
+		}
+
+		@Override
+		public LocalTime getStart() {
+			return null;
+		}
+
+		@Override
+		public Map<String, Duration> getItems() {
+			return null;
+		}
+
+		@Override
+		public Duration getTimeAssets() {
+			return null;
+		}
+
+	}
+
+	private class Entry2 extends Entry1 {
+
+		@Override
+		public LocalDate getDay() {
+			return DAY.minusDays(1);
+		}
+
 	}
 
 }

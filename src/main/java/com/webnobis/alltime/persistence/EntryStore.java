@@ -7,39 +7,42 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 import com.webnobis.alltime.model.Entry;
 
 public class EntryStore {
-	
+
 	private static final int MAX_COUNT = 100;
 
 	private static final String MONTH_FILE_NAME_FORMAT = "yyyyMM";
 
 	private static final String FILE_EXTENTION = ".dat";
 
+	private static final Pattern FILE_NAME_PATTERN = Pattern.compile("^([0-9]{" + MONTH_FILE_NAME_FORMAT.length() + "})\\" + FILE_EXTENTION + '$');
+
 	private static final Comparator<Entry> entryReverseComparator = (e1, e2) -> e2.getDay().compareTo(e1.getDay());
 
-	private final Path root;
+	private static final Comparator<YearMonth> monthReverseComparator = (m1, m2) -> m2.compareTo(m1);
 
-	private final Supplier<LocalDate> today;
+	private final Path root;
 
 	private final Function<String, Entry> deserializer;
 
 	private final Function<Entry, String> serializer;
 
-	public EntryStore(Path root, Supplier<LocalDate> today, Function<String, Entry> deserializer, Function<Entry, String> serializer) {
+	public EntryStore(Path root, Function<String, Entry> deserializer, Function<Entry, String> serializer) {
 		this.root = root;
-		this.today = today;
 		this.deserializer = deserializer;
 		this.serializer = serializer;
 	}
@@ -50,14 +53,30 @@ public class EntryStore {
 
 	public List<Entry> getLastEntries(int maxCount) {
 		final int count = Math.min(maxCount, MAX_COUNT);
-		return LongStream.range(0, count)
-				.mapToObj(today.get()::minusMonths)
+		return findMonths(count)
 				.map(this::getMonthFile)
 				.map(this::getEntriesOfMonth)
 				.flatMap(List::stream)
 				.sorted(entryReverseComparator)
 				.limit(count)
 				.collect(Collectors.toList());
+	}
+
+	private Stream<YearMonth> findMonths(int maxCount) {
+		try {
+			return Files.walk(root)
+					.filter(file -> Files.isRegularFile(file))
+					.map(Path::getFileName)
+					.map(Path::toString)
+					.map(FILE_NAME_PATTERN::matcher)
+					.filter(Matcher::find)
+					.map(matcher -> matcher.group(1))
+					.map(month -> YearMonth.parse(month, DateTimeFormatter.ofPattern(MONTH_FILE_NAME_FORMAT)))
+					.sorted(monthReverseComparator)
+					.limit(maxCount);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	private List<Entry> getEntriesOfMonth(Path monthFile) {
@@ -74,8 +93,12 @@ public class EntryStore {
 		}
 	}
 
+	private Path getMonthFile(YearMonth month) {
+		return root.resolve(month.format(DateTimeFormatter.ofPattern(MONTH_FILE_NAME_FORMAT)).concat(FILE_EXTENTION));
+	}
+
 	private Path getMonthFile(LocalDate day) {
-		return root.resolve(day.format(DateTimeFormatter.ofPattern(MONTH_FILE_NAME_FORMAT)).concat(FILE_EXTENTION));
+		return getMonthFile(YearMonth.of(day.getYear(), day.getMonth()));
 	}
 
 	public void storeEntry(Entry entry) {
