@@ -3,7 +3,6 @@ package com.webnobis.alltime.model;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Collections;
 import java.util.Map;
 
 public interface Entry {
@@ -30,12 +29,8 @@ public interface Entry {
 		return Duration.ZERO;
 	}
 
-	default Duration getTimeAssets() {
-		return Duration.ZERO;
-	}
+	Duration getTimeAssets();
 	
-	default Map<String, Duration> getItems() {
-		return Collections.emptyMap();
-	}
+	Map<String, Duration> getItems();
 	
 }
