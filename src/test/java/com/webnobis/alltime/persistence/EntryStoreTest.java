@@ -14,6 +14,7 @@ import java.time.LocalTime;
 import java.time.Month;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
@@ -49,7 +50,7 @@ public class EntryStoreTest {
 		juneFile = tmpFolder.resolve(JUNE_FILE);
 		julyFile = tmpFolder.resolve(JULY_FILE);
 
-		store = new EntryStore(tmpFolder, line -> ENTRY, entry -> CONTENT);
+		store = new FileEntryStore(tmpFolder, line -> ENTRY, entry -> CONTENT);
 	}
 
 	@After
@@ -66,7 +67,9 @@ public class EntryStoreTest {
 		assertEquals(Collections.singletonList(CONTENT), Files.readAllLines(julyFile, StandardCharsets.UTF_8));
 
 		{
-			Entry e = store.getLastEntry();
+			List<Entry> list = store.getLastEntries(1);
+			assertEquals(1, list.size());
+			Entry e = list.iterator().next();
 			assertSame(ENTRY, e);
 			assertEquals(DAY, e.getDay());
 		}
