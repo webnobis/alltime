@@ -7,9 +7,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-public class AZEntry implements Entry {
-
-	private final LocalDate day;
+public class AZEntry extends AbstractEntry implements Entry {
 
 	private final LocalTime start;
 
@@ -34,7 +32,7 @@ public class AZEntry implements Entry {
 	}
 
 	private AZEntry(LocalDate day, LocalTime start, LocalTime now, LocalTime end, Duration expectedTime, Duration idleTime, Duration timeAssetsBefore, Map<String, Duration> items) {
-		this.day = day;
+		super(day, EntryType.AZ);
 		this.start = start;
 		this.now = now;
 		this.end = end;
@@ -42,16 +40,6 @@ public class AZEntry implements Entry {
 		this.idleTime = idleTime;
 		this.timeAssetsBefore = timeAssetsBefore;
 		this.items = items;
-	}
-
-	@Override
-	public LocalDate getDay() {
-		return day;
-	}
-
-	@Override
-	public EntryType getType() {
-		return EntryType.AZ;
 	}
 
 	@Override

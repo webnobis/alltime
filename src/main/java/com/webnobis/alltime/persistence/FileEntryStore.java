@@ -49,7 +49,7 @@ public class FileEntryStore implements EntryStore {
 
 	@Override
 	public List<Entry> getLastEntries(int maxCount) {
-		final int count = Math.min(maxCount, MAX_COUNT);
+		final int count = Math.max(0, Math.min(maxCount, MAX_COUNT));
 		return findMonths(count)
 				.map(this::getMonthFile)
 				.map(this::getEntriesOfMonth)

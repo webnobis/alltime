@@ -6,36 +6,24 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.Map;
 
-public class DayEntry implements Entry {
+public class DayEntry extends AbstractEntry implements Entry {
 
-	private final LocalDate day;
-
-	private final EntryType type;
+	private final LocalTime start;
 
 	private final Map<String, Duration> items;
-	
+
 	private final Duration timeAssetsBefore;
 
 	public DayEntry(LocalDate day, EntryType type, Duration timeAssetsBefore, Map<String, Duration> items) {
-		this.day = day;
-		this.type = type;
+		super(day, type);
+		start = day.atStartOfDay().toLocalTime();
 		this.timeAssetsBefore = timeAssetsBefore;
 		this.items = Collections.unmodifiableMap(items);
 	}
 
 	@Override
-	public LocalDate getDay() {
-		return day;
-	}
-
-	@Override
-	public EntryType getType() {
-		return type;
-	}
-
-	@Override
 	public LocalTime getStart() {
-		return day.atStartOfDay().toLocalTime();
+		return start;
 	}
 
 	@Override

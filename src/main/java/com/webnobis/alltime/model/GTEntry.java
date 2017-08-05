@@ -8,8 +8,8 @@ public class GTEntry extends DayEntry implements Entry {
 
 	private final Duration expectedTime;
 
-	public GTEntry(LocalDate day, EntryType type, Duration expectedTime, Duration timeAssetsBefore, Map<String, Duration> items) {
-		super(day, type, timeAssetsBefore, items);
+	public GTEntry(LocalDate day, Duration expectedTime, Duration timeAssetsBefore, Map<String, Duration> items) {
+		super(day, EntryType.GT, timeAssetsBefore, items);
 		this.expectedTime = expectedTime;
 	}
 
