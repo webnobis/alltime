@@ -1,6 +1,8 @@
 package com.webnobis.alltime.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -35,11 +37,13 @@ public class EntryServiceTest {
 
 	private static final Duration EXPECTED_TIME = Duration.ofHours(8);
 
+	private static final Duration IDLE_TIME_LIMIT = Duration.ofHours(9);
+
 	private static final Duration IDLE_TIME = Duration.ofMinutes(45);
 
 	private static final Duration REAL_TIME_START = Duration.ofHours(1).plusMinutes(30);
 
-	private static final Duration REAL_TIME_START_END = Duration.ofHours(9).plusMinutes(15);
+	private static final Duration REAL_TIME_START_END = Duration.ofHours(9).plusMinutes(55);
 
 	private static final Duration TIME_ASSETS_BEFORE = Duration.ofDays(1).plusMinutes(30);
 
@@ -48,7 +52,7 @@ public class EntryServiceTest {
 	private static final Duration TIME_ASSETS_START_END = Duration.ofDays(1).plusHours(1);
 
 	private static final Duration TIME_ASSETS_GT = Duration.ofHours(16).plusMinutes(30);
-	
+
 	private static final Map<String, Duration> ITEMS = Collections.singletonMap("a key", Duration.ofMillis(Long.MAX_VALUE));
 
 	private Entry lastEntry;
@@ -58,8 +62,6 @@ public class EntryServiceTest {
 	private EntryStore store;
 
 	private EntryService service;
-
-	private Duration workTime;
 
 	@Before
 	public void setUp() throws Exception {
@@ -81,19 +83,17 @@ public class EntryServiceTest {
 
 		};
 
-		service = new EntryService(() -> NOW, weekDay -> {
-			assertEquals(DayOfWeek.WEDNESDAY, weekDay);
-			return EXPECTED_TIME;
-		}, duration -> {
-			this.workTime = duration;
-			return IDLE_TIME;
-		}, store);
+		service = new EntryService(() -> NOW,
+				Integer.MAX_VALUE,
+				Collections.singletonMap(DayOfWeek.WEDNESDAY, EXPECTED_TIME),
+				Collections.singletonMap(IDLE_TIME_LIMIT, IDLE_TIME),
+				store);
 	}
 
 	@Test
 	public void testStartAZ() {
 		Entry e = service.startAZ(DAY, START);
-		
+
 		assertEquals(DAY, e.getDay());
 		assertEquals(START, e.getStart());
 		assertNull(e.getEnd());
@@ -102,15 +102,14 @@ public class EntryServiceTest {
 		assertEquals(REAL_TIME_START, e.getRealTime());
 		assertEquals(TIME_ASSETS_START, e.getTimeAssets());
 		assertEquals(Collections.emptyMap(), e.getItems());
-		
+
 		assertEquals(Collections.singletonList(e), storedEntries);
-		assertEquals(REAL_TIME_START, workTime);
 	}
 
 	@Test
 	public void testEndAZ() {
 		Entry e = service.endAZ(DAY, START, END, ITEMS);
-		
+
 		assertEquals(DAY, e.getDay());
 		assertEquals(START, e.getStart());
 		assertEquals(END, e.getEnd());
@@ -119,9 +118,8 @@ public class EntryServiceTest {
 		assertEquals(REAL_TIME_START_END, e.getRealTime());
 		assertEquals(TIME_ASSETS_START_END, e.getTimeAssets());
 		assertEquals(ITEMS, e.getItems());
-		
+
 		assertEquals(Collections.singletonList(e), storedEntries);
-		assertEquals(REAL_TIME_START_END, workTime);
 	}
 
 	@Test
@@ -130,7 +128,7 @@ public class EntryServiceTest {
 		items.put("1st key", Duration.ofHours(2));
 		items.put("2nd key", null);
 		Entry e = service.book(DAY, EntryType.SM, items);
-		
+
 		assertEquals(DAY, e.getDay());
 		assertEquals(LocalTime.of(0, 0), e.getStart());
 		assertNull(e.getEnd());
@@ -139,15 +137,14 @@ public class EntryServiceTest {
 		assertEquals(Duration.ZERO, e.getRealTime());
 		assertEquals(TIME_ASSETS_BEFORE, e.getTimeAssets());
 		assertEquals(items, e.getItems());
-		
+
 		assertEquals(Collections.singletonList(e), storedEntries);
-		assertNull(workTime);
 	}
 
 	@Test
 	public void testBookGTDay() {
 		Entry e = service.book(DAY, EntryType.GT, ITEMS);
-		
+
 		assertEquals(DAY, e.getDay());
 		assertEquals(LocalTime.of(0, 0), e.getStart());
 		assertNull(e.getEnd());
@@ -156,34 +153,38 @@ public class EntryServiceTest {
 		assertEquals(Duration.ZERO, e.getRealTime());
 		assertEquals(TIME_ASSETS_GT, e.getTimeAssets());
 		assertEquals(ITEMS, e.getItems());
-		
+
 		assertEquals(Collections.singletonList(e), storedEntries);
-		assertNull(workTime);
 	}
 
 	@Test
 	public void testBookURDayRange() {
-		List<LocalDate> days = Stream.of(LocalDate.of(1999, Month.DECEMBER, 30), 
+		List<LocalDate> days = Stream.of(LocalDate.of(1999, Month.DECEMBER, 30),
 				LocalDate.of(1999, Month.DECEMBER, 31),
 				LocalDate.of(2000, Month.JANUARY, 1),
 				LocalDate.of(2000, Month.JANUARY, 2),
 				LocalDate.of(2000, Month.JANUARY, 3))
 				.collect(Collectors.toList());
-		
+
 		List<Entry> expectedEntries = days.stream()
 				.map(day -> new DayEntry(day, EntryType.UR, TIME_ASSETS_BEFORE, ITEMS))
 				.collect(Collectors.toList());
 		assertEquals(expectedEntries, service.book(days.get(0), days.get(days.size() - 1), EntryType.UR, ITEMS));
-		
+
 		assertEquals(expectedEntries, storedEntries);
-		assertNull(workTime);
 	}
 
 	@Test
 	public void testGetLastEntries() {
-		assertEquals(Collections.singletonList(lastEntry), service.getLastEntries(Integer.MAX_VALUE));
-		assertTrue(service.getLastEntries(0).isEmpty());
-		assertTrue(service.getLastEntries(Integer.MIN_VALUE).isEmpty());
+		assertEquals(Collections.singletonList(lastEntry), service.getLastEntries());
+
+		assertTrue(new EntryService(null, 0, null, null, store).getLastEntries().isEmpty());
+		assertTrue(new EntryService(null, Integer.MIN_VALUE, null, null, store).getLastEntries().isEmpty());
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testBookAZFailed() {
+		service.book(DAY, EntryType.AZ);
 	}
 
 }
