@@ -8,6 +8,7 @@ import java.time.Period;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -16,26 +17,27 @@ import com.webnobis.alltime.model.AZEntry;
 import com.webnobis.alltime.model.DayEntry;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
-import com.webnobis.alltime.model.ExpectedTime;
 import com.webnobis.alltime.model.GTEntry;
-import com.webnobis.alltime.model.IdleTime;
 import com.webnobis.alltime.persistence.EntryStore;
 
 public class EntryService {
 
 	private final Supplier<LocalTime> now;
 
-	private final ExpectedTime expectedTime;
+	private final int maxCount;
 
-	private final IdleTime idleTime;
+	private final Map<DayOfWeek, Duration> expectedTimes;
+
+	private final IdleTimeHandler idleTimeHandler;
 
 	private final EntryStore store;
 
-	public EntryService(Supplier<LocalTime> now, ExpectedTime expectedTime, IdleTime idleTime, EntryStore store) {
-		this.now = now;
-		this.expectedTime = expectedTime;
-		this.idleTime = idleTime;
-		this.store = store;
+	public EntryService(Supplier<LocalTime> now, int maxCount, Map<DayOfWeek, Duration> expectedTimes, Map<Duration, Duration> idleTimes, EntryStore store) {
+		this.now = Objects.requireNonNull(now, "now is null");
+		this.maxCount = maxCount;
+		this.expectedTimes = Objects.requireNonNull(expectedTimes, "expectedTimes is null");
+		this.idleTimeHandler = new IdleTimeHandler(idleTimes);
+		this.store = Objects.requireNonNull(store, "store is null");
 	}
 
 	private Duration getTimeAssetsBefore(LocalDate day) {
@@ -49,14 +51,14 @@ public class EntryService {
 	public Entry startAZ(LocalDate day, LocalTime start) {
 		Duration timeAssetsBefore = getTimeAssetsBefore(day);
 		LocalTime now = this.now.get();
-		Entry entry = new AZEntry(day, start, now, expectedTime.getExpectedTime(DayOfWeek.from(day)), idleTime.getIdleTime(day, start, now), timeAssetsBefore);
+		Entry entry = new AZEntry(day, start, now, expectedTimes.get(DayOfWeek.from(day)), idleTimeHandler.getIdleTime(day, start, now), timeAssetsBefore);
 		store.storeEntry(entry);
 		return entry;
 	}
 
 	public Entry endAZ(LocalDate day, LocalTime start, LocalTime end, Map<String, Duration> items) {
 		Duration timeAssetsBefore = getTimeAssetsBefore(day);
-		Entry entry = new AZEntry(day, start, end, expectedTime.getExpectedTime(DayOfWeek.from(day)), idleTime.getIdleTime(day, start, end), timeAssetsBefore, items);
+		Entry entry = new AZEntry(day, start, end, expectedTimes.get(DayOfWeek.from(day)), idleTimeHandler.getIdleTime(day, start, end), timeAssetsBefore, items);
 		store.storeEntry(entry);
 		return entry;
 	}
@@ -68,7 +70,7 @@ public class EntryService {
 		Duration timeAssetsBefore = getTimeAssetsBefore(day);
 		Entry entry;
 		if (EntryType.GT.equals(type)) {
-			entry = new GTEntry(day, expectedTime.getExpectedTime(DayOfWeek.from(day)), timeAssetsBefore, items);
+			entry = new GTEntry(day, expectedTimes.get(DayOfWeek.from(day)), timeAssetsBefore, items);
 		} else {
 			entry = new DayEntry(day, type, timeAssetsBefore, items);
 		}
@@ -92,7 +94,7 @@ public class EntryService {
 		return book(fromDay, untilDay, type, Collections.emptyMap());
 	}
 
-	public List<Entry> getLastEntries(int maxCount) {
+	public List<Entry> getLastEntries() {
 		return store.getLastEntries(maxCount);
 	}
 
