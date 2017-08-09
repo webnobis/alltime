@@ -33,7 +33,7 @@ public class EntryServiceTest {
 
 	private static final LocalTime NOW = LocalTime.of(10, 00);
 
-	private static final LocalTime END = LocalTime.of(17, 45);
+	private static final LocalTime END = LocalTime.of(18, 25);
 
 	private static final Duration EXPECTED_TIME = Duration.ofHours(8);
 
@@ -47,9 +47,9 @@ public class EntryServiceTest {
 
 	private static final Duration TIME_ASSETS_BEFORE = Duration.ofDays(1).plusMinutes(30);
 
-	private static final Duration TIME_ASSETS_START = Duration.ofHours(17).plusMinutes(15);
+	private static final Duration TIME_ASSETS_START = Duration.ofHours(18);
 
-	private static final Duration TIME_ASSETS_START_END = Duration.ofDays(1).plusHours(1);
+	private static final Duration TIME_ASSETS_START_END = Duration.ofDays(1).plusHours(1).plusMinutes(40);
 
 	private static final Duration TIME_ASSETS_GT = Duration.ofHours(16).plusMinutes(30);
 
@@ -98,7 +98,7 @@ public class EntryServiceTest {
 		assertEquals(START, e.getStart());
 		assertNull(e.getEnd());
 		assertEquals(EXPECTED_TIME, e.getExpectedTime());
-		assertEquals(IDLE_TIME, e.getIdleTime());
+		assertEquals(Duration.ZERO, e.getIdleTime());
 		assertEquals(REAL_TIME_START, e.getRealTime());
 		assertEquals(TIME_ASSETS_START, e.getTimeAssets());
 		assertEquals(Collections.emptyMap(), e.getItems());
@@ -178,8 +178,8 @@ public class EntryServiceTest {
 	public void testGetLastEntries() {
 		assertEquals(Collections.singletonList(lastEntry), service.getLastEntries());
 
-		assertTrue(new EntryService(null, 0, null, null, store).getLastEntries().isEmpty());
-		assertTrue(new EntryService(null, Integer.MIN_VALUE, null, null, store).getLastEntries().isEmpty());
+		assertTrue(new EntryService(() -> null, 0, Collections.emptyMap(), Collections.emptyMap(), store).getLastEntries().isEmpty());
+		assertTrue(new EntryService(() -> null, Integer.MIN_VALUE, Collections.emptyMap(), Collections.emptyMap(), store).getLastEntries().isEmpty());
 	}
 
 	@Test(expected = IllegalStateException.class)

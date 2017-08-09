@@ -8,6 +8,7 @@ import java.time.Period;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -32,11 +33,11 @@ public class EntryService {
 	private final EntryStore store;
 
 	public EntryService(Supplier<LocalTime> now, int maxCount, Map<DayOfWeek, Duration> expectedTimes, Map<Duration, Duration> idleTimes, EntryStore store) {
-		this.now = now;
+		this.now = Objects.requireNonNull(now, "now is null");
 		this.maxCount = maxCount;
-		this.expectedTimes = expectedTimes;
+		this.expectedTimes = Objects.requireNonNull(expectedTimes, "expectedTimes is null");
 		this.idleTimeHandler = new IdleTimeHandler(idleTimes);
-		this.store = store;
+		this.store = Objects.requireNonNull(store, "store is null");
 	}
 
 	private Duration getTimeAssetsBefore(LocalDate day) {

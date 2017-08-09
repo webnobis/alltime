@@ -60,6 +60,12 @@ public class IdleTimeHandlerTest {
 	}
 
 	@Test
+	public void testLimit1And2And3IdleTime() {
+		Duration realTime = IDLE_TIME_LIMIT_3.plusMinutes(45);
+		assertEquals(IDLE_TIME_1.plus(IDLE_TIME_2).plus(IDLE_TIME_3), handler.getIdleTime(realTime));
+	}
+
+	@Test
 	public void testPartOfLimit1IdleTime() {
 		Duration expectedIdleTime = IDLE_TIME_1.minusMinutes(20);
 		Duration realTime = IDLE_TIME_LIMIT_1.plus(expectedIdleTime);
