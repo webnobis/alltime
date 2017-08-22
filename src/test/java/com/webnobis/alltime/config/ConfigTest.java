@@ -1,7 +1,6 @@
 package com.webnobis.alltime.config;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
