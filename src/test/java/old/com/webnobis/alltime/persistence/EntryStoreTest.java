@@ -1,4 +1,4 @@
-package com.webnobis.alltime.persistence;
+package old.com.webnobis.alltime.persistence;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
@@ -19,11 +19,16 @@ import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
+import com.webnobis.alltime.persistence.EntryStore;
 
+import old.com.webnobis.alltime.persistence.FileEntryStore;
+
+@Ignore
 public class EntryStoreTest {
 
 	private static final LocalDate DAY = LocalDate.of(2017, Month.JULY, 1);

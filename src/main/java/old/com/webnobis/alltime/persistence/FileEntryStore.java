@@ -1,4 +1,4 @@
-package com.webnobis.alltime.persistence;
+package old.com.webnobis.alltime.persistence;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.webnobis.alltime.model.Entry;
+import com.webnobis.alltime.persistence.EntryStore;
 
 public class FileEntryStore implements EntryStore {
 

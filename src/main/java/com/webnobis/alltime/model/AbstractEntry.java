@@ -1,6 +1,9 @@
 package com.webnobis.alltime.model;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.Map;
 
 abstract class AbstractEntry implements Entry {
 
@@ -8,9 +11,12 @@ abstract class AbstractEntry implements Entry {
 
 	private final EntryType type;
 
-	AbstractEntry(LocalDate day, EntryType type) {
+	private final Map<String, Duration> items;
+
+	AbstractEntry(LocalDate day, EntryType type, Map<String, Duration> items) {
 		this.day = day;
 		this.type = type;
+		this.items = Collections.unmodifiableMap(items);
 	}
 
 	@Override
@@ -21,6 +27,10 @@ abstract class AbstractEntry implements Entry {
 	@Override
 	public EntryType getType() {
 		return type;
+	}
+
+	public Map<String, Duration> getItems() {
+		return items;
 	}
 
 	@Override

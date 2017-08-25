@@ -4,12 +4,12 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Map;
 
-public class GTEntry extends DayEntry implements Entry {
+public class GTEntry extends AbstractEntry implements Entry {
 
 	private final Duration expectedTime;
 
-	public GTEntry(LocalDate day, Duration expectedTime, Duration timeAssetsBefore, Map<String, Duration> items) {
-		super(day, EntryType.GT, timeAssetsBefore, items);
+	public GTEntry(LocalDate day, Duration expectedTime, Map<String, Duration> items) {
+		super(day, EntryType.GT, items);
 		this.expectedTime = expectedTime;
 	}
 
@@ -20,7 +20,7 @@ public class GTEntry extends DayEntry implements Entry {
 
 	@Override
 	public Duration getTimeAssets() {
-		return super.getTimeAssets().minus(expectedTime);
+		return expectedTime.negated();
 	}
 
 }
