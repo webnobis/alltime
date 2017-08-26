@@ -12,7 +12,7 @@ public interface Entry {
 	EntryType getType();
 	
 	default LocalTime getStart() {
-		return LocalTime.of(0, 0);
+		return null;
 	}
 	
 	default LocalTime getEnd() {

@@ -20,9 +20,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.webnobis.alltime.model.Entry;
-import com.webnobis.alltime.persistence.EntryStore;
 
-public class FileEntryStore implements EntryStore {
+public class FileEntryStore {
 
 	private static final int MAX_COUNT = 100;
 
@@ -48,7 +47,6 @@ public class FileEntryStore implements EntryStore {
 		this.serializer = serializer;
 	}
 
-	@Override
 	public List<Entry> getLastEntries(int maxCount) {
 		final int count = Math.max(0, Math.min(maxCount, MAX_COUNT));
 		return findMonths(count)
@@ -99,7 +97,6 @@ public class FileEntryStore implements EntryStore {
 		return getMonthFile(YearMonth.of(day.getYear(), day.getMonth()));
 	}
 
-	@Override
 	public void storeEntry(Entry entry) {
 		Path monthFile = getMonthFile(entry.getDay());
 		List<Entry> entries = new ArrayList<>(getEntriesOfMonth(monthFile));
@@ -119,6 +116,5 @@ public class FileEntryStore implements EntryStore {
 			throw new UncheckedIOException(e);
 		}
 	}
-
 
 }
