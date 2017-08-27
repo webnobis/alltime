@@ -12,6 +12,4 @@ public enum LineDefinition {
 
 	public static String TIME_FORMAT = "HH:mm";
 
-	public static String TIME_FORMAT_WITH_DAYS = "dd:" + TIME_FORMAT;
-
 }
