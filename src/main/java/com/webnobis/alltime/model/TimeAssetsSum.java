@@ -2,35 +2,24 @@ package com.webnobis.alltime.model;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.Map;
 
-abstract class AbstractEntry implements Entry {
+public class TimeAssetsSum {
 
 	private final LocalDate day;
+	
+	private final Duration timeAssetsSum;
 
-	private final EntryType type;
-
-	private final Map<String, Duration> items;
-
-	AbstractEntry(LocalDate day, EntryType type, Map<String, Duration> items) {
+	public TimeAssetsSum(LocalDate day, Duration timeAssetsSum) {
 		this.day = day;
-		this.type = type;
-		this.items = Collections.unmodifiableMap(items);
+		this.timeAssetsSum = timeAssetsSum;
 	}
 
-	@Override
 	public LocalDate getDay() {
 		return day;
 	}
 
-	@Override
-	public EntryType getType() {
-		return type;
-	}
-
-	public Map<String, Duration> getItems() {
-		return items;
+	public Duration getTimeAssetsSum() {
+		return timeAssetsSum;
 	}
 
 	@Override
@@ -38,6 +27,7 @@ abstract class AbstractEntry implements Entry {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((day == null) ? 0 : day.hashCode());
+		result = prime * result + ((timeAssetsSum == null) ? 0 : timeAssetsSum.hashCode());
 		return result;
 	}
 
@@ -49,18 +39,23 @@ abstract class AbstractEntry implements Entry {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		AbstractEntry other = (AbstractEntry) obj;
+		TimeAssetsSum other = (TimeAssetsSum) obj;
 		if (day == null) {
 			if (other.day != null)
 				return false;
 		} else if (!day.equals(other.day))
+			return false;
+		if (timeAssetsSum == null) {
+			if (other.timeAssetsSum != null)
+				return false;
+		} else if (!timeAssetsSum.equals(other.timeAssetsSum))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("%s [day=%s, type=%s]", this.getClass().getSimpleName(), day, type);
+		return "TimeAssetsSum [day=" + day + ", timeAssetsSum=" + timeAssetsSum + "]";
 	}
 
 }

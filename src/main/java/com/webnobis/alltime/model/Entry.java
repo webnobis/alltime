@@ -11,7 +11,9 @@ public interface Entry {
 	
 	EntryType getType();
 	
-	LocalTime getStart();
+	default LocalTime getStart() {
+		return null;
+	}
 	
 	default LocalTime getEnd() {
 		return null;
@@ -29,7 +31,9 @@ public interface Entry {
 		return Duration.ZERO;
 	}
 
-	Duration getTimeAssets();
+	default Duration getTimeAssets() {
+		return Duration.ZERO;
+	}
 	
 	Map<String, Duration> getItems();
 	
