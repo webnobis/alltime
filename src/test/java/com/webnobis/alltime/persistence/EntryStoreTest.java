@@ -1,126 +1,144 @@
 package com.webnobis.alltime.persistence;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.webnobis.alltime.model.DayEntry;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
+import com.webnobis.alltime.model.TimeAssetsSum;
 
 public class EntryStoreTest {
 
-	private static final LocalDate DAY = LocalDate.of(2017, Month.JULY, 1);
+	private static final LocalDate DAY1 = LocalDate.of(2017, Month.MAY, 1);
 
-	private static final String JUNE_FILE = "201706.dat";
+	private static final LocalDate DAY2 = DAY1.plusDays(3);
 
-	private static final String JULY_FILE = "201707.dat";
+	private static final LocalDate DAY3 = DAY1.plusDays(13);
 
-	private static final String CONTENT = EntryStoreTest.class.getName();
+	private static final LocalDate DAY4 = DAY2.plusMonths(1).plusDays(1);
 
-	private static final Entry ENTRY = new Entry1();
+	private static final LocalDate DAY5 = DAY3.plusMonths(2).plusDays(1);
 
-	private Path tmpFolder;
+	private static final Supplier<LocalDate> now = () -> DAY5;
 
-	private Path juneFile;
+	private static final int maxCount = 4;
 
-	private Path julyFile;
+	private static final Function<String, LocalDate> dayDeserializer = text -> LocalDate.parse(text);
+
+	private static final Function<String, Entry> entryDeserializer = text -> new DayEntry(dayDeserializer.apply(text), EntryType.UR, Collections.emptyMap());
+
+	private static final Function<Entry, String> entrySerializer = entry -> entry.getDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+	private static final Function<TimeAssetsSum, String> timeAssetsSumSerializer = sum -> sum.getDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+	private static final Function<LocalDate, TimeAssetsSum> testTransformer = day -> new TimeAssetsSum(day, Duration.ofHours(day.getDayOfMonth()));
+
+	private static final Function<String, TimeAssetsSum> timeAssetsSumDeserializer = text -> testTransformer.apply(LocalDate.parse(text));
+
+	private Path tmpRoot;
 
 	private EntryStore store;
 
 	@Before
 	public void setUp() throws Exception {
-		tmpFolder = Files.createTempDirectory(EntryStoreTest.class.getSimpleName());
-		juneFile = tmpFolder.resolve(JUNE_FILE);
-		julyFile = tmpFolder.resolve(JULY_FILE);
+		tmpRoot = Files.createTempDirectory(EntryStoreTest.class.getSimpleName());
 
-		store = new FileEntryStore(tmpFolder, line -> ENTRY, entry -> CONTENT);
+		Path file1 = tmpRoot.resolve("201705.dat");
+		Files.write(file1, Arrays.asList(DAY1.format(DateTimeFormatter.ISO_LOCAL_DATE),
+				DAY2.format(DateTimeFormatter.ISO_LOCAL_DATE),
+				DAY3.format(DateTimeFormatter.ISO_LOCAL_DATE)), StandardOpenOption.CREATE);
+		Files.write(tmpRoot.resolve("201706.dat"), Collections.singleton(DAY4.format(DateTimeFormatter.ISO_LOCAL_DATE)), StandardOpenOption.CREATE);
+		Files.write(tmpRoot.resolve("201707.dat"), Collections.singleton(DAY5.format(DateTimeFormatter.ISO_LOCAL_DATE)), StandardOpenOption.CREATE);
+		Files.copy(file1, tmpRoot.resolve("timeassets.dat"));
+
+		store = new FileStore(tmpRoot, now, maxCount, dayDeserializer, entryDeserializer, entrySerializer, timeAssetsSumDeserializer, timeAssetsSumSerializer);
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		Files.delete(juneFile);
-		Files.delete(julyFile);
-		Files.delete(tmpFolder);
+		Files.walkFileTree(tmpRoot, new FileVisitor<Path>() {
+
+			@Override
+			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+				Files.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				Files.delete(dir);
+				return FileVisitResult.CONTINUE;
+			}
+		});
 	}
 
 	@Test
-	public void testStoreAndGet() throws IOException {
-		store.storeEntry(ENTRY);
-		assertTrue(Files.exists(julyFile));
-		assertEquals(Collections.singletonList(CONTENT), Files.readAllLines(julyFile, StandardCharsets.UTF_8));
-
-		{
-			List<Entry> list = store.getLastEntries(1);
-			assertEquals(1, list.size());
-			Entry e = list.iterator().next();
-			assertSame(ENTRY, e);
-			assertEquals(DAY, e.getDay());
-		}
-
-		assertEquals(Collections.singletonList(ENTRY), store.getLastEntries(Integer.MAX_VALUE));
-
-		{
-			Entry e = new Entry2();
-			store.storeEntry(e);
-			assertTrue(Files.exists(juneFile));
-
-			assertEquals(Arrays.asList(ENTRY, ENTRY), store.getLastEntries(Integer.MAX_VALUE));
-		}
+	public void testGetLastDays() throws IOException {
+		List<LocalDate> expected = Arrays.asList(DAY5, DAY4, DAY3, DAY2);
+		assertEquals(expected, store.getLastDays());
 	}
 
-	private static class Entry1 implements Entry {
-
-		@Override
-		public LocalDate getDay() {
-			return DAY;
-		}
-
-		@Override
-		public EntryType getType() {
-			return EntryType.GT;
-		}
-
-		@Override
-		public LocalTime getStart() {
-			return null;
-		}
-
-		@Override
-		public Map<String, Duration> getItems() {
-			return null;
-		}
-
-		@Override
-		public Duration getTimeAssets() {
-			return null;
-		}
-
+	@Test
+	public void testGetEntry() {
+		Entry expected = new DayEntry(DAY1, EntryType.UR, Collections.emptyMap());
+		assertEquals(expected, store.getEntry(DAY1));
 	}
 
-	private class Entry2 extends Entry1 {
+	@Test
+	public void testGetTimeAssetsSumBefore() {
+		TimeAssetsSum expected = testTransformer.apply(DAY3);
+		assertEquals(expected, store.getTimeAssetsSumBefore(DAY5));
+	}
 
-		@Override
-		public LocalDate getDay() {
-			return DAY.minusDays(1);
-		}
+	@Test
+	public void testStoreEntry() {
+		LocalDate day = DAY1.minusDays(7);
+		Entry expected = new DayEntry(day, EntryType.SO, Collections.singletonMap("a key", Duration.ofMinutes(5)));
+		assertNull(store.getEntry(day));
+		assertEquals(expected, store.storeEntry(expected));
+		assertEquals(expected, store.getEntry(day));
 
+		// test update
+		TimeAssetsSum expectedAfterUpdate = testTransformer.apply(day);
+		assertEquals(expectedAfterUpdate, store.getTimeAssetsSumBefore(DAY1));
+	}
+
+	@Test(expected=NoSuchElementException.class)
+	public void testGetTimeAssetsSumBeforeOutOfRange() {
+		store.getTimeAssetsSumBefore(DAY1);
 	}
 
 }
