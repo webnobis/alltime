@@ -15,6 +15,7 @@ import com.webnobis.alltime.model.DayEntry;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.model.GTEntry;
+import com.webnobis.alltime.model.TimeAssetsSum;
 import com.webnobis.alltime.persistence.EntryStore;
 
 public class EntryService implements FindService, BookingService, TimeAssetsService {
@@ -32,7 +33,7 @@ public class EntryService implements FindService, BookingService, TimeAssetsServ
 	}
 
 	@Override
-	public Duration getTimeAssetsSumBefore(LocalDate day) {
+	public TimeAssetsSum getTimeAssetsSumBefore(LocalDate day) {
 		return store.getTimeAssetsSumBefore(day);
 	}
 

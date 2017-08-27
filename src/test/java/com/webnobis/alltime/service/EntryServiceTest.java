@@ -24,6 +24,7 @@ import org.junit.Test;
 import com.webnobis.alltime.model.DayEntry;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
+import com.webnobis.alltime.model.TimeAssetsSum;
 import com.webnobis.alltime.persistence.EntryStore;
 
 public class EntryServiceTest {
@@ -111,7 +112,7 @@ public class EntryServiceTest {
 	}
 
 	@Test
-	public void bookGT() {
+	public void testBookGT() {
 		Entry e = service.book(DAY2, EntryType.GT);
 
 		assertEquals(DAY2, e.getDay());
@@ -126,7 +127,7 @@ public class EntryServiceTest {
 	}
 
 	@Test
-	public void bookURRange() {
+	public void testBookURRange() {
 		List<Entry> entries = service.book(DAY1, DAY2, EntryType.UR);
 		assertEquals(9, entries.size());
 
@@ -150,7 +151,7 @@ public class EntryServiceTest {
 	}
 
 	@Test
-	public void getLastDays() {
+	public void testGetLastDays() {
 		Stream.of(DAY1, DAY2, DAY3)
 				.map(day -> new DayEntry(day, EntryType.KR, items))
 				.forEach(store::storeEntry);
@@ -160,7 +161,7 @@ public class EntryServiceTest {
 	}
 
 	@Test
-	public void getEntry() {
+	public void testGetEntry() {
 		Entry expected = new DayEntry(DAY3, EntryType.KR, items);
 		store.storeEntry(expected);
 
@@ -169,8 +170,9 @@ public class EntryServiceTest {
 	}
 
 	@Test
-	public void getTimeAssetsSum() {
-		assertEquals(TIME_ASSETS_SUM_BEFORE, service.getTimeAssetsSumBefore(null));
+	public void testGetTimeAssetsSum() {
+		TimeAssetsSum expected = new TimeAssetsSum(DAY2, TIME_ASSETS_SUM_BEFORE);
+		assertEquals(expected, service.getTimeAssetsSumBefore(DAY2));
 	}
 
 	private class TestEntryStore implements EntryStore {
@@ -188,8 +190,8 @@ public class EntryServiceTest {
 		}
 
 		@Override
-		public Duration getTimeAssetsSumBefore(LocalDate day) {
-			return TIME_ASSETS_SUM_BEFORE;
+		public TimeAssetsSum getTimeAssetsSumBefore(LocalDate day) {
+			return new TimeAssetsSum(day, TIME_ASSETS_SUM_BEFORE);
 		}
 
 		@Override

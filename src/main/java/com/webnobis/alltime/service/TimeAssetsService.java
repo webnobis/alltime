@@ -1,10 +1,11 @@
 package com.webnobis.alltime.service;
 
-import java.time.Duration;
 import java.time.LocalDate;
+
+import com.webnobis.alltime.model.TimeAssetsSum;
 
 public interface TimeAssetsService {
 
-	Duration getTimeAssetsSumBefore(LocalDate day);
+	TimeAssetsSum getTimeAssetsSumBefore(LocalDate day);
 
 }
