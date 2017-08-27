@@ -38,7 +38,6 @@ abstract class AbstractEntry implements Entry {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((day == null) ? 0 : day.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
 
@@ -55,8 +54,6 @@ abstract class AbstractEntry implements Entry {
 			if (other.day != null)
 				return false;
 		} else if (!day.equals(other.day))
-			return false;
-		if (type != other.type)
 			return false;
 		return true;
 	}

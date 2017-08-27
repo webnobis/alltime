@@ -1,7 +1,7 @@
 package com.webnobis.alltime.persistence;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -17,12 +17,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.webnobis.alltime.model.DayEntry;
@@ -38,9 +38,9 @@ public class EntryStoreTest {
 
 	private static final LocalDate DAY3 = DAY1.plusDays(13);
 
-	private static final LocalDate DAY4 = DAY2.plusMonths(1);
+	private static final LocalDate DAY4 = DAY2.plusMonths(1).plusDays(1);
 
-	private static final LocalDate DAY5 = DAY3.plusMonths(2);
+	private static final LocalDate DAY5 = DAY3.plusMonths(2).plusDays(1);
 
 	private static final Supplier<LocalDate> now = () -> DAY5;
 
@@ -54,29 +54,25 @@ public class EntryStoreTest {
 
 	private static final Function<TimeAssetsSum, String> timeAssetsSumSerializer = sum -> sum.getDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-	private static Function<String, TimeAssetsSum> timeAssetsSumDeserializer;
+	private static final Function<LocalDate, TimeAssetsSum> testTransformer = day -> new TimeAssetsSum(day, Duration.ofHours(day.getDayOfMonth()));
+
+	private static final Function<String, TimeAssetsSum> timeAssetsSumDeserializer = text -> testTransformer.apply(LocalDate.parse(text));
 
 	private Path tmpRoot;
 
 	private EntryStore store;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		timeAssetsSumDeserializer = text -> {
-			LocalDate day = LocalDate.parse(text);
-			return new TimeAssetsSum(day, Duration.between(LocalDate.parse(text), DAY5));
-		};
-	}
-
 	@Before
 	public void setUp() throws Exception {
 		tmpRoot = Files.createTempDirectory(EntryStoreTest.class.getSimpleName());
 
-		Files.write(tmpRoot.resolve("201705.dat"), Arrays.asList(DAY1.format(DateTimeFormatter.ISO_LOCAL_DATE), 
-				DAY2.format(DateTimeFormatter.ISO_LOCAL_DATE), 
+		Path file1 = tmpRoot.resolve("201705.dat");
+		Files.write(file1, Arrays.asList(DAY1.format(DateTimeFormatter.ISO_LOCAL_DATE),
+				DAY2.format(DateTimeFormatter.ISO_LOCAL_DATE),
 				DAY3.format(DateTimeFormatter.ISO_LOCAL_DATE)), StandardOpenOption.CREATE);
 		Files.write(tmpRoot.resolve("201706.dat"), Collections.singleton(DAY4.format(DateTimeFormatter.ISO_LOCAL_DATE)), StandardOpenOption.CREATE);
 		Files.write(tmpRoot.resolve("201707.dat"), Collections.singleton(DAY5.format(DateTimeFormatter.ISO_LOCAL_DATE)), StandardOpenOption.CREATE);
+		Files.copy(file1, tmpRoot.resolve("timeassets.dat"));
 
 		store = new FileStore(tmpRoot, now, maxCount, dayDeserializer, entryDeserializer, entrySerializer, timeAssetsSumDeserializer, timeAssetsSumSerializer);
 	}
@@ -123,12 +119,26 @@ public class EntryStoreTest {
 
 	@Test
 	public void testGetTimeAssetsSumBefore() {
-		fail("Not yet implemented");
+		TimeAssetsSum expected = testTransformer.apply(DAY3);
+		assertEquals(expected, store.getTimeAssetsSumBefore(DAY5));
 	}
 
 	@Test
 	public void testStoreEntry() {
-		fail("Not yet implemented");
+		LocalDate day = DAY1.minusDays(7);
+		Entry expected = new DayEntry(day, EntryType.SO, Collections.singletonMap("a key", Duration.ofMinutes(5)));
+		assertNull(store.getEntry(day));
+		assertEquals(expected, store.storeEntry(expected));
+		assertEquals(expected, store.getEntry(day));
+
+		// test update
+		TimeAssetsSum expectedAfterUpdate = testTransformer.apply(day);
+		assertEquals(expectedAfterUpdate, store.getTimeAssetsSumBefore(DAY1));
+	}
+
+	@Test(expected=NoSuchElementException.class)
+	public void testGetTimeAssetsSumBeforeOutOfRange() {
+		store.getTimeAssetsSumBefore(DAY1);
 	}
 
 }

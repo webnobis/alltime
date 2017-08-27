@@ -31,7 +31,7 @@ public class FileStore implements EntryStore {
 
 	private static final Comparator<LocalDate> dayReverseComparator = (d1, d2) -> d2.compareTo(d1);
 
-	private static final Comparator<TimeAssetsSum> timeAssetsSumReverseComparator = (s1, s2) -> dayReverseComparator.compare(s2.getDay(), s1.getDay());
+	private static final Comparator<TimeAssetsSum> timeAssetsSumReverseComparator = (s1, s2) -> dayReverseComparator.compare(s1.getDay(), s2.getDay());
 
 	private final Path root;
 
@@ -96,6 +96,10 @@ public class FileStore implements EntryStore {
 	}
 
 	private Stream<String> readLines(Path file) {
+		if (!Files.exists(file)) {
+			return Stream.empty();
+		}
+
 		try {
 			return Files.readAllLines(file, StandardCharsets.UTF_8).stream();
 		} catch (IOException e) {
