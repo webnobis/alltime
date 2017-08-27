@@ -1,13 +1,11 @@
 package com.webnobis.alltime.persistence;
 
-import java.util.List;
-
 import com.webnobis.alltime.model.Entry;
+import com.webnobis.alltime.service.FindService;
+import com.webnobis.alltime.service.TimeAssetsService;
 
-public interface EntryStore {
+public interface EntryStore extends FindService, TimeAssetsService {
 
-	List<Entry> getLastEntries(int maxCount);
-
-	void storeEntry(Entry entry);
+	Entry storeEntry(Entry entry);
 
 }
