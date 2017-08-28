@@ -22,9 +22,9 @@ import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.service.DurationFormatter;
 
-public abstract class LineToEntrySerializer {
+public abstract class EntryToLineSerializer {
 
-	private LineToEntrySerializer() {
+	private EntryToLineSerializer() {
 	}
 
 	public static String toLine(Entry entry) {
@@ -37,15 +37,15 @@ public abstract class LineToEntrySerializer {
 				toText(entry.getType()),
 				toText(entry.getStart()),
 				toText(entry.getEnd()),
-				R.name().concat(toText(entry.getRealTime())),
-				E.name().concat(toText(entry.getExpectedTime())),
-				I.name().concat(toText(entry.getIdleTime())),
-				A.name().concat(toText(entry.getTimeAssets())));
+				toText(R, entry.getRealTime()),
+				toText(E, entry.getExpectedTime()),
+				toText(I, entry.getIdleTime()),
+				toText(A, entry.getTimeAssets()));
 	}
 
 	private static Stream<String> getItemStream(Entry entry) {
 		return new TreeMap<>(entry.getItems()).entrySet().stream()
-				.flatMap(e -> Stream.of(toText(e.getValue()), e.getKey()));
+				.flatMap(e -> Stream.of(toText(null, e.getValue()), e.getKey()));
 	}
 
 	private static String toText(LocalDate day) {
@@ -66,10 +66,11 @@ public abstract class LineToEntrySerializer {
 				.orElse(MISSING_VALUE);
 	}
 
-	private static String toText(Duration duration) {
-		return Optional.ofNullable(duration)
-				.map(DurationFormatter::toString)
-				.orElse(MISSING_VALUE);
+	private static String toText(LineDefinition prefix, Duration duration) {
+		return Optional.ofNullable(prefix).map(LineDefinition::name).orElse("")
+				.concat(Optional.ofNullable(duration)
+						.map(DurationFormatter::toString)
+						.orElse(MISSING_VALUE));
 	}
 
 }
