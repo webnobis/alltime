@@ -20,7 +20,7 @@ import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.model.GTEntry;
 
-public class LineToEntrySerializerTest {
+public class EntryToLineSerializerTest {
 
 	private static final LocalDate DAY = LocalDate.of(1999, Month.DECEMBER, 31);
 
@@ -59,7 +59,7 @@ public class LineToEntrySerializerTest {
 
 	@Before
 	public void setUp() {
-		serializer = LineToEntrySerializer::toLine;
+		serializer = EntryToLineSerializer::toLine;
 	}
 
 	@Test

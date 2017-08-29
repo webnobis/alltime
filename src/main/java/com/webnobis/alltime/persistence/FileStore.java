@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -117,12 +118,14 @@ public class FileStore implements EntryStore {
 
 	@Override
 	public Entry getEntry(LocalDate day) {
+		Objects.requireNonNull(day, "day is null");
+		
 		return getEntry(toMonthFile(YearMonth.from(day)), day);
 	}
 
 	@Override
 	public TimeAssetsSum getTimeAssetsSumBefore(LocalDate day) {
-		return getTimeAssetsSumsBeforeStream(day)
+		return getTimeAssetsSumsBeforeStream(Objects.requireNonNull(day, "day is null"))
 				.findFirst()
 				.orElseThrow(() -> new NoSuchElementException(String.format("no time assets sum found before day %s", day)));
 	}
@@ -154,6 +157,8 @@ public class FileStore implements EntryStore {
 
 	@Override
 	public Entry storeEntry(Entry entry) {
+		Objects.requireNonNull(entry, "entry is null");
+		
 		LocalDate day = entry.getDay();
 		Path monthFile = toMonthFile(YearMonth.from(day));
 		List<String> lines = readLines(monthFile)

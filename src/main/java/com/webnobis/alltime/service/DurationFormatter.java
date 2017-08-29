@@ -2,6 +2,9 @@ package com.webnobis.alltime.service;
 
 import java.text.DecimalFormat;
 import java.time.Duration;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -15,11 +18,13 @@ public abstract class DurationFormatter {
 
 	private static final String TWICE_ZERO = "00";
 
+	private static final Pattern durationPattern = Pattern.compile("^([0-9]{0,2})".concat(TIME_SEPARATOR).concat("?([0-9]{2})").concat(TIME_SEPARATOR).concat("([0-9]{2})$"));
+
 	private DurationFormatter() {
 	}
 
 	public static String toString(Duration duration) {
-		long minutes = duration.toMinutes();
+		long minutes = Objects.requireNonNull(duration, "duration is null").toMinutes();
 		long hours = minutes / HOUR_MINUTES;
 		minutes %= HOUR_MINUTES;
 		long days = hours / DAY_HOURS;
@@ -33,6 +38,20 @@ public abstract class DurationFormatter {
 		}
 		return stream.mapToObj(l -> new DecimalFormat(TWICE_ZERO).format(l))
 				.collect(Collectors.joining(TIME_SEPARATOR));
+	}
+
+	public static Duration toDuration(String duration) {
+		Matcher matcher = durationPattern.matcher(Objects.requireNonNull(duration, "duration is null"));
+		if (!matcher.find()) {
+			return null;
+		}
+
+		String days = matcher.group(1);
+		String hours = matcher.group(2);
+		String minutes = matcher.group(3);
+		return Duration.ofDays((days.isEmpty()) ? 0 : Integer.parseInt(days))
+				.plusHours(Integer.parseInt(hours))
+				.plusMinutes(Integer.parseInt(minutes));
 	}
 
 }
