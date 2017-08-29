@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -28,6 +29,8 @@ public abstract class EntryToLineSerializer {
 	}
 
 	public static String toLine(Entry entry) {
+		Objects.requireNonNull(entry, "entry is null");
+		
 		return Stream.concat(getAttributeStream(entry), getItemStream(entry))
 				.collect(Collectors.joining(ATTRIBUTE_SEPARATOR));
 	}

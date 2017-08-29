@@ -27,6 +27,8 @@ class IdleTimeHandler {
 	}
 
 	public Duration getIdleTime(Duration realTime) {
+		Objects.requireNonNull(realTime, "reatTime is null");
+		
 		Duration limit = idleTimes.floorKey(realTime);
 		if (limit == null) {
 			return Duration.ZERO;

@@ -7,6 +7,7 @@ import java.time.LocalTime;
 import java.time.Period;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -39,6 +40,8 @@ public class EntryService implements FindService, BookingService, TimeAssetsServ
 
 	@Override
 	public Entry endAZ(LocalDate day, LocalTime start, LocalTime end, Map<String, Duration> items) {
+		Objects.requireNonNull(day, "day is null");
+
 		return store.storeEntry(new AZEntry(day, start, end, expectedTimes.get(DayOfWeek.from(day)), idleTimeHandler.getIdleTime(day, start, end), items));
 	}
 
@@ -47,6 +50,8 @@ public class EntryService implements FindService, BookingService, TimeAssetsServ
 		if (EntryType.AZ.equals(type)) {
 			throw new IllegalStateException(String.format("Please use 'startAZ' and 'endAZ' for %s type.", EntryType.AZ));
 		}
+		Objects.requireNonNull(fromDay, "fromDay is null");
+		Objects.requireNonNull(untilDay, "untilDay is null");
 
 		boolean gtType = EntryType.GT.equals(type);
 		long days = Period.between(fromDay, untilDay).getDays();

@@ -2,6 +2,7 @@ package com.webnobis.alltime.service;
 
 import java.text.DecimalFormat;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -23,7 +24,7 @@ public abstract class DurationFormatter {
 	}
 
 	public static String toString(Duration duration) {
-		long minutes = duration.toMinutes();
+		long minutes = Objects.requireNonNull(duration, "duration is null").toMinutes();
 		long hours = minutes / HOUR_MINUTES;
 		minutes %= HOUR_MINUTES;
 		long days = hours / DAY_HOURS;
@@ -40,7 +41,7 @@ public abstract class DurationFormatter {
 	}
 
 	public static Duration toDuration(String duration) {
-		Matcher matcher = durationPattern.matcher(duration);
+		Matcher matcher = durationPattern.matcher(Objects.requireNonNull(duration, "duration is null"));
 		if (!matcher.find()) {
 			return null;
 		}
