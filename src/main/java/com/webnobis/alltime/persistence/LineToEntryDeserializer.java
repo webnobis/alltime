@@ -15,8 +15,6 @@ import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.webnobis.alltime.model.AZEntry;
 import com.webnobis.alltime.model.DayEntry;
@@ -28,7 +26,7 @@ import com.webnobis.alltime.service.DurationFormatter;
 public abstract class LineToEntryDeserializer {
 
 	private static final int MIN_ATTRIBUTE_SEPARATOR = 8;
-	
+
 	private static final Pattern durationPattern = Pattern.compile("^?(.+)$");
 
 	private LineToEntryDeserializer() {
@@ -84,18 +82,20 @@ public abstract class LineToEntryDeserializer {
 		if (!matcher.find()) {
 			return null;
 		}
-		String durationPart = matcher.group();
+		String durationPart = matcher.group(1);
 		if (MISSING_VALUE.equals(durationPart)) {
 			return null;
 		}
-		
+
 		return DurationFormatter.toDuration(durationPart);
 	}
 
-	private static Map<String, Duration> toItems(String[] items) {
-		return IntStream.range(1, items.length)
-				.boxed()
-				.collect(Collectors.toMap(i -> items[i], i -> DurationFormatter.toDuration(items[i - 1]), (d1, d2) -> d1.plus(d2), TreeMap::new));
+	private static Map<String, Duration> toItems(String[] itemsPart) {
+		Map<String, Duration> items = new TreeMap<>();
+		for (int k = 1, v = 0; k < itemsPart.length; k++, v++) {
+			items.put(itemsPart[k], DurationFormatter.toDuration(itemsPart[v]));
+		}
+		return items;
 	}
 
 }

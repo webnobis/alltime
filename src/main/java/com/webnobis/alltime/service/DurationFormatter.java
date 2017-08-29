@@ -45,7 +45,7 @@ public abstract class DurationFormatter {
 			return null;
 		}
 
-		return Duration.ofHours(Integer.parseInt(matcher.group())).plusMinutes(Integer.parseInt(matcher.group(1)));
+		return Duration.ofHours(Integer.parseInt(matcher.group(1))).plusMinutes(Integer.parseInt(matcher.group(2)));
 	}
 
 }
