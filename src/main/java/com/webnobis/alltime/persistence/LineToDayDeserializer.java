@@ -7,6 +7,7 @@ import static com.webnobis.alltime.persistence.LineDefinition.MISSING_VALUE;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public abstract class LineToDayDeserializer {
 
@@ -14,6 +15,8 @@ public abstract class LineToDayDeserializer {
 	}
 
 	public static LocalDate toDay(String line) {
+		Objects.requireNonNull(line, "line is null");
+		
 		if (!line.contains(ATTRIBUTE_SEPARATOR)) {
 			throw new NoSuchElementException("missing day within line: ".concat(line));
 		}

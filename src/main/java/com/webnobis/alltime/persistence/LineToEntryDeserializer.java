@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,6 +34,8 @@ public abstract class LineToEntryDeserializer {
 	}
 
 	public static Entry toEntry(String line) {
+		Objects.requireNonNull(line, "line is null");
+
 		if (!line.contains(ATTRIBUTE_SEPARATOR)) {
 			throw new NoSuchElementException(String.format("missing attributes, separated with %s within line: %s", ATTRIBUTE_SEPARATOR, line));
 		}
