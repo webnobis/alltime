@@ -17,7 +17,7 @@ public abstract class DurationFormatter {
 
 	private static final String TWICE_ZERO = "00";
 
-	private static final Pattern durationPattern = Pattern.compile("^([0-9]{2})".concat(TIME_SEPARATOR).concat("([0-9]{2})$"));
+	private static final Pattern durationPattern = Pattern.compile("^([0-9]{0,2})".concat(TIME_SEPARATOR).concat("?([0-9]{2})").concat(TIME_SEPARATOR).concat("([0-9]{2})$"));
 
 	private DurationFormatter() {
 	}
@@ -45,7 +45,12 @@ public abstract class DurationFormatter {
 			return null;
 		}
 
-		return Duration.ofHours(Integer.parseInt(matcher.group(1))).plusMinutes(Integer.parseInt(matcher.group(2)));
+		String days = matcher.group(1);
+		String hours = matcher.group(2);
+		String minutes = matcher.group(3);
+		return Duration.ofDays((days.isEmpty()) ? 0 : Integer.parseInt(days))
+				.plusHours(Integer.parseInt(hours))
+				.plusMinutes(Integer.parseInt(minutes));
 	}
 
 }
