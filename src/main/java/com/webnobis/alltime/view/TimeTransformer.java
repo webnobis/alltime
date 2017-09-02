@@ -42,7 +42,7 @@ public class TimeTransformer {
 	public String nowToText(boolean start) {
 		LocalTime time = (start) ? now.get().minusMinutes(startOffset) : now.get().plusMinutes(endOffset);
 		int minutes = (int) (time.getMinute() / (double) minutesRaster) * minutesRaster;
-		time = (start) ? time.withMinute(minutes) : time.withMinute(minutes + minutesRaster);
+		time = time.withMinute(minutes).plusMinutes((start) ? 0 : minutesRaster);
 		return toText(time);
 	}
 

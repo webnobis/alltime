@@ -10,11 +10,11 @@ import org.junit.Test;
 
 public class TimeTransformerTest {
 
-	private static final Supplier<LocalTime> NOW = () -> LocalTime.of(4, 54, 14);
+	private static final Supplier<LocalTime> NOW = () -> LocalTime.of(4, 51, 14);
 
 	private static final int START_OFFSET = 2;
 
-	private static final int END_OFFSET = 7;
+	private static final int END_OFFSET = 4;
 
 	private static final int MINUTES_RASTER = 5;
 
@@ -39,13 +39,13 @@ public class TimeTransformerTest {
 
 	@Test
 	public void testStartNowToText() {
-		String expected = "04:50";
+		String expected = "04:45";
 		assertEquals(expected, transformer.nowToText(true));
 	}
 
 	@Test
 	public void testEndNowToText() {
-		String expected = "05:05";
+		String expected = "05:00";
 		assertEquals(expected, transformer.nowToText(false));
 	}
 
