@@ -51,6 +51,8 @@ public class BookingDialog extends Dialog<Entry> {
 		startAZ.setOnAction(this::startAZ);
 
 		endAZ = new Button("Ende AZ");
+		endAZ.setOnAction(this::endAZ);
+		
 		bookDay = new Button("Tag buchen");
 
 		GridPane pane = new GridPane();
@@ -69,6 +71,12 @@ public class BookingDialog extends Dialog<Entry> {
 
 	private void startAZ(ActionEvent event) {
 		super.setResult(service.startAZ(day.getValue(), startTime.getValue()));
+		
+		System.out.println(super.getResult());
+	}
+
+	private void endAZ(ActionEvent event) {
+		super.setResult(service.endAZ(day.getValue(), startTime.getValue(), endTime.getValue(), null));
 		
 		System.out.println(super.getResult());
 	}

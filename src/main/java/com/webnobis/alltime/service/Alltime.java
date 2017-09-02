@@ -2,11 +2,13 @@ package com.webnobis.alltime.service;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import com.webnobis.alltime.config.Config;
-import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.persistence.EntryStore;
 import com.webnobis.alltime.persistence.EntryToLineSerializer;
 import com.webnobis.alltime.persistence.FileStore;
@@ -14,9 +16,7 @@ import com.webnobis.alltime.persistence.LineToDayDeserializer;
 import com.webnobis.alltime.persistence.LineToEntryDeserializer;
 import com.webnobis.alltime.persistence.TimeAssetsSumDeserializer;
 import com.webnobis.alltime.persistence.TimeAssetsSumSerializer;
-import com.webnobis.alltime.view.BookingDialog;
-import com.webnobis.alltime.view.DayTransformer;
-import com.webnobis.alltime.view.TimeTransformer;
+import com.webnobis.alltime.view.ItemsDialog;
 
 import javafx.application.Application;
 import javafx.scene.control.Dialog;
@@ -62,8 +62,12 @@ public class Alltime extends Application {
 		 * bookingStage.centerOnScreen();
 		 */
 
-		Dialog<Entry> bookingDialog = new BookingDialog(service, new DayTransformer(() -> now.get().toLocalDate()), new TimeTransformer(() -> now.get().toLocalTime(), 0, 0, 5));
+//		Dialog<Entry> bookingDialog = new BookingDialog(service, new DayTransformer(() -> now.get().toLocalDate()), new TimeTransformer(() -> now.get().toLocalTime(), 0, 0, 5));
 
+		Map<String,Duration> map = new HashMap<>();
+		map.put("etwas Eingegebenes", Duration.ofMinutes(56));
+		map.put("alles ohne", Duration.ofHours(4));
+		Dialog<Map<String,Duration>> itemsDialog = new ItemsDialog(map);
 	}
 
 }
