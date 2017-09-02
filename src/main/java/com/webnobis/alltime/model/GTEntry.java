@@ -3,6 +3,7 @@ package com.webnobis.alltime.model;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Objects;
 
 public class GTEntry extends AbstractEntry implements Entry {
 
@@ -10,7 +11,7 @@ public class GTEntry extends AbstractEntry implements Entry {
 
 	public GTEntry(LocalDate day, Duration expectedTime, Map<String, Duration> items) {
 		super(day, EntryType.GT, items);
-		this.expectedTime = expectedTime;
+		this.expectedTime = Objects.requireNonNull(expectedTime, "expectedTime is null");
 	}
 
 	@Override

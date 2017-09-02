@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 abstract class AbstractEntry implements Entry {
 
@@ -14,9 +15,9 @@ abstract class AbstractEntry implements Entry {
 	private final Map<String, Duration> items;
 
 	AbstractEntry(LocalDate day, EntryType type, Map<String, Duration> items) {
-		this.day = day;
-		this.type = type;
-		this.items = Collections.unmodifiableMap(items);
+		this.day = Objects.requireNonNull(day, "day is null");
+		this.type = Objects.requireNonNull(type, "type is null");
+		this.items = Collections.unmodifiableMap(Objects.requireNonNull(items, "items is null"));
 	}
 
 	@Override
