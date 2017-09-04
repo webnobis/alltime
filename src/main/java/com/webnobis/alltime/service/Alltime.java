@@ -3,12 +3,15 @@ package com.webnobis.alltime.service;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import com.webnobis.alltime.config.Config;
+import com.webnobis.alltime.model.AZEntry;
 import com.webnobis.alltime.persistence.EntryStore;
 import com.webnobis.alltime.persistence.EntryToLineSerializer;
 import com.webnobis.alltime.persistence.FileStore;
@@ -16,7 +19,7 @@ import com.webnobis.alltime.persistence.LineToDayDeserializer;
 import com.webnobis.alltime.persistence.LineToEntryDeserializer;
 import com.webnobis.alltime.persistence.TimeAssetsSumDeserializer;
 import com.webnobis.alltime.persistence.TimeAssetsSumSerializer;
-import com.webnobis.alltime.view.ItemsDialog;
+import com.webnobis.alltime.view.items.ItemsDialog;
 
 import javafx.application.Application;
 import javafx.scene.control.Dialog;
@@ -67,7 +70,8 @@ public class Alltime extends Application {
 		Map<String,Duration> map = new HashMap<>();
 		map.put("etwas Eingegebenes", Duration.ofMinutes(56));
 		map.put("alles ohne", Duration.ofHours(4));
-		Dialog<Map<String,Duration>> itemsDialog = new ItemsDialog(map);
+		Dialog<Map<String,Duration>> itemsDialog = new ItemsDialog(new AZEntry(LocalDate.now(), LocalTime.of(8, 0), LocalTime.of(16, 0), Duration.ofDays(2), Duration.ofMinutes(15), map), 30);
+		System.out.println(itemsDialog.showAndWait());
 	}
 
 }
