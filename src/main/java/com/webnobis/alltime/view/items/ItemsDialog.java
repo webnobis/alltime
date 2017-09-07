@@ -16,6 +16,8 @@ import com.webnobis.alltime.view.DayTransformer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
@@ -60,14 +62,16 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 
 		duration = new ComboBox<>(getSelectableDurations());
 		duration.setConverter(new DurationStringConverter());
+		duration.focusedProperty().addListener((observable, oldValue, newValue) -> updateSelectableDurations(newValue.booleanValue()));
 
 		description = new TextField("Beschreibung");
 
 		add = new Button(" + ");
-		add.setOnAction(this::addItem);
+		add.setOnAction(this::updateItem);
 
 		change = new Button("a|b");
-		change.setOnAction(this::changeItem);
+		change.setDisable(true);
+		change.setOnAction(this::updateItem);
 
 		GridPane pane = new GridPane();
 		pane.add(this.day, 0, 0);
@@ -83,6 +87,18 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 		dialogPane.setHeaderText("Einträge");
 
 		super.setResultConverter(this::finish);
+	}
+
+	private void updateSelectableDurations(boolean hasFocus) {
+		Optional.ofNullable(duration.getValue())
+				.filter(unused -> !hasFocus)
+				.ifPresent(selection -> {
+					ObservableList<Duration> selectableDurations = getSelectableDurations();
+					duration.setItems(selectableDurations);
+					duration.setValue(selectableDurations.stream().findFirst()
+							.map(maxDuration -> (maxDuration.compareTo(selection) < 1) ? maxDuration : selection)
+							.orElse(null));
+				});
 	}
 
 	private ObservableList<Duration> getSelectableDurations() {
@@ -110,32 +126,39 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 		return FXCollections.observableArrayList(durations);
 	}
 
-	private void addItem(ActionEvent event) {
-		Map.Entry<String, Duration> item = new Item(description.getText(), duration.getValue());
-
-		items.getItems().add(item);
-		items.setValue(item);
-
-		duration.setItems(getSelectableDurations());
-		description.setText("");
-	}
-
 	private void getItem(ActionEvent event) {
-		Map.Entry<String, Duration> item = items.getValue();
-		duration.setItems(getSelectableDurations(item.getValue()));
-		duration.setValue(item.getValue());
-		description.setText(item.getKey());
+		Optional.ofNullable(items.getValue())
+				.ifPresent(item -> {
+					duration.setItems(getSelectableDurations(item.getValue()));
+					duration.setValue(item.getValue());
+					description.setText(item.getKey());
 
-		duration.requestFocus();
+					change.setDisable(false);
+					duration.requestFocus();
+				});
 	}
 
-	private void changeItem(ActionEvent event) {
-		Map.Entry<String, Duration> item = new Item(description.getText(), duration.getValue());
+	private void updateItem(ActionEvent event) {
+		if (duration.getValue() == null) {
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setContentText(String.format("Es ist keine Dauer %s.", (duration.getItems().isEmpty()) ? "mehr verfügbar" : "ausgewählt"));
+			alert.show();
+		} else if (description.getText().isEmpty()) {
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setContentText("Es ist keine Beschreibung eingetragen.");
+			alert.show();
+		} else {
+			Map.Entry<String, Duration> item = new Item(description.getText(), duration.getValue());
 
-		items.getItems().set(items.getItems().indexOf(items.getValue()), item);
+			if (add.equals(event.getSource())) {
+				items.getItems().add(item);
 
-		duration.setItems(getSelectableDurations());
-		description.setText("");
+				items.setValue(item);
+			} else {
+				int index = items.getSelectionModel().selectedIndexProperty().intValue();
+				items.getItems().set(index, item);
+			}
+		}
 	}
 
 	private Map<String, Duration> finish(ButtonType type) {
