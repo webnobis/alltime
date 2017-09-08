@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -70,7 +71,7 @@ public class Alltime extends Application {
 		Map<String,Duration> map = new HashMap<>();
 		map.put("etwas Eingegebenes", Duration.ofMinutes(56));
 		map.put("alles ohne", Duration.ofHours(4));
-		Dialog<Map<String,Duration>> itemsDialog = new ItemsDialog(new AZEntry(LocalDate.now(), LocalTime.of(8, 0), LocalTime.of(16, 0), Duration.ofDays(2), Duration.ofMinutes(15), map), 30);
+		Dialog<Map<String,Duration>> itemsDialog = new ItemsDialog(new AZEntry(LocalDate.now(), LocalTime.of(8, 0), LocalTime.of(16, 0), Duration.ofDays(2), Duration.ofMinutes(15), map), 30, Arrays.asList("Alt 1", "Ganz alt 2"));
 		System.out.println(itemsDialog.showAndWait());
 	}
 
