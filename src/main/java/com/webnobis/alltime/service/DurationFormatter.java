@@ -25,19 +25,20 @@ public abstract class DurationFormatter {
 
 	public static String toString(Duration duration) {
 		long minutes = Objects.requireNonNull(duration, "duration is null").toMinutes();
+		boolean negative = minutes < 0;
 		long hours = minutes / HOUR_MINUTES;
 		minutes = Math.abs(minutes % HOUR_MINUTES);
-		long days = hours / DAY_HOURS;
+		long days = Math.abs(hours / DAY_HOURS);
 		hours = Math.abs(hours % DAY_HOURS);
 
 		LongStream stream;
-		if (days != 0) {
+		if (days > 0) {
 			stream = LongStream.of(days, hours, minutes);
 		} else {
 			stream = LongStream.of(hours, minutes);
 		}
-		return stream.mapToObj(l -> new DecimalFormat(TWICE_ZERO).format(l))
-				.collect(Collectors.joining(TIME_SEPARATOR));
+		return ((negative) ? "-" : "").concat(stream.mapToObj(l -> new DecimalFormat(TWICE_ZERO).format(l))
+				.collect(Collectors.joining(TIME_SEPARATOR)));
 	}
 
 	public static Duration toDuration(String duration) {
