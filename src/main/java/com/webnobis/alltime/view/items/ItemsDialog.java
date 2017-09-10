@@ -8,10 +8,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.webnobis.alltime.model.Entry;
+import com.webnobis.alltime.service.DurationFormatter;
 import com.webnobis.alltime.view.DayTransformer;
+import com.webnobis.alltime.view.ValueField;
+import com.webnobis.alltime.view.ViewStyle;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -35,7 +37,11 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 
 	private final TextField day;
 
+	private final ValueField<Duration> durationsToBook;
+
 	private final ComboBox<Map.Entry<String, Duration>> items;
+
+	private final ComboBox<String> lastDescriptions;
 
 	private final ComboBox<Duration> duration;
 
@@ -45,13 +51,16 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 
 	private final Button change;
 
-	public ItemsDialog(Entry entry, int minutesRaster) {
+	private final Button delete;
+
+	public ItemsDialog(Entry entry, int minutesRaster, List<String> lastDescriptions) {
 		super();
 		this.entry = Objects.requireNonNull(entry, "entry is null");
 		this.minutesRaster = minutesRaster;
 
 		day = new TextField(DayTransformer.toText(entry.getDay()));
 		day.setEditable(false);
+		day.setStyle(ViewStyle.READONLY);
 
 		items = new ComboBox<>(FXCollections.observableArrayList(entry.getItems().entrySet().stream()
 				.map(Item::new)
@@ -60,26 +69,37 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 		items.setConverter(new ItemStringConverter());
 		items.setOnAction(this::getItem);
 
+		durationsToBook = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, getDurationsToBook());
+		durationsToBook.setEditable(false);
+		durationsToBook.setStyle(ViewStyle.READONLY);
+
+		this.lastDescriptions = new ComboBox<>(FXCollections.observableArrayList(Objects.requireNonNull(lastDescriptions, "lastDescriptions is null")));
+		this.lastDescriptions.setOnAction(this::getDescription);
+
 		duration = new ComboBox<>(getSelectableDurations());
 		duration.setConverter(new DurationStringConverter());
-		duration.focusedProperty().addListener((observable, oldValue, newValue) -> updateSelectableDurations(newValue.booleanValue()));
 
-		description = new TextField("Beschreibung");
+		description = new TextField();
 
 		add = new Button(" + ");
 		add.setOnAction(this::updateItem);
 
 		change = new Button("a|b");
-		change.setDisable(true);
 		change.setOnAction(this::updateItem);
 
+		delete = new Button(" - ");
+		delete.setOnAction(this::updateItem);
+
 		GridPane pane = new GridPane();
-		pane.add(this.day, 0, 0);
-		pane.add(this.items, 0, 1);
+		pane.add(day, 0, 0);
+		pane.add(durationsToBook, 1, 0);
+		pane.add(items, 0, 1);
+		pane.add(this.lastDescriptions, 1, 1);
 		pane.add(duration, 0, 2);
 		pane.add(description, 1, 2);
 		pane.add(add, 2, 2);
 		pane.add(change, 3, 2);
+		pane.add(delete, 4, 2);
 
 		DialogPane dialogPane = super.getDialogPane();
 		dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -89,16 +109,12 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 		super.setResultConverter(this::finish);
 	}
 
-	private void updateSelectableDurations(boolean hasFocus) {
-		Optional.ofNullable(duration.getValue())
-				.filter(unused -> !hasFocus)
-				.ifPresent(selection -> {
-					ObservableList<Duration> selectableDurations = getSelectableDurations();
-					duration.setItems(selectableDurations);
-					duration.setValue(selectableDurations.stream().findFirst()
-							.map(maxDuration -> (maxDuration.compareTo(selection) < 1) ? maxDuration : selection)
-							.orElse(null));
-				});
+	private Duration getDurationsToBook() {
+		Duration booked = items.getItems().stream()
+				.map(Map.Entry::getValue)
+				.reduce((d1, d2) -> d1.plus(d2))
+				.orElse(Duration.ZERO);
+		return entry.getRealTime().minus(entry.getIdleTime()).minus(booked);
 	}
 
 	private ObservableList<Duration> getSelectableDurations() {
@@ -106,12 +122,7 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 	}
 
 	private ObservableList<Duration> getSelectableDurations(Duration selectedDuration) {
-		Duration maxDuration = Stream.concat(Stream.of(entry.getIdleTime()),
-				items.getItems().stream()
-						.map(Map.Entry::getValue))
-				.reduce((d1, d2) -> d1.plus(d2))
-				.map(entry.getRealTime()::minus)
-				.orElse(Duration.ZERO);
+		Duration maxDuration = getDurationsToBook();
 		if (selectedDuration != null && maxDuration.minus(selectedDuration).isNegative()) {
 			maxDuration = selectedDuration;
 		}
@@ -138,6 +149,11 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 				});
 	}
 
+	private void getDescription(ActionEvent event) {
+		Optional.ofNullable(lastDescriptions.getValue())
+				.ifPresent(description::setText);
+	}
+
 	private void updateItem(ActionEvent event) {
 		if (duration.getValue() == null) {
 			Alert alert = new Alert(AlertType.ERROR);
@@ -146,6 +162,11 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 		} else if (description.getText().isEmpty()) {
 			Alert alert = new Alert(AlertType.ERROR);
 			alert.setContentText("Es ist keine Beschreibung eingetragen.");
+			alert.show();
+		} else if (items.getItems().stream()
+				.anyMatch(entry -> description.getText().equals(entry.getKey()))) {
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setContentText(String.format("'%s' als Beschreibung ist bereits vorhanden.", description.getText()));
 			alert.show();
 		} else {
 			Map.Entry<String, Duration> item = new Item(description.getText(), duration.getValue());
@@ -158,6 +179,9 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 				int index = items.getSelectionModel().selectedIndexProperty().intValue();
 				items.getItems().set(index, item);
 			}
+			
+			durationsToBook.setValue(getDurationsToBook());
+			duration.setItems(getSelectableDurations());
 		}
 	}
 

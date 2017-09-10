@@ -18,8 +18,6 @@ public class BookingDialog extends Dialog<Entry> {
 	
 	private final EntryService service;
 	
-	private final DayTransformer dayTransformer;
-	
 	private final TimeTransformer timeTransformer;
 	
 	private final ValueField<LocalDate> day;
@@ -36,15 +34,14 @@ public class BookingDialog extends Dialog<Entry> {
 	
 	private final Button bookDay;
 
-	public BookingDialog(EntryService service, DayTransformer dayTransformer, TimeTransformer timeTransformer) {
+	public BookingDialog(EntryService service, TimeTransformer timeTransformer) {
 		super();
 		this.service = service;
-		this.dayTransformer = dayTransformer;
 		this.timeTransformer = timeTransformer;
 		
-		day = new ValueField<>(DayTransformer::toDay, DayTransformer::toText, dayTransformer::nowToText);
-		startTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, () -> timeTransformer.nowToText(true));
-		endTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, () -> timeTransformer.nowToText(false));
+		day = new ValueField<>(DayTransformer::toDay, DayTransformer::toText, LocalDate.now());
+		startTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, timeTransformer.now(true));
+		endTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, timeTransformer.now(false));
 		typeBox = new ComboBox<>(FXCollections.observableArrayList(EntryType.values()));
 		
 		startAZ = new Button("Start AZ");
