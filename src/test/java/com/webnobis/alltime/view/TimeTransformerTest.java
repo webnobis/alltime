@@ -38,15 +38,15 @@ public class TimeTransformerTest {
 	}
 
 	@Test
-	public void testStartNowToText() {
-		String expected = "04:45";
-		assertEquals(expected, transformer.nowToText(true));
+	public void testStartNow() {
+		LocalTime expected = LocalTime.of(4, 45);
+		assertEquals(expected, transformer.now(true));
 	}
 
 	@Test
-	public void testEndNowToText() {
-		String expected = "05:00";
-		assertEquals(expected, transformer.nowToText(false));
+	public void testEndNow() {
+		LocalTime expected = LocalTime.of(5, 0);
+		assertEquals(expected, transformer.now(false));
 	}
 
 }

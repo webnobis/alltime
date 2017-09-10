@@ -39,11 +39,10 @@ public class TimeTransformer {
 		return time.format(DateTimeFormatter.ofPattern(TIME_FORMAT));
 	}
 
-	public String nowToText(boolean start) {
+	public LocalTime now(boolean start) {
 		LocalTime time = (start) ? now.get().minusMinutes(startOffset) : now.get().plusMinutes(endOffset);
 		int minutes = (int) (time.getMinute() / (double) minutesRaster) * minutesRaster;
-		time = time.withMinute(minutes).plusMinutes((start) ? 0 : minutesRaster);
-		return toText(time);
+		return time.withSecond(0).withMinute(minutes).plusMinutes((start) ? 0 : minutesRaster);
 	}
 
 }
