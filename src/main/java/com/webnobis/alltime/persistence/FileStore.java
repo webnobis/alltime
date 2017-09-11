@@ -11,8 +11,10 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -32,13 +34,17 @@ public class FileStore implements EntryStore {
 
 	private static final Comparator<LocalDate> dayReverseComparator = (d1, d2) -> d2.compareTo(d1);
 
+	private static final Comparator<Entry> entryReverseComparator = (e1, e2) -> dayReverseComparator.compare(e1.getDay(), e2.getDay());
+
 	private static final Comparator<TimeAssetsSum> timeAssetsSumReverseComparator = (s1, s2) -> dayReverseComparator.compare(s1.getDay(), s2.getDay());
 
 	private final Path root;
 
 	private final Supplier<LocalDate> now;
 
-	private final int maxCount;
+	private final int maxDayCount;
+
+	private final int maxDescriptionCount;
 
 	private final Function<String, LocalDate> dayDeserializer;
 
@@ -50,7 +56,7 @@ public class FileStore implements EntryStore {
 
 	private final Function<TimeAssetsSum, String> timeAssetsSumSerializer;
 
-	public FileStore(Path root, Supplier<LocalDate> now, int maxCount,
+	public FileStore(Path root, Supplier<LocalDate> now, int maxDayCount, int maxDescriptionCount,
 			Function<String, LocalDate> dayDeserializer,
 			Function<String, Entry> entryDeserializer,
 			Function<Entry, String> entrySerializer,
@@ -58,7 +64,8 @@ public class FileStore implements EntryStore {
 			Function<TimeAssetsSum, String> timeAssetsSumSerializer) {
 		this.root = root;
 		this.now = now;
-		this.maxCount = maxCount;
+		this.maxDayCount = maxDayCount;
+		this.maxDescriptionCount = maxDescriptionCount;
 		this.dayDeserializer = dayDeserializer;
 		this.entryDeserializer = entryDeserializer;
 		this.entrySerializer = entrySerializer;
@@ -77,12 +84,12 @@ public class FileStore implements EntryStore {
 	@Override
 	public List<LocalDate> getLastDays() {
 		YearMonth currentMonth = YearMonth.from(now.get());
-		return LongStream.range(0, maxCount)
+		return LongStream.range(0, maxDayCount)
 				.mapToObj(currentMonth::minusMonths)
 				.map(this::toMonthFile)
 				.filter(Files::exists)
 				.flatMap(this::getDayStream)
-				.limit(maxCount)
+				.limit(maxDayCount)
 				.collect(Collectors.toList());
 	}
 
@@ -119,7 +126,7 @@ public class FileStore implements EntryStore {
 	@Override
 	public Entry getEntry(LocalDate day) {
 		Objects.requireNonNull(day, "day is null");
-		
+
 		return getEntry(toMonthFile(YearMonth.from(day)), day);
 	}
 
@@ -158,7 +165,7 @@ public class FileStore implements EntryStore {
 	@Override
 	public Entry storeEntry(Entry entry) {
 		Objects.requireNonNull(entry, "entry is null");
-		
+
 		LocalDate day = entry.getDay();
 		Path monthFile = toMonthFile(YearMonth.from(day));
 		List<String> lines = readLines(monthFile)
@@ -177,6 +184,25 @@ public class FileStore implements EntryStore {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	@Override
+	public List<String> getLastDescriptions() {
+		YearMonth currentMonth = YearMonth.from(now.get());
+		return LongStream.range(0, maxDayCount)
+				.mapToObj(currentMonth::minusMonths)
+				.map(this::toMonthFile)
+				.filter(Files::exists)
+				.flatMap(this::readLines)
+				.map(entryDeserializer::apply)
+				.sorted(entryReverseComparator)
+				.map(Entry::getItems)
+				.map(Map::keySet)
+				.flatMap(Set::stream)
+				.distinct()
+				.sorted()
+				.limit(maxDescriptionCount)
+				.collect(Collectors.toList());
 	}
 
 }
