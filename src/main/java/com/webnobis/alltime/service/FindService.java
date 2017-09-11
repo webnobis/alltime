@@ -10,5 +10,7 @@ public interface FindService {
 	List<LocalDate> getLastDays();
 	
 	Entry getEntry(LocalDate day);
+	
+	List<String> getLastDescriptions();
 
 }

@@ -17,9 +17,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -42,13 +45,22 @@ public class EntryStoreTest {
 
 	private static final LocalDate DAY5 = DAY3.plusMonths(2).plusDays(1);
 
-	private static final Supplier<LocalDate> now = () -> DAY5;
+	private static final String LAST_DESCRIPTION_1 = "test 1 2 3";
 
-	private static final int maxCount = 4;
+	private static final String LAST_DESCRIPTION_2 = "erster test 1 2 3";
+
+	private static final int MAX_DAY_COUNT = 4;
+
+	private static final int MAX_DESCRIPTION_COUNT = 3;
+
+	private static final Map<String, Duration> items = Stream.of(LAST_DESCRIPTION_1, LAST_DESCRIPTION_2)
+			.collect(Collectors.toMap(s -> s, unused -> Duration.ZERO));
+
+	private static final Supplier<LocalDate> now = () -> DAY5;
 
 	private static final Function<String, LocalDate> dayDeserializer = text -> LocalDate.parse(text);
 
-	private static final Function<String, Entry> entryDeserializer = text -> new DayEntry(dayDeserializer.apply(text), EntryType.UR, Collections.emptyMap());
+	private static final Function<String, Entry> entryDeserializer = text -> new DayEntry(dayDeserializer.apply(text), EntryType.UR, items);
 
 	private static final Function<Entry, String> entrySerializer = entry -> entry.getDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
@@ -74,7 +86,7 @@ public class EntryStoreTest {
 		Files.write(tmpRoot.resolve("201707.dat"), Collections.singleton(DAY5.format(DateTimeFormatter.ISO_LOCAL_DATE)), StandardOpenOption.CREATE);
 		Files.copy(file1, tmpRoot.resolve("timeassets.dat"));
 
-		store = new FileStore(tmpRoot, now, maxCount, dayDeserializer, entryDeserializer, entrySerializer, timeAssetsSumDeserializer, timeAssetsSumSerializer);
+		store = new FileStore(tmpRoot, now, MAX_DAY_COUNT, MAX_DESCRIPTION_COUNT, dayDeserializer, entryDeserializer, entrySerializer, timeAssetsSumDeserializer, timeAssetsSumSerializer);
 	}
 
 	@After
@@ -136,9 +148,15 @@ public class EntryStoreTest {
 		assertEquals(expectedAfterUpdate, store.getTimeAssetsSumBefore(DAY1));
 	}
 
-	@Test(expected=NoSuchElementException.class)
+	@Test(expected = NoSuchElementException.class)
 	public void testGetTimeAssetsSumBeforeOutOfRange() {
 		store.getTimeAssetsSumBefore(DAY1);
+	}
+
+	@Test
+	public void testGetLastDescriptions() throws IOException {
+		List<String> expected = Arrays.asList(LAST_DESCRIPTION_2, LAST_DESCRIPTION_1);
+		assertEquals(expected, store.getLastDescriptions());
 	}
 
 }

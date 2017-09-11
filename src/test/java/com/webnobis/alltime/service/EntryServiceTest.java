@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -174,6 +175,11 @@ public class EntryServiceTest {
 		TimeAssetsSum expected = new TimeAssetsSum(DAY2, TIME_ASSETS_SUM_BEFORE);
 		assertEquals(expected, service.getTimeAssetsSumBefore(DAY2));
 	}
+	
+	@Test
+	public void testGetLastDescriptions() {
+		assertEquals(items.keySet(), new HashSet<>(service.getLastDescriptions()));
+	}
 
 	private class TestEntryStore implements EntryStore {
 
@@ -198,6 +204,11 @@ public class EntryServiceTest {
 		public Entry storeEntry(Entry entry) {
 			entries.put(entry.getDay(), entry);
 			return entry;
+		}
+
+		@Override
+		public List<String> getLastDescriptions() {
+			return new ArrayList<>(items.keySet());
 		}
 
 	}

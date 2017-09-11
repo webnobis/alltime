@@ -72,4 +72,9 @@ public class EntryService implements FindService, BookingService, TimeAssetsServ
 		return store.getEntry(day);
 	}
 
+	@Override
+	public List<String> getLastDescriptions() {
+		return store.getLastDescriptions();
+	}
+
 }
