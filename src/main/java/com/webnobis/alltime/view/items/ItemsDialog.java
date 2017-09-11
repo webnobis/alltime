@@ -26,6 +26,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
@@ -78,6 +79,7 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 
 		duration = new ComboBox<>(getSelectableDurations());
 		duration.setConverter(new DurationStringConverter());
+		duration.itemsProperty().addListener((observable, oldValue, newValue) -> selectFirstOrDisableDuration(newValue));
 
 		description = new TextField();
 
@@ -90,23 +92,43 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 		delete = new Button(" - ");
 		delete.setOnAction(this::updateItem);
 
+		toggleButtons(false);
+
 		GridPane pane = new GridPane();
-		pane.add(day, 0, 0);
-		pane.add(durationsToBook, 1, 0);
-		pane.add(items, 0, 1);
-		pane.add(this.lastDescriptions, 1, 1);
-		pane.add(duration, 0, 2);
-		pane.add(description, 1, 2);
-		pane.add(add, 2, 2);
-		pane.add(change, 3, 2);
-		pane.add(delete, 4, 2);
+		
+		pane.add(new Label("Buchungstag: "), 0, 0);
+		pane.add(day, 1, 0);
+		pane.add(new Label("Verbleibende buchbare Zeit: "), 3, 0);
+		pane.add(durationsToBook, 4, 0);
+		
+		pane.add(new Label("Buchungen: "), 0, 1);
+		pane.add(items, 1, 1);
+		pane.add(new Label("Bisherige Buchungstexte: "), 3, 1);
+		pane.add(this.lastDescriptions, 4, 1);
+		
+		pane.add(new Label("Zeitdauer: "), 0, 2);
+		pane.add(duration, 1, 2);
+		pane.add(new Label("Buchungstext: "), 3, 2);
+		pane.add(description, 4, 2);
+		pane.add(new Label("   "), 5, 2);
+		pane.add(add, 6, 2);
+		pane.add(change, 7, 2);
+		pane.add(delete, 8, 2);
+		
+		pane.add(new Label("   "), 2, 0, 1, 3);
 
 		DialogPane dialogPane = super.getDialogPane();
 		dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 		dialogPane.setContent(pane);
-		dialogPane.setHeaderText("Einträge");
+		dialogPane.setHeaderText("Buchungen");
 
 		super.setResultConverter(this::finish);
+	}
+
+	private void toggleButtons(boolean addDisabled) {
+		add.setDisable(addDisabled);
+		change.setDisable(!addDisabled);
+		delete.setDisable(!addDisabled);
 	}
 
 	private Duration getDurationsToBook() {
@@ -123,18 +145,23 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 
 	private ObservableList<Duration> getSelectableDurations(Duration selectedDuration) {
 		Duration maxDuration = getDurationsToBook();
-		if (selectedDuration != null && maxDuration.minus(selectedDuration).isNegative()) {
+		if (selectedDuration != null && maxDuration.compareTo(selectedDuration) < 0) {
 			maxDuration = selectedDuration;
 		}
 
 		List<Duration> durations = new ArrayList<>();
-		Duration duration = Duration.ZERO;
+		Duration duration = Duration.ofMinutes(minutesRaster);
 		while (maxDuration.compareTo(duration) > 0) {
-			duration = duration.plusMinutes(minutesRaster);
 			durations.add(duration);
+			duration = duration.plusMinutes(minutesRaster);
 		}
 		Collections.reverse(durations);
 		return FXCollections.observableArrayList(durations);
+	}
+
+	private void selectFirstOrDisableDuration(ObservableList<Duration> items) {
+		duration.setValue(items.stream().findFirst().orElse(null));
+		duration.setDisable(items.isEmpty());
 	}
 
 	private void getItem(ActionEvent event) {
@@ -144,7 +171,7 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 					duration.setValue(item.getValue());
 					description.setText(item.getKey());
 
-					change.setDisable(false);
+					toggleButtons(true);
 					duration.requestFocus();
 				});
 	}
@@ -157,31 +184,35 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 	private void updateItem(ActionEvent event) {
 		if (duration.getValue() == null) {
 			Alert alert = new Alert(AlertType.ERROR);
-			alert.setContentText(String.format("Es ist keine Dauer %s.", (duration.getItems().isEmpty()) ? "mehr verfügbar" : "ausgewählt"));
+			alert.setContentText(String.format("Es ist keine Zeitdauer %s.", (duration.getItems().isEmpty()) ? "mehr verfügbar" : "ausgewählt"));
 			alert.show();
 		} else if (description.getText().isEmpty()) {
 			Alert alert = new Alert(AlertType.ERROR);
-			alert.setContentText("Es ist keine Beschreibung eingetragen.");
+			alert.setContentText("Es ist kein Buchungstext eingetragen.");
 			alert.show();
-		} else if (items.getItems().stream()
+		} else if (add.equals(event.getSource()) && items.getItems().stream()
 				.anyMatch(entry -> description.getText().equals(entry.getKey()))) {
 			Alert alert = new Alert(AlertType.ERROR);
-			alert.setContentText(String.format("'%s' als Beschreibung ist bereits vorhanden.", description.getText()));
+			alert.setContentText(String.format("'%s' als Buchungstext ist bereits vorhanden.", description.getText()));
 			alert.show();
 		} else {
 			Map.Entry<String, Duration> item = new Item(description.getText(), duration.getValue());
-
 			if (add.equals(event.getSource())) {
 				items.getItems().add(item);
-
-				items.setValue(item);
-			} else {
+			} else if (change.equals(event.getSource())) {
 				int index = items.getSelectionModel().selectedIndexProperty().intValue();
 				items.getItems().set(index, item);
+			} else {
+				int index = items.getSelectionModel().selectedIndexProperty().intValue();
+				items.getItems().remove(index);
 			}
-			
+
 			durationsToBook.setValue(getDurationsToBook());
 			duration.setItems(getSelectableDurations());
+			duration.setValue(duration.getItems().stream().findFirst().orElse(null));
+			description.setText("");
+
+			toggleButtons(false);
 		}
 	}
 
