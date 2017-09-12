@@ -77,10 +77,11 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 		this.lastDescriptions = new ComboBox<>(FXCollections.observableArrayList(Objects.requireNonNull(lastDescriptions, "lastDescriptions is null")));
 		this.lastDescriptions.setOnAction(this::getDescription);
 
-		duration = new ComboBox<>(getSelectableDurations());
+		duration = new ComboBox<>();
 		duration.setConverter(new DurationStringConverter());
 		duration.itemsProperty().addListener((observable, oldValue, newValue) -> selectFirstOrDisableDuration(newValue));
-
+		duration.setItems(getSelectableDurations());
+		
 		description = new TextField();
 
 		add = new Button(" + ");
