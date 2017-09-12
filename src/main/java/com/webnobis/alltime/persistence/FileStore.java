@@ -6,13 +6,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -25,6 +25,8 @@ import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.TimeAssetsSum;
 
 public class FileStore implements EntryStore {
+	
+	static final TimeAssetsSum ALTERNATIVE_START_IF_MISSING = new TimeAssetsSum(LocalDate.of(0, 1, 1), Duration.ZERO);
 
 	private static final String MONTH_FORMAT = "yyyyMM";
 
@@ -134,7 +136,7 @@ public class FileStore implements EntryStore {
 	public TimeAssetsSum getTimeAssetsSumBefore(LocalDate day) {
 		return getTimeAssetsSumsBeforeStream(Objects.requireNonNull(day, "day is null"))
 				.findFirst()
-				.orElseThrow(() -> new NoSuchElementException(String.format("no time assets sum found before day %s", day)));
+				.orElse(ALTERNATIVE_START_IF_MISSING);
 	}
 
 	private Stream<TimeAssetsSum> getTimeAssetsSumsBeforeStream(LocalDate day) {

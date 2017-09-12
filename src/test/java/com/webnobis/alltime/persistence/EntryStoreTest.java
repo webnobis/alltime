@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -148,9 +147,9 @@ public class EntryStoreTest {
 		assertEquals(expectedAfterUpdate, store.getTimeAssetsSumBefore(DAY1));
 	}
 
-	@Test(expected = NoSuchElementException.class)
+	@Test
 	public void testGetTimeAssetsSumBeforeOutOfRange() {
-		store.getTimeAssetsSumBefore(DAY1);
+		assertEquals(FileStore.ALTERNATIVE_START_IF_MISSING, store.getTimeAssetsSumBefore(DAY1));
 	}
 
 	@Test
