@@ -38,6 +38,10 @@ public class Config {
 		return Integer.parseInt(properties.get(Key.MAX_COUNT_OF_DAYS.getKey()));
 	}
 
+	public int getMaxCountOfDescriptions() {
+		return Integer.parseInt(properties.get(Key.MAX_COUNT_OF_DESCRIPTIONS.getKey()));
+	}
+
 	public Map<DayOfWeek, Duration> getExpectedTimes() {
 		return EnumSet.allOf(WeekdayKey.class).stream()
 				.collect(Collectors.toMap(WeekdayKey::getWeekday, weekdayKey -> toDuration(properties.get(weekdayKey.getKey()))));

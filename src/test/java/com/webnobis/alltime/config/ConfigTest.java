@@ -16,6 +16,8 @@ public class ConfigTest {
 
 	private static final int MAX_COUNT_OF_DAYS = 77;
 
+	private static final int MAX_COUNT_OF_DESCRIPTIONS = 99;
+
 	private static final Duration EXPECTED_TIME_DI = Duration.ofHours(7).plusMinutes(36);
 
 	private static final Duration EXPECTED_TIME_MI = Duration.ofHours(8);
@@ -45,6 +47,11 @@ public class ConfigTest {
 	@Test
 	public void testGetMaxCountOfDays() {
 		assertEquals(MAX_COUNT_OF_DAYS, config.getMaxCountOfDays());
+	}
+
+	@Test
+	public void testGetMaxCountOfDescriptions() {
+		assertEquals(MAX_COUNT_OF_DESCRIPTIONS, config.getMaxCountOfDescriptions());
 	}
 
 	@Test
