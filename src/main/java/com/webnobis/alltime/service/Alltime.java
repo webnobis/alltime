@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 
 import com.webnobis.alltime.config.Config;
 import com.webnobis.alltime.model.AZEntry;
+import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.persistence.EntryStore;
 import com.webnobis.alltime.persistence.EntryToLineSerializer;
 import com.webnobis.alltime.persistence.FileStore;
@@ -20,6 +21,8 @@ import com.webnobis.alltime.persistence.LineToDayDeserializer;
 import com.webnobis.alltime.persistence.LineToEntryDeserializer;
 import com.webnobis.alltime.persistence.TimeAssetsSumDeserializer;
 import com.webnobis.alltime.persistence.TimeAssetsSumSerializer;
+import com.webnobis.alltime.view.BookingDialog;
+import com.webnobis.alltime.view.TimeTransformer;
 import com.webnobis.alltime.view.items.ItemsDialog;
 
 import javafx.application.Application;
@@ -66,13 +69,14 @@ public class Alltime extends Application {
 		 * bookingStage.centerOnScreen();
 		 */
 
-//		Dialog<Entry> bookingDialog = new BookingDialog(service, new DayTransformer(() -> now.get().toLocalDate()), new TimeTransformer(() -> now.get().toLocalTime(), 0, 0, 5));
-
-		Map<String,Duration> map = new HashMap<>();
+		Dialog<Entry> bookingDialog = new BookingDialog(now.get().toLocalDate(), service, new TimeTransformer(() -> now.get().toLocalTime(), 0, 0, 5));
+		System.out.println(bookingDialog.showAndWait());
+		
+/*		Map<String,Duration> map = new HashMap<>();
 		map.put("etwas Eingegebenes", Duration.ofMinutes(56));
 		map.put("alles ohne", Duration.ofHours(4));
 		Dialog<Map<String,Duration>> itemsDialog = new ItemsDialog(new AZEntry(LocalDate.now(), LocalTime.of(8, 0), LocalTime.of(16, 0), Duration.ofDays(2), Duration.ofMinutes(15), map), 30, Arrays.asList("Alt 1", "Ganz alt 2"));
-		System.out.println(itemsDialog.showAndWait());
+		System.out.println(itemsDialog.showAndWait());*/
 	}
 
 }

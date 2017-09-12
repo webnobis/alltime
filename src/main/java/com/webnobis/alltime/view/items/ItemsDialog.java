@@ -1,6 +1,7 @@
 package com.webnobis.alltime.view.items;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.service.DurationFormatter;
 import com.webnobis.alltime.view.DayTransformer;
 import com.webnobis.alltime.view.ValueField;
@@ -32,7 +32,7 @@ import javafx.scene.layout.GridPane;
 
 public class ItemsDialog extends Dialog<Map<String, Duration>> {
 
-	private final Entry entry;
+	private final Duration bookableDuration;
 
 	private final int minutesRaster;
 
@@ -54,25 +54,21 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 
 	private final Button delete;
 
-	public ItemsDialog(Entry entry, int minutesRaster, List<String> lastDescriptions) {
+	public ItemsDialog(LocalDate day, Duration bookableDuration, ObservableList<Map.Entry<String, Duration>> items, int minutesRaster, List<String> lastDescriptions) {
 		super();
-		this.entry = Objects.requireNonNull(entry, "entry is null");
+		this.bookableDuration = Objects.requireNonNull(bookableDuration, "bookableDuration is null");
 		this.minutesRaster = minutesRaster;
 
-		day = new TextField(DayTransformer.toText(entry.getDay()));
-		day.setEditable(false);
-		day.setStyle(ViewStyle.READONLY);
+		this.day = new TextField(DayTransformer.toText(Objects.requireNonNull(day, "day is null")));
+		this.day.setEditable(false);
+		this.day.setStyle(ViewStyle.READONLY);
 
-		items = new ComboBox<>(FXCollections.observableArrayList(entry.getItems().entrySet().stream()
-				.map(Item::new)
-				.sorted()
-				.collect(Collectors.toList())));
-		items.setConverter(new ItemStringConverter());
-		items.setOnAction(this::getItem);
+		this.items = new ComboBox<>(Objects.requireNonNull(items, "items is null"));
+		this.items.setOnAction(this::getItem);
 
-		durationsToBook = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, getDurationsToBook());
-		durationsToBook.setEditable(false);
-		durationsToBook.setStyle(ViewStyle.READONLY);
+		this.durationsToBook = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, getDurationsToBook());
+		this.durationsToBook.setEditable(false);
+		this.durationsToBook.setStyle(ViewStyle.READONLY);
 
 		this.lastDescriptions = new ComboBox<>(FXCollections.observableArrayList(Objects.requireNonNull(lastDescriptions, "lastDescriptions is null")));
 		this.lastDescriptions.setOnAction(this::getDescription);
@@ -81,7 +77,7 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 		duration.setConverter(new DurationStringConverter());
 		duration.itemsProperty().addListener((observable, oldValue, newValue) -> selectFirstOrDisableDuration(newValue));
 		duration.setItems(getSelectableDurations());
-		
+
 		description = new TextField();
 
 		add = new Button(" + ");
@@ -96,17 +92,17 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 		toggleButtons(false);
 
 		GridPane pane = new GridPane();
-		
+
 		pane.add(new Label("Buchungstag: "), 0, 0);
-		pane.add(day, 1, 0);
+		pane.add(this.day, 1, 0);
 		pane.add(new Label("Verbleibende buchbare Zeit: "), 3, 0);
 		pane.add(durationsToBook, 4, 0);
-		
+
 		pane.add(new Label("Buchungen: "), 0, 1);
-		pane.add(items, 1, 1);
+		pane.add(this.items, 1, 1);
 		pane.add(new Label("Bisherige Buchungstexte: "), 3, 1);
 		pane.add(this.lastDescriptions, 4, 1);
-		
+
 		pane.add(new Label("Zeitdauer: "), 0, 2);
 		pane.add(duration, 1, 2);
 		pane.add(new Label("Buchungstext: "), 3, 2);
@@ -115,7 +111,7 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 		pane.add(add, 6, 2);
 		pane.add(change, 7, 2);
 		pane.add(delete, 8, 2);
-		
+
 		pane.add(new Label("   "), 2, 0, 1, 3);
 
 		DialogPane dialogPane = super.getDialogPane();
@@ -137,7 +133,7 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 				.map(Map.Entry::getValue)
 				.reduce((d1, d2) -> d1.plus(d2))
 				.orElse(Duration.ZERO);
-		return entry.getRealTime().minus(entry.getIdleTime()).minus(booked);
+		return bookableDuration.minus(booked);
 	}
 
 	private ObservableList<Duration> getSelectableDurations() {
@@ -152,7 +148,7 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 
 		List<Duration> durations = new ArrayList<>();
 		Duration duration = Duration.ofMinutes(minutesRaster);
-		while (maxDuration.compareTo(duration) > 0) {
+		while (maxDuration.compareTo(duration) >= 0) {
 			durations.add(duration);
 			duration = duration.plusMinutes(minutesRaster);
 		}
@@ -224,43 +220,6 @@ public class ItemsDialog extends Dialog<Map<String, Duration>> {
 				.map(data -> items.getItems().stream()
 						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
 				.orElse(null);
-	}
-
-	private class Item implements Map.Entry<String, Duration>, Comparable<Item> {
-
-		private final String key;
-
-		private final Duration value;
-
-		public Item(String key, Duration value) {
-			this.key = key;
-			this.value = value;
-		}
-
-		public Item(Map.Entry<String, Duration> entry) {
-			this(entry.getKey(), entry.getValue());
-		}
-
-		@Override
-		public String getKey() {
-			return key;
-		}
-
-		@Override
-		public Duration getValue() {
-			return value;
-		}
-
-		@Override
-		public Duration setValue(Duration value) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int compareTo(Item other) {
-			return key.compareTo(other.key);
-		}
-
 	}
 
 }
