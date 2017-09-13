@@ -2,6 +2,7 @@ package com.webnobis.alltime.view.items;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 
 import com.webnobis.alltime.service.DurationFormatter;
 
@@ -42,7 +43,10 @@ public class Item implements Map.Entry<String, Duration>, Comparable<Item> {
 
 	@Override
 	public String toString() {
-		return DurationFormatter.toString(value).concat(", ").concat(key);
+		return Optional.ofNullable(value)
+				.filter(v -> !Duration.ZERO.equals(v))
+				.map(v -> DurationFormatter.toString(v).concat(", ").concat(key))
+				.orElse(key);
 	}
 
 }

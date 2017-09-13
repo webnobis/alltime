@@ -12,7 +12,7 @@ import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.service.DurationFormatter;
 import com.webnobis.alltime.service.EntryService;
 import com.webnobis.alltime.view.items.Item;
-import com.webnobis.alltime.view.items.ItemsDialog;
+import com.webnobis.alltime.view.items.OldItemsDialog;
 
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -25,7 +25,7 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
 
-public class BookingDialog extends Dialog<Entry> {
+public class OldBookingDialog extends Dialog<Entry> {
 
 	private final EntryService service;
 
@@ -53,7 +53,7 @@ public class BookingDialog extends Dialog<Entry> {
 
 	private Optional<Entry> entry;
 
-	public BookingDialog(LocalDate day, EntryService service, TimeTransformer timeTransformer) {
+	public OldBookingDialog(LocalDate day, EntryService service, TimeTransformer timeTransformer) {
 		super();
 		this.service = service;
 		this.timeTransformer = timeTransformer;
@@ -137,7 +137,7 @@ public class BookingDialog extends Dialog<Entry> {
 				.map(e -> e.getRealTime().minus(e.getIdleTime()))
 				.orElse(Duration.ofDays(1));
 
-		Dialog<Map<String, Duration>> itemsDialog = new ItemsDialog(day.getValue(), bookableDuration, items.getItems(), 30, service.getLastDescriptions());
+		Dialog<Map<String, Duration>> itemsDialog = new OldItemsDialog(day.getValue(), bookableDuration, items.getItems(), 30, service.getLastDescriptions());
 		itemsDialog.showAndWait().ifPresent(this::updateItems);
 	}
 
