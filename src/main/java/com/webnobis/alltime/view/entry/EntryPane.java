@@ -31,10 +31,6 @@ public class EntryPane extends GridPane {
 
 	private final EntryService service;
 
-	private final TimeTransformer timeTransformer;
-
-	private final int minutesRaster;
-
 	private final ValueField<Duration> timeAssetsSum;
 
 	private final TextField day;
@@ -53,11 +49,11 @@ public class EntryPane extends GridPane {
 
 	private final RadioButton bookDay;
 
+	private final boolean disabledEndAZ;
+
 	public EntryPane(EntryService service, TimeTransformer timeTransformer, int minutesRaster, LocalDate day) {
 		super();
 		this.service = service;
-		this.timeTransformer = timeTransformer;
-		this.minutesRaster = minutesRaster;
 
 		Optional<Entry> entry = Optional.ofNullable(service.getEntry(day));
 
@@ -70,11 +66,14 @@ public class EntryPane extends GridPane {
 		LocalTime start = entry.map(Entry::getStart).orElse(timeTransformer.now(true));
 		startTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, start);
 
+		disabledEndAZ = !entry.map(Entry::getStart).isPresent();
 		LocalTime end = entry.map(Entry::getEnd).orElse(timeTransformer.now(false));
 		endTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, end);
 
-		items = new ItemListView(entry.map(Entry::getItems).orElse(Collections.emptyMap()));
-		
+		items = new ItemListView(minutesRaster, service.getLastDescriptions(),
+				entry.map(e -> e.getRealTime().minus(e.getIdleTime())).orElse(Duration.ZERO),
+				entry.map(Entry::getItems).orElse(Collections.emptyMap()));
+
 		ToggleGroup group = new ToggleGroup();
 		startAZ = new RadioButton("Start AZ");
 		startAZ.setToggleGroup(group);
@@ -85,14 +84,15 @@ public class EntryPane extends GridPane {
 
 		type = new ComboBox<>(FXCollections.observableArrayList(EnumSet.allOf(EntryType.class)));
 		type.valueProperty().addListener((observable, oldValue, newValue) -> selectRadiobutton(newValue));
+		type.valueProperty().addListener((observable, oldValue, newValue) -> enableElements(newValue));
 		type.setValue(entry.map(Entry::getType).orElse(EntryType.AZ));
-		
+
 		GridPane buttonPane = new GridPane();
 		buttonPane.add(startAZ, 0, 0);
-		buttonPane.add(endAZ, 0,1);
-		buttonPane.add(bookDay, 0,2);
-		
-		super.add(this.day, 0,0);
+		buttonPane.add(endAZ, 0, 1);
+		buttonPane.add(bookDay, 0, 2);
+
+		super.add(this.day, 0, 0);
 		super.add(type, 1, 0);
 		super.add(timeAssetsSum, 2, 0);
 		super.add(startTime, 0, 1);
@@ -103,7 +103,7 @@ public class EntryPane extends GridPane {
 
 	private void selectRadiobutton(EntryType newType) {
 		if (EntryType.AZ.equals(newType)) {
-			if (endTime.isDisabled()) {
+			if (disabledEndAZ) {
 				startAZ.setSelected(true);
 			} else {
 				endAZ.setSelected(true);
@@ -111,6 +111,16 @@ public class EntryPane extends GridPane {
 		} else {
 			bookDay.setSelected(true);
 		}
+	}
+
+	private void enableElements(EntryType newType) {
+		boolean az = EntryType.AZ.equals(newType);
+		startTime.setDisable(!az);
+		endTime.setDisable(!az || disabledEndAZ);
+		items.setDisable(az && disabledEndAZ);
+		startAZ.setDisable(!startAZ.isSelected());
+		endAZ.setDisable(!endAZ.isSelected());
+		bookDay.setDisable(!bookDay.isSelected());
 	}
 
 }

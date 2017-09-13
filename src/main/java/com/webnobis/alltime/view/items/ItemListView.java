@@ -1,7 +1,7 @@
 package com.webnobis.alltime.view.items;
 
 import java.time.Duration;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -14,14 +14,15 @@ public class ItemListView extends ListView<Item> {
 
 	private static final Item NEW_TRIGGER = new Item("--- Neuer Eintrag ---", Duration.ZERO);
 
-	public ItemListView(Map<String, Duration> items) {
+	public ItemListView(int minutesRaster, List<String> lastDescriptions, Duration maxDurationRange, Map<String, Duration> items) {
 		super(FXCollections.observableArrayList(items.entrySet().stream()
 				.map(Item::new)
 				.sorted()
 				.collect(Collectors.toList())));
 		addNewTrigger();
+
 		super.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-		super.setCellFactory(unused -> new ItemListCell(15, Arrays.asList("ein Text", "noch ein Text"), Duration.ofHours(8)));
+		super.setCellFactory(unused -> new ItemListCell(minutesRaster, lastDescriptions, maxDurationRange));
 		super.setEditable(true);
 		super.getItems().addListener(this::changedItem);
 	}
