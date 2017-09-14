@@ -18,16 +18,8 @@ public interface BookingService {
 
 	Entry endAZ(LocalDate day, LocalTime start, LocalTime end, Map<String, Duration> items);
 
-	default Entry book(LocalDate day, EntryType type) {
-		return book(day, type, Collections.emptyMap());
-	}
-
 	default Entry book(LocalDate day, EntryType type, Map<String, Duration> items) {
 		return book(day, day, type, items).stream().findFirst().orElse(null);
-	}
-
-	default List<Entry> book(LocalDate fromDay, LocalDate untilDay, EntryType type) {
-		return book(fromDay, untilDay, type, Collections.emptyMap());
 	}
 
 	List<Entry> book(LocalDate fromDay, LocalDate untilDay, EntryType type, Map<String, Duration> items);

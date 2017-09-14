@@ -114,7 +114,7 @@ public class EntryServiceTest {
 
 	@Test
 	public void testBookGT() {
-		Entry e = service.book(DAY2, EntryType.GT);
+		Entry e = service.book(DAY2, EntryType.GT, Collections.emptyMap());
 
 		assertEquals(DAY2, e.getDay());
 		assertEquals(EntryType.GT, e.getType());
@@ -129,7 +129,7 @@ public class EntryServiceTest {
 
 	@Test
 	public void testBookURRange() {
-		List<Entry> entries = service.book(DAY1, DAY2, EntryType.UR);
+		List<Entry> entries = service.book(DAY1, DAY2, EntryType.UR, items);
 		assertEquals(9, entries.size());
 
 		assertEquals(DAY1, entries.get(0).getDay());
@@ -142,13 +142,13 @@ public class EntryServiceTest {
 			assertEquals(Duration.ZERO, e.getIdleTime());
 			assertEquals(Duration.ZERO, e.getRealTime());
 			assertEquals(Duration.ZERO, e.getTimeAssets());
-			assertEquals(Collections.emptyMap(), e.getItems());
+			assertEquals(items, e.getItems());
 		});
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void testBookAZFailed() {
-		service.book(DAY1, EntryType.AZ);
+		service.book(DAY1, EntryType.AZ, Collections.emptyMap());
 	}
 
 	@Test
@@ -175,7 +175,7 @@ public class EntryServiceTest {
 		TimeAssetsSum expected = new TimeAssetsSum(DAY2, TIME_ASSETS_SUM_BEFORE);
 		assertEquals(expected, service.getTimeAssetsSumBefore(DAY2));
 	}
-	
+
 	@Test
 	public void testGetLastDescriptions() {
 		assertEquals(items.keySet(), new HashSet<>(service.getLastDescriptions()));
