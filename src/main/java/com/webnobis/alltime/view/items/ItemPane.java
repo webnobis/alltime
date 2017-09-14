@@ -9,6 +9,7 @@ import java.util.Optional;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
@@ -27,15 +28,20 @@ public class ItemPane extends GridPane {
 		duration = new ComboBox<>(FXCollections.observableArrayList(getSelectableDurations(minutesRaster, durationRange, selectedDuration)));
 		duration.setConverter(new DurationStringConverter());
 		duration.setValue((selectedDuration != null) ? selectedDuration : duration.getItems().stream().findFirst().orElse(null));
-
+		
 		description = new TextField((item != null) ? item.getKey() : "Beschreibung");
 
 		this.lastDescriptions = new ComboBox<>(FXCollections.observableArrayList(lastDescriptions));
 		this.lastDescriptions.setOnAction(this::setDescription);
 
-		super.add(duration, 0, 0, 1, 2);
-		super.add(this.lastDescriptions, 1, 0);
-		super.add(description, 1, 1);
+		super.add(new Label("Zeitdauer:"), 0, 0);
+		super.add(duration, 0, 1);
+		super.add(new Label("Beschreibung:"), 1, 0);
+		super.add(this.lastDescriptions, 1, 1);
+		super.add(description, 1, 2);
+		
+		super.setHgap(5);
+		super.setVgap(5);
 	}
 
 	private void setDescription(ActionEvent event) {
