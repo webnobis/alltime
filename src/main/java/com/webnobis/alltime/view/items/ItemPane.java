@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -13,7 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
-public class ItemPane extends GridPane {
+public class ItemPane extends GridPane implements Supplier<Item> {
 
 	private final ComboBox<Duration> duration;
 
@@ -21,14 +22,14 @@ public class ItemPane extends GridPane {
 
 	private final TextField description;
 
-	public ItemPane(int minutesRaster, List<String> lastDescriptions, Duration durationRange, Item item) {
+	public ItemPane(int itemDurationRasterMinutes, List<String> lastDescriptions, Duration durationRange, Item item) {
 		super();
 
 		Duration selectedDuration = (item != null) ? item.getValue() : null;
-		duration = new ComboBox<>(FXCollections.observableArrayList(getSelectableDurations(minutesRaster, durationRange, selectedDuration)));
+		duration = new ComboBox<>(FXCollections.observableArrayList(getSelectableDurations(itemDurationRasterMinutes, durationRange, selectedDuration)));
 		duration.setConverter(new DurationStringConverter());
 		duration.setValue((selectedDuration != null) ? selectedDuration : duration.getItems().stream().findFirst().orElse(null));
-		
+
 		description = new TextField((item != null) ? item.getKey() : "Beschreibung");
 
 		this.lastDescriptions = new ComboBox<>(FXCollections.observableArrayList(lastDescriptions));
@@ -39,7 +40,7 @@ public class ItemPane extends GridPane {
 		super.add(new Label("Beschreibung:"), 1, 0);
 		super.add(this.lastDescriptions, 1, 1);
 		super.add(description, 1, 2);
-		
+
 		super.setHgap(5);
 		super.setVgap(5);
 	}
@@ -49,22 +50,23 @@ public class ItemPane extends GridPane {
 		event.consume();
 	}
 
-	private List<Duration> getSelectableDurations(int minutesRaster, Duration durationRange, Duration selectedDuration) {
+	private List<Duration> getSelectableDurations(int rasterMinutes, Duration durationRange, Duration selectedDuration) {
 		Duration maxDuration = Optional.ofNullable(durationRange)
 				.map(range -> Optional.ofNullable(selectedDuration).filter(selected -> range.compareTo(selected) < 0).orElse(range))
 				.orElse(Duration.ZERO);
 
 		List<Duration> durations = new ArrayList<>();
-		Duration duration = Duration.ofMinutes(minutesRaster);
+		Duration duration = Duration.ofMinutes(rasterMinutes);
 		while (maxDuration.compareTo(duration) >= 0) {
 			durations.add(duration);
-			duration = duration.plusMinutes(minutesRaster);
+			duration = duration.plusMinutes(rasterMinutes);
 		}
 		Collections.reverse(durations);
 		return durations;
 	}
 
-	public Item getItem() {
+	@Override
+	public Item get() {
 		return new Item(description.getText(), Optional.ofNullable(duration.getValue()).orElse(Duration.ZERO));
 	}
 

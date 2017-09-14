@@ -69,7 +69,7 @@ public class Alltime extends Application {
 		Dialog<Map<String,Duration>> itemsDialog = new ItemsDialog(new AZEntry(LocalDate.now(), LocalTime.of(8, 0), LocalTime.of(16, 0), Duration.ofDays(2), Duration.ofMinutes(15), map), 30, Arrays.asList("Alt 1", "Ganz alt 2"));
 		System.out.println(itemsDialog.showAndWait());*/
 		
-		Dialog<Void> dialog = new AlltimeDialog(service, new TimeTransformer(() -> now.get().toLocalTime(), 5, 10, 5), 15);
+		Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), service, new TimeTransformer(() -> now.get().toLocalTime(), 5, 10, 5), 15);
 		System.out.println(dialog.showAndWait());
 	}
 

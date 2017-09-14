@@ -14,7 +14,7 @@ public class ItemListView extends ListView<Item> {
 
 	private static final Item NEW_TRIGGER = new Item("--- Neuer Eintrag ---", Duration.ZERO);
 
-	public ItemListView(int minutesRaster, List<String> lastDescriptions, Duration maxDurationRange, Map<String, Duration> items) {
+	public ItemListView(int itemDurationRasterMinutes, List<String> lastDescriptions, Duration maxDurationRange, Map<String, Duration> items) {
 		super(FXCollections.observableArrayList(items.entrySet().stream()
 				.map(Item::new)
 				.sorted()
@@ -22,7 +22,7 @@ public class ItemListView extends ListView<Item> {
 		addNewTrigger();
 
 		super.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-		super.setCellFactory(unused -> new ItemListCell(minutesRaster, lastDescriptions, maxDurationRange));
+		super.setCellFactory(unused -> new ItemListCell(itemDurationRasterMinutes, lastDescriptions, maxDurationRange));
 		super.setEditable(true);
 		super.getItems().addListener(this::changedItem);
 	}

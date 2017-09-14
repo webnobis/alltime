@@ -5,7 +5,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
@@ -21,24 +23,26 @@ import com.webnobis.alltime.view.items.ItemListView;
 
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 
-public class EntryPane extends GridPane {
-	
+public class EntryDialog extends Dialog<Entry> {
+
 	private static final int PREF_WIDTH = 90;
 
 	private final EntryService service;
 
 	private final ValueField<Duration> timeAssetsSum;
 
-	private final TextField day;
+	private final ValueField<LocalDate> day;
 
 	private final ValueField<LocalTime> startTime;
 
@@ -58,13 +62,13 @@ public class EntryPane extends GridPane {
 
 	private final boolean disabledIdleTimeAndEndAZ;
 
-	public EntryPane(EntryService service, TimeTransformer timeTransformer, int minutesRaster, LocalDate day) {
+	public EntryDialog(EntryService service, TimeTransformer timeTransformer, int itemDurationRasterMinutes, LocalDate day) {
 		super();
 		this.service = service;
 
 		Optional<Entry> entry = Optional.ofNullable(service.getEntry(day));
 		disabledIdleTimeAndEndAZ = !entry.map(Entry::getStart).isPresent();
-		
+
 		TimeAssetsSum sum = service.getTimeAssetsSumBefore(day);
 		timeAssetsSum = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, sum.getTimeAssetsSum());
 		timeAssetsSum.setEditable(false);
@@ -72,17 +76,17 @@ public class EntryPane extends GridPane {
 		timeAssetsSum.setTooltip(new Tooltip(String.format("Stand: %s", DayTransformer.toText(sum.getDay()))));
 		timeAssetsSum.setPrefWidth(PREF_WIDTH * 2);
 		timeAssetsSum.setAlignment(Pos.CENTER);
-		
-		this.day = new TextField(DayTransformer.toText(day));
+
+		this.day = new ValueField<>(DayTransformer::toDay, DayTransformer::toText, day);
 		this.day.setEditable(false);
 		this.day.setStyle(ViewStyle.READONLY);
 		this.day.setPrefWidth(PREF_WIDTH);
 		this.day.setAlignment(Pos.CENTER);
-		
+
 		LocalTime start = entry.map(Entry::getStart).orElse(timeTransformer.now(true));
 		startTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, start);
 		startTime.setPrefWidth(PREF_WIDTH);
-		
+
 		idleTime = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, entry.map(Entry::getIdleTime).orElse(Duration.ZERO));
 		idleTime.setPrefWidth(PREF_WIDTH);
 
@@ -90,7 +94,7 @@ public class EntryPane extends GridPane {
 		endTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, end);
 		endTime.setPrefWidth(PREF_WIDTH);
 
-		items = new ItemListView(minutesRaster, service.getLastDescriptions(),
+		items = new ItemListView(itemDurationRasterMinutes, service.getLastDescriptions(),
 				entry.map(e -> e.getRealTime().minus(e.getIdleTime())).orElse(Duration.ZERO),
 				entry.map(Entry::getItems).orElse(Collections.emptyMap()));
 
@@ -112,29 +116,37 @@ public class EntryPane extends GridPane {
 		buttonPane.add(startAZ, 0, 0);
 		buttonPane.add(endAZ, 0, 1);
 		buttonPane.add(bookDay, 0, 2);
-		
-		super.add(new Label("Zeitguthaben: "), 0, 0);
-		super.add(timeAssetsSum, 1, 0, 3, 1);
 
-		super.add(new Label("Buchungstag: "), 0, 1);
-		super.add(this.day, 1, 1);
-		super.add(new Label(" Buchungstyp: "), 2, 1);
-		super.add(type, 3, 1);
-		
-		super.add(new Label("Start: "), 0, 2);
-		super.add(startTime, 1, 2);
-		super.add(new Label(" Pause: "), 2, 2);
-		super.add(idleTime, 3, 2);
+		GridPane pane = new GridPane();
+		pane.add(new Label("Zeitguthaben: "), 0, 0);
+		pane.add(timeAssetsSum, 1, 0, 3, 1);
 
-		super.add(new Label("Ende:  "), 0, 3);
-		super.add(endTime, 1, 3);
-		
-		super.add(new Label("Einträge:"), 0, 4, 4, 1);
-		super.add(items, 0, 5, 4, 1);
-		super.add(buttonPane, 0, 6);
-		
-		super.setHgap(5);
-		super.setVgap(5);
+		pane.add(new Label("Buchungstag: "), 0, 1);
+		pane.add(this.day, 1, 1);
+		pane.add(new Label(" Buchungstyp: "), 2, 1);
+		pane.add(type, 3, 1);
+
+		pane.add(new Label("Start: "), 0, 2);
+		pane.add(startTime, 1, 2);
+		pane.add(new Label(" Pause: "), 2, 2);
+		pane.add(idleTime, 3, 2);
+
+		pane.add(new Label("Ende:  "), 0, 3);
+		pane.add(endTime, 1, 3);
+
+		pane.add(new Label("Einträge:"), 0, 4, 4, 1);
+		pane.add(items, 0, 5, 4, 1);
+		pane.add(buttonPane, 0, 6);
+
+		pane.setHgap(5);
+		pane.setVgap(5);
+
+		DialogPane dialogPane = super.getDialogPane();
+		dialogPane.getButtonTypes().addAll(ButtonType.APPLY, ButtonType.CANCEL);
+		dialogPane.setContent(pane);
+		dialogPane.setHeaderText("Buchung");
+
+		super.setResultConverter(this::get);
 	}
 
 	private void selectRadiobutton(EntryType newType) {
@@ -158,6 +170,25 @@ public class EntryPane extends GridPane {
 		startAZ.setDisable(!startAZ.isSelected());
 		endAZ.setDisable(!endAZ.isSelected());
 		bookDay.setDisable(!bookDay.isSelected());
+	}
+
+	private Entry get(ButtonType button) {
+		if (Optional.ofNullable(button)
+				.filter(ButtonType.APPLY::equals)
+				.isPresent()) {
+			if (startAZ.isSelected()) {
+				return service.startAZ(day.getValue(), startTime.getValue());
+			} else {
+				Map<String, Duration> items = this.items.getItems().stream()
+						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+				if (endAZ.isSelected()) {
+					return service.endAZ(day.getValue(), startTime.getValue(), endTime.getValue(), idleTime.getValue(), items);
+				} else {
+					return service.book(day.getValue(), type.getValue(), items);
+				}
+			}
+		}
+		return null;
 	}
 
 }
