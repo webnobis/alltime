@@ -42,6 +42,22 @@ public class Config {
 		return Integer.parseInt(properties.get(Key.MAX_COUNT_OF_DESCRIPTIONS.getKey()));
 	}
 
+	public int getTimeRasterMinutes() {
+		return Integer.parseInt(properties.get(Key.TIME_RASTER_MINUTES.getKey()));
+	}
+
+	public int getTimeStartOffsetMinutes() {
+		return Integer.parseInt(properties.get(Key.TIME_START_OFFSET_MINUTES.getKey()));
+	}
+
+	public int getTimeEndOffsetMinutes() {
+		return Integer.parseInt(properties.get(Key.TIME_END_OFFSET_MINUTES.getKey()));
+	}
+
+	public int getItemDurationRasterMinutes() {
+		return Integer.parseInt(properties.get(Key.ITEM_DURATION_RASTER_MINUTES.getKey()));
+	}
+
 	public Map<DayOfWeek, Duration> getExpectedTimes() {
 		return EnumSet.allOf(WeekdayKey.class).stream()
 				.filter(weekdayKey -> properties.containsKey(weekdayKey.getKey()))
