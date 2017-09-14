@@ -39,10 +39,10 @@ public class EntryService implements FindService, BookingService, TimeAssetsServ
 	}
 
 	@Override
-	public Entry endAZ(LocalDate day, LocalTime start, LocalTime end, Map<String, Duration> items) {
+	public Entry endAZ(LocalDate day, LocalTime start, LocalTime end, Duration idleTime, Map<String, Duration> items) {
 		Objects.requireNonNull(day, "day is null");
 
-		return store.storeEntry(new AZEntry(day, start, end, expectedTimes.get(DayOfWeek.from(day)), idleTimeHandler.getIdleTime(day, start, end), items));
+		return store.storeEntry(new AZEntry(day, start, end, expectedTimes.get(DayOfWeek.from(day)), idleTimeHandler.getIdleTime(day, start, end, idleTime), items));
 	}
 
 	@Override

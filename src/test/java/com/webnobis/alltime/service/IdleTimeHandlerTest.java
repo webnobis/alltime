@@ -3,6 +3,8 @@ package com.webnobis.alltime.service;
 import static org.junit.Assert.assertEquals;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +13,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class IdleTimeHandlerTest {
+
+	private static final LocalDate DAY = LocalDate.of(1, 2, 3);
+
+	private static final LocalTime START = LocalTime.of(0, 0);
 
 	private static final Duration IDLE_TIME_LIMIT_1 = Duration.ofHours(6);
 
@@ -44,32 +50,32 @@ public class IdleTimeHandlerTest {
 	@Test
 	public void testNoIdleTime() {
 		Duration realTime = IDLE_TIME_LIMIT_1.minusHours(1);
-		assertEquals(Duration.ZERO, handler.getIdleTime(realTime));
+		assertEquals(Duration.ZERO, handler.getIdleTime(DAY, START, START.plusMinutes(realTime.toMinutes()), null));
 	}
 
 	@Test
 	public void testLimit1IdleTime() {
 		Duration realTime = IDLE_TIME_LIMIT_2.minusHours(1);
-		assertEquals(IDLE_TIME_1, handler.getIdleTime(realTime));
+		assertEquals(IDLE_TIME_1, handler.getIdleTime(DAY, START, START.plusMinutes(realTime.toMinutes()), null));
 	}
 
 	@Test
 	public void testLimit1And2IdleTime() {
 		Duration realTime = IDLE_TIME_LIMIT_3.minusMinutes(1);
-		assertEquals(IDLE_TIME_1.plus(IDLE_TIME_2), handler.getIdleTime(realTime));
+		assertEquals(IDLE_TIME_1.plus(IDLE_TIME_2), handler.getIdleTime(DAY, START, START.plusMinutes(realTime.toMinutes()), null));
 	}
 
 	@Test
 	public void testLimit1And2And3IdleTime() {
 		Duration realTime = IDLE_TIME_LIMIT_3.plusMinutes(45);
-		assertEquals(IDLE_TIME_1.plus(IDLE_TIME_2).plus(IDLE_TIME_3), handler.getIdleTime(realTime));
+		assertEquals(IDLE_TIME_1.plus(IDLE_TIME_2).plus(IDLE_TIME_3), handler.getIdleTime(DAY, START, START.plusMinutes(realTime.toMinutes()), null));
 	}
 
 	@Test
 	public void testPartOfLimit1IdleTime() {
 		Duration expectedIdleTime = IDLE_TIME_1.minusMinutes(20);
 		Duration realTime = IDLE_TIME_LIMIT_1.plus(expectedIdleTime);
-		assertEquals(expectedIdleTime, handler.getIdleTime(realTime));
+		assertEquals(expectedIdleTime, handler.getIdleTime(DAY, START, START.plusMinutes(realTime.toMinutes()), null));
 	}
 
 	@Test
@@ -77,7 +83,22 @@ public class IdleTimeHandlerTest {
 		Duration offset = Duration.ofMinutes(1);
 		Duration expectedIdleTime = IDLE_TIME_1.plus(IDLE_TIME_2).plus(offset);
 		Duration realTime = IDLE_TIME_LIMIT_3.plus(offset);
-		assertEquals(expectedIdleTime, handler.getIdleTime(realTime));
+		assertEquals(expectedIdleTime, handler.getIdleTime(DAY, START, START.plusMinutes(realTime.toMinutes()), null));
+	}
+
+	@Test
+	public void testSetIdleTimeLonger() {
+		Duration realTime = IDLE_TIME_LIMIT_3.plusHours(2);
+		Duration expectedIdleTime = Duration.ofDays(100);
+		assertEquals(expectedIdleTime, handler.getIdleTime(DAY, START, START.plusMinutes(realTime.toMinutes()), expectedIdleTime));
+	}
+
+	@Test
+	public void testSetIdleTimeShorter() {
+		Duration realTime = IDLE_TIME_LIMIT_3.plusHours(2);
+		Duration expectedIdleTime = IDLE_TIME_1.plus(IDLE_TIME_2).plus(IDLE_TIME_3);
+		assertEquals(expectedIdleTime, handler.getIdleTime(DAY, START, START.plusMinutes(realTime.toMinutes()), expectedIdleTime.minusMinutes(1)));
+		assertEquals(expectedIdleTime, handler.getIdleTime(DAY, START, START.plusMinutes(realTime.toMinutes()), Duration.ofHours(-1)));
 	}
 
 }

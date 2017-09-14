@@ -13,10 +13,10 @@ import com.webnobis.alltime.model.EntryType;
 public interface BookingService {
 
 	default Entry startAZ(LocalDate day, LocalTime start) {
-		return endAZ(day, start, null, Collections.emptyMap());
+		return endAZ(day, start, null, null, Collections.emptyMap());
 	}
 
-	Entry endAZ(LocalDate day, LocalTime start, LocalTime end, Map<String, Duration> items);
+	Entry endAZ(LocalDate day, LocalTime start, LocalTime end, Duration idleTime, Map<String, Duration> items);
 
 	default Entry book(LocalDate day, EntryType type, Map<String, Duration> items) {
 		return book(day, day, type, items).stream().findFirst().orElse(null);

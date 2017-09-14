@@ -99,7 +99,7 @@ public class EntryServiceTest {
 
 	@Test
 	public void testEndAZ() {
-		Entry e = service.endAZ(DAY1, START, END, items);
+		Entry e = service.endAZ(DAY1, START, END, null, items);
 
 		assertEquals(DAY1, e.getDay());
 		assertEquals(EntryType.AZ, e.getType());
