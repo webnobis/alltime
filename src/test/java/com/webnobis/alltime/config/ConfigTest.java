@@ -18,6 +18,14 @@ public class ConfigTest {
 
 	private static final int MAX_COUNT_OF_DESCRIPTIONS = 99;
 
+	private static final int TIME_RASTER_MINUTES = 3;
+
+	private static final int TIME_START_OFFSET_MINUTES = 4;
+
+	private static final int TIME_END_OFFSET_MINUTES = 5;
+
+	private static final int ITEM_DURATION_RASTER_MINUTES = 6;
+
 	private static final Duration EXPECTED_TIME_DI = Duration.ofHours(7).plusMinutes(36);
 
 	private static final Duration EXPECTED_TIME_MI = Duration.ofHours(8);
@@ -52,6 +60,26 @@ public class ConfigTest {
 	@Test
 	public void testGetMaxCountOfDescriptions() {
 		assertEquals(MAX_COUNT_OF_DESCRIPTIONS, config.getMaxCountOfDescriptions());
+	}
+
+	@Test
+	public void testGetTimeRasterMinutes() {
+		assertEquals(TIME_RASTER_MINUTES, config.getTimeRasterMinutes());
+	}
+
+	@Test
+	public void testGetTimeStartOffsetMinutes() {
+		assertEquals(TIME_START_OFFSET_MINUTES, config.getTimeStartOffsetMinutes());
+	}
+
+	@Test
+	public void testGetTimeEndOffsetMinutes() {
+		assertEquals(TIME_END_OFFSET_MINUTES, config.getTimeEndOffsetMinutes());
+	}
+
+	@Test
+	public void testGetItemDurationRasterMinutes() {
+		assertEquals(ITEM_DURATION_RASTER_MINUTES, config.getItemDurationRasterMinutes());
 	}
 
 	@Test

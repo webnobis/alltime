@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.TreeMap;
 
 class IdleTimeHandler {
@@ -18,17 +19,22 @@ class IdleTimeHandler {
 		this.idleTimes = Collections.unmodifiableNavigableMap(new TreeMap<>(Objects.requireNonNull(idleTimes, "idleTimes is null")));
 	}
 
-	public Duration getIdleTime(LocalDate day, LocalTime start, LocalTime end) {
+	public Duration getIdleTime(LocalDate day, LocalTime start, LocalTime end, Duration idleTime) {
 		if (day == null || start == null || end == null) {
-			return getIdleTime(Duration.ZERO);
+			return getCalculatedIdleTime(Duration.ZERO);
 		}
-		return getIdleTime(Duration.between(LocalDateTime.of(day, start),
-				LocalDateTime.of((start.isAfter(end)) ? day.plusDays(1) : day, end)));
+
+		Duration realTime = Duration.between(LocalDateTime.of(day, start),
+				LocalDateTime.of((start.isAfter(end)) ? day.plusDays(1) : day, end));
+
+		Optional<Duration> setIdleTime = Optional.ofNullable(idleTime);
+		Duration calculatedIdleTime = getCalculatedIdleTime(setIdleTime.map(realTime::minus).orElse(realTime));
+		return setIdleTime.filter(time -> time.compareTo(calculatedIdleTime) > 0).orElse(calculatedIdleTime);
 	}
 
-	public Duration getIdleTime(Duration realTime) {
+	private Duration getCalculatedIdleTime(Duration realTime) {
 		Objects.requireNonNull(realTime, "reatTime is null");
-		
+
 		Duration limit = idleTimes.floorKey(realTime);
 		if (limit == null) {
 			return Duration.ZERO;
