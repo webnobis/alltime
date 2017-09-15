@@ -28,7 +28,7 @@ public abstract class LineToEntryDeserializer {
 
 	private static final int MIN_ATTRIBUTE_SEPARATOR = 8;
 
-	private static final Pattern durationPattern = Pattern.compile("^?(.+)$");
+	private static final Pattern durationPattern = Pattern.compile("^[A-Z]?(.+)$");
 
 	private LineToEntryDeserializer() {
 	}

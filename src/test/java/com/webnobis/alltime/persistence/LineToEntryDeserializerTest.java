@@ -26,7 +26,7 @@ public class LineToEntryDeserializerTest {
 
 	@Test
 	public void testToAZEntry() {
-		Entry expected = new AZEntry(LocalDate.of(2000, 3, 4), LocalTime.of(7, 5), LocalTime.of(16, 2), Duration.ofMinutes(58), Duration.ofMinutes(2), Collections.emptyMap());
+		Entry expected = new AZEntry(LocalDate.of(2000, 3, 4), LocalTime.of(7, 5), LocalTime.of(16, 2), Duration.ZERO, Duration.ofMinutes(2), Collections.emptyMap());
 		String line = serializer.apply(expected);
 
 		assertEquals(expected, deserializer.apply(line));

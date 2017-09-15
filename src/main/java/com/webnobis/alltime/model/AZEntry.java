@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class AZEntry extends AbstractEntry implements Entry {
@@ -20,8 +21,8 @@ public class AZEntry extends AbstractEntry implements Entry {
 		super(day, EntryType.AZ, items);
 		this.start = start;
 		this.end = end;
-		this.expectedTime = expectedTime;
-		this.idleTime = idleTime;
+		this.expectedTime = Objects.requireNonNull(expectedTime, "expectedTime is null");
+		this.idleTime = Objects.requireNonNull(idleTime, "idleTime is null");
 	}
 
 	@Override
@@ -46,8 +47,9 @@ public class AZEntry extends AbstractEntry implements Entry {
 
 	@Override
 	public Duration getRealTime() {
-		return Optional.ofNullable(end)
-				.map(e -> Duration.between(start, e))
+		return Optional.ofNullable(start)
+				.flatMap(startTime -> Optional.ofNullable(end)
+						.map(endTime -> Duration.between(startTime, endTime)))
 				.orElse(Duration.ZERO);
 	}
 

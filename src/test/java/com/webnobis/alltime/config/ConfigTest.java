@@ -1,6 +1,7 @@
 package com.webnobis.alltime.config;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -84,11 +85,12 @@ public class ConfigTest {
 	@Test
 	public void testGetExpectedTimes() {
 		Map<DayOfWeek, Duration> map = config.getExpectedTimes();
-		assertEquals(3, map.size());
+		assertEquals(7, map.size());
 
-		assertEquals(map.get(DayOfWeek.TUESDAY), EXPECTED_TIME_DI);
-		assertEquals(map.get(DayOfWeek.WEDNESDAY), EXPECTED_TIME_MI);
-		assertEquals(map.get(DayOfWeek.FRIDAY), EXPECTED_TIME_FR);
+		assertEquals(map.remove(DayOfWeek.TUESDAY), EXPECTED_TIME_DI);
+		assertEquals(map.remove(DayOfWeek.WEDNESDAY), EXPECTED_TIME_MI);
+		assertEquals(map.remove(DayOfWeek.FRIDAY), EXPECTED_TIME_FR);
+		assertTrue(map.values().stream().allMatch(Duration.ZERO::equals));
 	}
 
 	@Test

@@ -60,11 +60,14 @@ public class Config {
 
 	public Map<DayOfWeek, Duration> getExpectedTimes() {
 		return EnumSet.allOf(WeekdayKey.class).stream()
-				.filter(weekdayKey -> properties.containsKey(weekdayKey.getKey()))
 				.collect(Collectors.toMap(WeekdayKey::getWeekday, weekdayKey -> toDuration(properties.get(weekdayKey.getKey()))));
 	}
 
 	private static Duration toDuration(String value) {
+		if (value == null) {
+			return Duration.ZERO;
+		}
+		
 		LocalTime timeValue = LocalTime.parse(value);
 		return Duration.ofHours(timeValue.getHour()).plusMinutes(timeValue.getMinute());
 	}
