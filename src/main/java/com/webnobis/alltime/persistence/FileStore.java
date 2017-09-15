@@ -158,7 +158,7 @@ public class FileStore implements EntryStore {
 				.collect(Collectors.toList());
 
 		try {
-			Files.write(toTimeAssetsFile(), lines, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+			Files.write(toTimeAssetsFile(), lines, StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
@@ -182,7 +182,7 @@ public class FileStore implements EntryStore {
 
 	private void writeLines(Path file, List<String> lines) {
 		try {
-			Files.write(file, lines, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+			Files.write(file, lines, StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
