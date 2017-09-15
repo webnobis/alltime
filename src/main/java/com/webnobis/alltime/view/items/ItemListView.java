@@ -12,7 +12,7 @@ import javafx.scene.control.SelectionMode;
 
 public class ItemListView extends ListView<Item> {
 
-	private static final Item NEW_TRIGGER = new Item("--- Neuer Eintrag ---", Duration.ZERO);
+	public static final Item NEW_TRIGGER = new Item("--- Neuer Eintrag ---", Duration.ZERO);
 
 	public ItemListView(int itemDurationRasterMinutes, List<String> lastDescriptions, Duration maxDurationRange, Map<String, Duration> items) {
 		super(FXCollections.observableArrayList(items.entrySet().stream()

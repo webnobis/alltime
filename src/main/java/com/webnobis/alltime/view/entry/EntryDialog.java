@@ -180,6 +180,7 @@ public class EntryDialog extends Dialog<Entry> {
 				return service.startAZ(day.getValue(), startTime.getValue());
 			} else {
 				Map<String, Duration> items = this.items.getItems().stream()
+						.filter(item -> !ItemListView.NEW_TRIGGER.equals(item))
 						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 				if (endAZ.isSelected()) {
 					return service.endAZ(day.getValue(), startTime.getValue(), endTime.getValue(), idleTime.getValue(), items);
