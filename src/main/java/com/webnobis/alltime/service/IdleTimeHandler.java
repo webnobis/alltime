@@ -11,11 +11,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
 
-class IdleTimeHandler {
+public class IdleTimeHandler {
 
 	private final NavigableMap<Duration, Duration> idleTimes;
 
-	IdleTimeHandler(Map<Duration, Duration> idleTimes) {
+	public IdleTimeHandler(Map<Duration, Duration> idleTimes) {
 		this.idleTimes = Collections.unmodifiableNavigableMap(new TreeMap<>(Objects.requireNonNull(idleTimes, "idleTimes is null")));
 	}
 

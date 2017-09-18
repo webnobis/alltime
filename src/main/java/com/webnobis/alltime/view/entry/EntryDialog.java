@@ -10,10 +10,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.webnobis.alltime.Alltime;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.model.TimeAssetsSum;
-import com.webnobis.alltime.service.Alltime;
 import com.webnobis.alltime.service.BookingService;
 import com.webnobis.alltime.service.DurationFormatter;
 import com.webnobis.alltime.view.DayTransformer;

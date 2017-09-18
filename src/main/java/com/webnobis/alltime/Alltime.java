@@ -1,4 +1,4 @@
-package com.webnobis.alltime.service;
+package com.webnobis.alltime;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,6 +13,10 @@ import com.webnobis.alltime.persistence.LineToDayDeserializer;
 import com.webnobis.alltime.persistence.LineToEntryDeserializer;
 import com.webnobis.alltime.persistence.TimeAssetsSumDeserializer;
 import com.webnobis.alltime.persistence.TimeAssetsSumSerializer;
+import com.webnobis.alltime.service.BookingService;
+import com.webnobis.alltime.service.EntryService;
+import com.webnobis.alltime.service.FindService;
+import com.webnobis.alltime.service.IdleTimeHandler;
 import com.webnobis.alltime.view.AlltimeDialog;
 import com.webnobis.alltime.view.TimeTransformer;
 
@@ -21,8 +25,8 @@ import javafx.scene.control.Dialog;
 import javafx.stage.Stage;
 
 public class Alltime extends Application {
-	
-	public static final String TITLE = Alltime.class.getSimpleName().concat(" V2.00 (Steffen Nobis)");
+
+	public static final String TITLE = Alltime.class.getSimpleName().concat(" ").concat(Version.getVersion()).concat(" (Steffen Nobis)");
 
 	private static final String CONFIG_FILE = "config.properties";
 

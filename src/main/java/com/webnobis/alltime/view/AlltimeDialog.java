@@ -8,9 +8,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import com.webnobis.alltime.Alltime;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
-import com.webnobis.alltime.service.Alltime;
 import com.webnobis.alltime.service.BookingService;
 import com.webnobis.alltime.service.FindService;
 import com.webnobis.alltime.view.entry.EntryDialog;
