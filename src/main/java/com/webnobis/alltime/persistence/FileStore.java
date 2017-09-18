@@ -24,7 +24,7 @@ import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.TimeAssetsSum;
 
 public class FileStore implements EntryStore {
-	
+
 	static final TimeAssetsSum ALTERNATIVE_START_IF_MISSING = new TimeAssetsSum(LocalDate.of(0, 1, 1), Duration.ZERO);
 
 	private static final String MONTH_FORMAT = "yyyyMM";
@@ -152,7 +152,7 @@ public class FileStore implements EntryStore {
 	private void updateTimeAssetsSums(Entry entry) {
 		LocalDate day = entry.getDay();
 		List<String> lines = Stream.concat(getTimeAssetsSumsBeforeStream(day),
-				Stream.of(new TimeAssetsSum(day, entry.getTimeAssets())))
+				Stream.of(new TimeAssetsSum(day, getTimeAssetsSumBefore(day).getTimeAssetsSum().plus(entry.getTimeAssets()))))
 				.map(timeAssetsSumSerializer::apply)
 				.collect(Collectors.toList());
 

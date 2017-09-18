@@ -148,11 +148,6 @@ public class EntryStoreTest {
 	}
 
 	@Test
-	public void testGetTimeAssetsSumBeforeOutOfRange() {
-		assertEquals(FileStore.ALTERNATIVE_START_IF_MISSING, store.getTimeAssetsSumBefore(DAY1));
-	}
-
-	@Test
 	public void testGetLastDescriptions() throws IOException {
 		List<String> expected = Arrays.asList(LAST_DESCRIPTION_2, LAST_DESCRIPTION_1);
 		assertEquals(expected, store.getLastDescriptions());
