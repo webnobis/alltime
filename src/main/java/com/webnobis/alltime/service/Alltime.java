@@ -21,12 +21,16 @@ import javafx.scene.control.Dialog;
 import javafx.stage.Stage;
 
 public class Alltime extends Application {
+	
+	public static final String TITLE = Alltime.class.getSimpleName().concat(" V2.00 (Steffen Nobis)");
 
 	private static final String CONFIG_FILE = "config.properties";
 
 	private static final Supplier<LocalDateTime> now = LocalDateTime::now;
 
-	private EntryService service;
+	private FindService findService;
+
+	private BookingService bookingService;
 
 	public static void main(String[] args) {
 		Application.launch(Alltime.class, args);
@@ -38,11 +42,13 @@ public class Alltime extends Application {
 
 		Path configFile = Paths.get(this.getClass().getClassLoader().getResource(CONFIG_FILE).getPath());
 		Config config = new Config(configFile);
-		service = createService(config, createStore(config));
+		EntryService service = createService(config, createStore(config));
+		findService = service;
+		bookingService = service;
 	}
 
 	private static EntryStore createStore(Config config) {
-		return new FileStore(config.getFileStoreRootPath(), () -> now.get().toLocalDate(), config.getMaxCountOfDays(), config.getMaxCountOfDescriptions(), 
+		return new FileStore(config.getFileStoreRootPath(), () -> now.get().toLocalDate(), config.getMaxCountOfDays(), config.getMaxCountOfDescriptions(),
 				LineToDayDeserializer::toDay, LineToEntryDeserializer::toEntry, EntryToLineSerializer::toLine,
 				TimeAssetsSumDeserializer::toTimeAssetsSum, TimeAssetsSumSerializer::toLine);
 	}
@@ -53,24 +59,8 @@ public class Alltime extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-
-		/*
-		 * Scene bookingScene = new Scene(null); Stage bookingStage = new
-		 * Stage(); bookingStage.setScene(bookingScene);
-		 * bookingStage.centerOnScreen();
-		 */
-
-/*		Dialog<Entry> bookingDialog = new BookingDialog(now.get().toLocalDate(), service, new TimeTransformer(() -> now.get().toLocalTime(), 0, 0, 5));
-		System.out.println(bookingDialog.showAndWait());*/
-		
-/*		Map<String,Duration> map = new HashMap<>();
-		map.put("etwas Eingegebenes", Duration.ofMinutes(56));
-		map.put("alles ohne", Duration.ofHours(4));
-		Dialog<Map<String,Duration>> itemsDialog = new ItemsDialog(new AZEntry(LocalDate.now(), LocalTime.of(8, 0), LocalTime.of(16, 0), Duration.ofDays(2), Duration.ofMinutes(15), map), 30, Arrays.asList("Alt 1", "Ganz alt 2"));
-		System.out.println(itemsDialog.showAndWait());*/
-		
-		Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), service, new TimeTransformer(() -> now.get().toLocalTime(), 5, 10, 5), 15);
-		System.out.println(dialog.showAndWait());
+		Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), findService, bookingService, new TimeTransformer(() -> now.get().toLocalTime(), 5, 10, 5), 15);
+		dialog.showAndWait();
 	}
 
 }

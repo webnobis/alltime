@@ -19,7 +19,7 @@ import com.webnobis.alltime.model.GTEntry;
 import com.webnobis.alltime.model.TimeAssetsSum;
 import com.webnobis.alltime.persistence.EntryStore;
 
-public class EntryService implements FindService, BookingService, TimeAssetsService {
+public class EntryService implements FindService, BookingService {
 
 	private final Map<DayOfWeek, Duration> expectedTimes;
 
