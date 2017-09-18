@@ -37,20 +37,6 @@ public class TimeAssetsSumTest {
 			.mapToObj(d -> LocalDate.of(2000, 1, d))
 			.collect(Collectors.toList());
 
-	private static final Supplier<LocalDate> now = new Supplier<LocalDate>() {
-
-		private int i;
-
-		@Override
-		public LocalDate get() {
-			if (i < days.size()) {
-				return days.get(i++);
-			}
-			throw new NoSuchElementException();
-		}
-
-	};
-
 	private static final Function<TimeAssetsSum, String> timeAssetsSumSerializer = sum -> sum.getDay().format(DateTimeFormatter.ISO_LOCAL_DATE).concat(SPLIT).concat(sum.getTimeAssetsSum().toString());
 
 	private static final Function<String, TimeAssetsSum> timeAssetsSumDeserializer = text -> {
@@ -58,12 +44,28 @@ public class TimeAssetsSumTest {
 		return new TimeAssetsSum(LocalDate.parse(split[0], DateTimeFormatter.ISO_LOCAL_DATE), Duration.parse(split[1]));
 	};
 
+	private Supplier<LocalDate> now;
+
 	private Path tmpRoot;
 
 	private EntryStore store;
 
 	@Before
 	public void setUp() throws Exception {
+		now = new Supplier<LocalDate>() {
+
+			private int i;
+
+			@Override
+			public LocalDate get() {
+				if (i < days.size()) {
+					return days.get(i++);
+				}
+				throw new NoSuchElementException();
+			}
+
+		};
+
 		tmpRoot = Files.createTempDirectory(EntryStoreTest.class.getSimpleName());
 
 		store = new FileStore(tmpRoot, now, 0, 0, text -> null, text -> null, entry -> entry.toString(), timeAssetsSumDeserializer, timeAssetsSumSerializer);
@@ -106,6 +108,7 @@ public class TimeAssetsSumTest {
 
 		LocalTime startAndEnd = LocalTime.of(10, 10);
 		Stream.of(d1, d2, d3, d4)
+				.map(Duration::negated)
 				.map(d -> new AZEntry(now.get(), startAndEnd, startAndEnd, d, Duration.ZERO, Collections.emptyMap()))
 				.forEach(store::storeEntry);
 
