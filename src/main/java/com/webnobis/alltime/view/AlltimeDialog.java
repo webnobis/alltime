@@ -4,19 +4,23 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import com.webnobis.alltime.model.Entry;
-import com.webnobis.alltime.service.EntryService;
+import com.webnobis.alltime.model.EntryType;
+import com.webnobis.alltime.service.Alltime;
+import com.webnobis.alltime.service.BookingService;
+import com.webnobis.alltime.service.FindService;
 import com.webnobis.alltime.view.entry.EntryDialog;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
@@ -26,11 +30,15 @@ import javafx.scene.layout.GridPane;
 
 public class AlltimeDialog extends Dialog<Void> {
 
-	private static final String STORED = " gespeichert";
+	private static final String STORED = "%s (%s) gespeichert";
 
 	private static final Comparator<LocalDate> dayComparator = (d1, d2) -> d1.compareTo(d2);
 
-	private final EntryService service;
+	private final LocalDate now;
+
+	private final FindService findService;
+
+	private final BookingService bookingService;
 
 	private final TimeTransformer timeTransformer;
 
@@ -38,48 +46,68 @@ public class AlltimeDialog extends Dialog<Void> {
 
 	private final ComboBox<LocalDate> days;
 
+	private final CheckBox onlyUnfinishedDays;
+
 	private final TextField stored;
 
-	public AlltimeDialog(LocalDate now, EntryService service, TimeTransformer timeTransformer, int itemDurationRasterMinutes) {
+	public AlltimeDialog(LocalDate now, FindService findService, BookingService bookingService, TimeTransformer timeTransformer, int itemDurationRasterMinutes) {
 		super();
-		this.service = service;
+		this.now = now;
+		this.findService = findService;
+		this.bookingService = bookingService;
 		this.timeTransformer = timeTransformer;
 		this.itemDurationRasterMinutes = itemDurationRasterMinutes;
 
-		days = new ComboBox<>(FXCollections.observableArrayList(getDaysUntilNow(service.getLastDays(), now)));
+		onlyUnfinishedDays = new CheckBox("nur unvollständige Tage");
+		onlyUnfinishedDays.setOnAction(this::updateDays);
+
+		days = new ComboBox<>(getDaysUntilNow());
 		days.setConverter(new DayStringConverter());
 		days.setValue(now);
 		days.setOnAction(this::showEntryDialog);
 
 		stored = new TextField();
-		stored.setPrefWidth(220);
+		stored.setPrefWidth(300);
 		stored.setAlignment(Pos.CENTER);
 		stored.setStyle(ViewStyle.READONLY);
 
 		GridPane pane = new GridPane();
-		pane.setHgap(5);
+		pane.setHgap(10);
 		pane.setVgap(5);
 		pane.add(new Label("Verfügbare Tage:"), 0, 0);
 		pane.add(days, 1, 0);
-		pane.add(stored, 0, 1, 2, 1);
+		pane.add(onlyUnfinishedDays, 2, 0);
+		pane.add(stored, 0, 1, 3, 1);
 
 		DialogPane dialogPane = super.getDialogPane();
-		dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+		dialogPane.getButtonTypes().addAll(ButtonType.CLOSE);
 		dialogPane.setContent(pane);
 		dialogPane.setHeaderText("Alltime");
 
+		super.setTitle(Alltime.TITLE);
 		super.setResultConverter(button -> null);
 
 		showEntryDialog(now);
 	}
 
-	private static List<LocalDate> getDaysUntilNow(List<LocalDate> lastDays, LocalDate now) {
-		return lastDays.stream().min(dayComparator)
+	private ObservableList<LocalDate> getDaysUntilNow() {
+		return FXCollections.observableArrayList(findService.getLastDays().stream().min(dayComparator)
 				.map(minDay -> ChronoUnit.DAYS.between(minDay, now))
 				.map(count -> LongStream.rangeClosed(0, count)
 						.mapToObj(now::minusDays)
+						.filter(day -> !onlyUnfinishedDays.isSelected() || !isFinish(day))
 						.collect(Collectors.toList()))
-				.orElse(Collections.singletonList(now));
+				.orElse(Collections.singletonList(now)));
+	}
+
+	private boolean isFinish(LocalDate day) {
+		return Optional.ofNullable(findService.getEntry(day))
+				.map(entry -> !EntryType.AZ.equals(entry.getType()) || entry.getEnd() != null)
+				.orElse(false);
+	}
+
+	private void updateDays(ActionEvent event) {
+		days.setItems(getDaysUntilNow());
 	}
 
 	private void showEntryDialog(ActionEvent event) {
@@ -89,14 +117,14 @@ public class AlltimeDialog extends Dialog<Void> {
 	}
 
 	private void showEntryDialog(LocalDate selectedDay) {
-		System.out.println(selectedDay);
 		stored.setVisible(false);
 		Optional.ofNullable(selectedDay)
 				.ifPresent(day -> {
-					Dialog<Entry> entryDialog = new EntryDialog(service, timeTransformer, itemDurationRasterMinutes, day);
+					Dialog<Entry> entryDialog = new EntryDialog(bookingService, timeTransformer, itemDurationRasterMinutes,
+							day, findService.getTimeAssetsSumBefore(day), findService.getLastDescriptions(), Optional.ofNullable(findService.getEntry(day)));
 					entryDialog.showAndWait()
 							.ifPresent(entry -> {
-								stored.setText(DayTransformer.toText(day).concat(STORED));
+								stored.setText(String.format(STORED, entry.getClass().getSimpleName(), DayTransformer.toText(day)));
 								stored.setVisible(true);
 							});
 				});

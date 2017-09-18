@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.webnobis.alltime.model.Entry;
+import com.webnobis.alltime.model.TimeAssetsSum;
 
 public interface FindService {
 	
@@ -12,5 +13,7 @@ public interface FindService {
 	Entry getEntry(LocalDate day);
 	
 	List<String> getLastDescriptions();
+
+	TimeAssetsSum getTimeAssetsSumBefore(LocalDate day);
 
 }

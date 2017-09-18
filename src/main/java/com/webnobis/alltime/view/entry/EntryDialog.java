@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,8 +13,9 @@ import java.util.stream.Collectors;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.model.TimeAssetsSum;
+import com.webnobis.alltime.service.Alltime;
+import com.webnobis.alltime.service.BookingService;
 import com.webnobis.alltime.service.DurationFormatter;
-import com.webnobis.alltime.service.EntryService;
 import com.webnobis.alltime.view.DayTransformer;
 import com.webnobis.alltime.view.TimeTransformer;
 import com.webnobis.alltime.view.ValueField;
@@ -38,7 +40,7 @@ public class EntryDialog extends Dialog<Entry> {
 
 	private static final int PREF_WIDTH = 90;
 
-	private final EntryService service;
+	private final BookingService bookingService;
 
 	private final ValueField<Duration> timeAssetsSum;
 
@@ -62,14 +64,13 @@ public class EntryDialog extends Dialog<Entry> {
 
 	private final boolean disabledIdleTimeAndEndAZ;
 
-	public EntryDialog(EntryService service, TimeTransformer timeTransformer, int itemDurationRasterMinutes, LocalDate day) {
+	public EntryDialog(BookingService bookingService, TimeTransformer timeTransformer, int itemDurationRasterMinutes,
+			LocalDate day, TimeAssetsSum sum, List<String> lastDescriptions, Optional<Entry> entry) {
 		super();
-		this.service = service;
+		this.bookingService = bookingService;
 
-		Optional<Entry> entry = Optional.ofNullable(service.getEntry(day));
 		disabledIdleTimeAndEndAZ = !entry.map(Entry::getStart).isPresent();
 
-		TimeAssetsSum sum = service.getTimeAssetsSumBefore(day);
 		timeAssetsSum = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, sum.getTimeAssetsSum());
 		timeAssetsSum.setEditable(false);
 		timeAssetsSum.setStyle(ViewStyle.READONLY + ViewStyle.BIG);
@@ -94,7 +95,7 @@ public class EntryDialog extends Dialog<Entry> {
 		endTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, end);
 		endTime.setPrefWidth(PREF_WIDTH);
 
-		items = new ItemListView(itemDurationRasterMinutes, service.getLastDescriptions(),
+		items = new ItemListView(itemDurationRasterMinutes, lastDescriptions,
 				entry.map(e -> e.getRealTime().minus(e.getIdleTime())).orElse(Duration.ZERO),
 				entry.map(Entry::getItems).orElse(Collections.emptyMap()));
 
@@ -146,6 +147,7 @@ public class EntryDialog extends Dialog<Entry> {
 		dialogPane.setContent(pane);
 		dialogPane.setHeaderText("Buchung");
 
+		super.setTitle(Alltime.TITLE);
 		super.setResultConverter(this::get);
 	}
 
@@ -177,15 +179,15 @@ public class EntryDialog extends Dialog<Entry> {
 				.filter(ButtonType.APPLY::equals)
 				.isPresent()) {
 			if (startAZ.isSelected()) {
-				return service.startAZ(day.getValue(), startTime.getValue());
+				return bookingService.startAZ(day.getValue(), startTime.getValue());
 			} else {
 				Map<String, Duration> items = this.items.getItems().stream()
 						.filter(item -> !ItemListView.NEW_TRIGGER.equals(item))
 						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 				if (endAZ.isSelected()) {
-					return service.endAZ(day.getValue(), startTime.getValue(), endTime.getValue(), idleTime.getValue(), items);
+					return bookingService.endAZ(day.getValue(), startTime.getValue(), endTime.getValue(), idleTime.getValue(), items);
 				} else {
-					return service.book(day.getValue(), type.getValue(), items);
+					return bookingService.book(day.getValue(), type.getValue(), items);
 				}
 			}
 		}
