@@ -28,13 +28,17 @@ public class Alltime extends Application {
 
 	public static final String TITLE = Alltime.class.getSimpleName().concat(" ").concat(Version.getVersion()).concat(" (Steffen Nobis)");
 
-	private static final String CONFIG_FILE = "config.properties";
+	private static final String CONFIG_FILE = "config/config.properties";
 
 	private static final Supplier<LocalDateTime> now = LocalDateTime::now;
 
-	private FindService findService;
+	FindService findService;
 
-	private BookingService bookingService;
+	BookingService bookingService;
+
+	TimeTransformer timeTransformer;
+
+	int itemDurationRasterMinutes;
 
 	public static void main(String[] args) {
 		Application.launch(Alltime.class, args);
@@ -44,11 +48,13 @@ public class Alltime extends Application {
 	public void init() throws Exception {
 		super.init();
 
-		Path configFile = Paths.get(this.getClass().getClassLoader().getResource(CONFIG_FILE).getPath());
+		Path configFile = Paths.get(CONFIG_FILE);
 		Config config = new Config(configFile);
 		EntryService service = createService(config, createStore(config));
 		findService = service;
 		bookingService = service;
+		timeTransformer = new TimeTransformer(() -> now.get().toLocalTime(), config.getTimeStartOffsetMinutes(), config.getTimeEndOffsetMinutes(), config.getTimeRasterMinutes());
+		itemDurationRasterMinutes = config.getItemDurationRasterMinutes();
 	}
 
 	private static EntryStore createStore(Config config) {
@@ -63,7 +69,7 @@ public class Alltime extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), findService, bookingService, new TimeTransformer(() -> now.get().toLocalTime(), 5, 10, 5), 15);
+		Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), findService, bookingService, timeTransformer, itemDurationRasterMinutes);
 		dialog.showAndWait();
 	}
 

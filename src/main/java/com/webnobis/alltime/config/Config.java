@@ -24,9 +24,11 @@ public class Config {
 
 	public Config(Path configFile) {
 		try {
+			System.out.println("Configuration load:");
 			this.properties = Files.readAllLines(Objects.requireNonNull(configFile, "configFile is null"), StandardCharsets.UTF_8).stream()
 					.filter(line -> line.contains(KEY_VALUE_SEPARATOR))
 					.filter(line -> !line.startsWith(COMMEND_LINE))
+					.peek(System.out::println)
 					.map(line -> line.split(KEY_VALUE_SEPARATOR))
 					.collect(Collectors.toMap(array -> array[0], array -> array[1]));
 		} catch (IOException e) {
