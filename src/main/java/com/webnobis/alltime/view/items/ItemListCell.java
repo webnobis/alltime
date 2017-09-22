@@ -3,6 +3,7 @@ package com.webnobis.alltime.view.items;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -16,15 +17,15 @@ public class ItemListCell extends ListCell<Item> {
 
 	private final List<String> lastDescriptions;
 
-	private final Duration durationRange;
+	private final Supplier<Duration> maxDurationRange;
 
 	private ItemPane itemPane;
 
-	public ItemListCell(int itemDurationRasterMinutes, List<String> lastDescriptions, Duration durationRange) {
+	public ItemListCell(int itemDurationRasterMinutes, List<String> lastDescriptions, Supplier<Duration> maxDurationRange) {
 		super();
 		this.itemDurationRasterMinutes = itemDurationRasterMinutes;
 		this.lastDescriptions = lastDescriptions;
-		this.durationRange = durationRange;
+		this.maxDurationRange = maxDurationRange;
 	}
 
 	@Override
@@ -40,14 +41,14 @@ public class ItemListCell extends ListCell<Item> {
 	public void startEdit() {
 		super.startEdit();
 
-		itemPane = new ItemPane(itemDurationRasterMinutes, lastDescriptions, getAvailableDurationRange(), this.getItem());
+		itemPane = new ItemPane(itemDurationRasterMinutes, lastDescriptions, getAvailableDurationRange(this.getItem()), this.getItem());
 		itemPane.setOnKeyReleased(e -> {
 			if (e.getCode() == KeyCode.ESCAPE) {
 				this.cancelEdit();
 				e.consume();
 			} else if (e.getCode() == KeyCode.ENTER) {
 				Item newItem = itemPane.get();
-				if (validateDescription(newItem.getKey())) {
+				if (validateDescription(newItem.getKey(), ItemListView.NEW_TRIGGER.equals(this.getItem()))) {
 					this.commitEdit(itemPane.get());
 				} else {
 					this.cancelEdit();
@@ -58,15 +59,20 @@ public class ItemListCell extends ListCell<Item> {
 		super.setGraphic(itemPane);
 	}
 
-	private Duration getAvailableDurationRange() {
-		return durationRange.minus(super.getListView().getItems().stream()
+	private Duration getAvailableDurationRange(Item selectedItem) {
+		Duration booked = super.getListView().getItems().stream()
+				.filter(item -> !item.equals(selectedItem))
 				.map(Item::getValue)
 				.reduce((d1, d2) -> d1.plus(d2))
-				.orElse(Duration.ZERO));
+				.orElse(Duration.ZERO);
+
+		return Optional.ofNullable(maxDurationRange.get())
+				.map(d -> d.minus(booked))
+				.orElse(Duration.ZERO);
 	}
 
-	private boolean validateDescription(String description) {
-		if (description.isEmpty() || super.getListView().getItems().stream().map(Item::getKey).anyMatch(description::equals)) {
+	private boolean validateDescription(String description, boolean newItem) {
+		if (description.isEmpty() || (newItem && super.getListView().getItems().stream().map(Item::getKey).anyMatch(description::equals))) {
 			Alert alert = new Alert(AlertType.ERROR);
 			alert.setHeaderText("Fehlerhafter Eintrag");
 			alert.setContentText(String.format("Die Beschreibung %s.", (description.isEmpty()) ? "darf nicht leer sein" : "ist bereits vorhanden"));

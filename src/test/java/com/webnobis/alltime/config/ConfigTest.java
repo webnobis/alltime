@@ -3,6 +3,7 @@ package com.webnobis.alltime.config;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.DayOfWeek;
@@ -48,8 +49,8 @@ public class ConfigTest {
 
 	@Before
 	public void setUp() throws Exception {
-		String path = this.getClass().getClassLoader().getResource(CONFIG_FILE).getPath();
-		config = new Config(Paths.get(path));
+		URI uri = this.getClass().getClassLoader().getResource(CONFIG_FILE).toURI();
+		config = new Config(Paths.get(uri));
 	}
 
 	@Test

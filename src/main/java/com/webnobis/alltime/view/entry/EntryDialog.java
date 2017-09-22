@@ -52,6 +52,8 @@ public class EntryDialog extends Dialog<Entry> {
 
 	private final ValueField<LocalTime> endTime;
 
+	private final ValueField<Duration> bookableTime;
+
 	private final ComboBox<EntryType> type;
 
 	private final ListView<Item> items;
@@ -95,8 +97,13 @@ public class EntryDialog extends Dialog<Entry> {
 		endTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, end);
 		endTime.setPrefWidth(PREF_WIDTH);
 
+		bookableTime = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, Duration.ZERO);
+		bookableTime.setPrefWidth(PREF_WIDTH);
+		bookableTime.setEditable(false);
+		bookableTime.setStyle(ViewStyle.READONLY);
+
 		items = new ItemListView(itemDurationRasterMinutes, lastDescriptions,
-				entry.map(e -> e.getRealTime().minus(e.getIdleTime())).orElse(Duration.ZERO),
+				() -> bookableTime.getValue(),
 				entry.map(Entry::getItems).orElse(Collections.emptyMap()));
 
 		ToggleGroup group = new ToggleGroup();
@@ -108,10 +115,16 @@ public class EntryDialog extends Dialog<Entry> {
 		bookDay.setToggleGroup(group);
 
 		type = new ComboBox<>(FXCollections.observableArrayList(EnumSet.allOf(EntryType.class)));
+		type.setPrefWidth(PREF_WIDTH);
+
+		startTime.focusedProperty().addListener((observable, oldFocus, newFocus) -> updateBookableTime(oldFocus, newFocus));
+		idleTime.focusedProperty().addListener((observable, oldFocus, newFocus) -> updateBookableTime(oldFocus, newFocus));
+		endTime.focusedProperty().addListener((observable, oldFocus, newFocus) -> updateBookableTime(oldFocus, newFocus));
+
 		type.valueProperty().addListener((observable, oldValue, newValue) -> selectRadiobutton(newValue));
+		type.valueProperty().addListener((observable, oldValue, newValue) -> setBookableTime());
 		type.valueProperty().addListener((observable, oldValue, newValue) -> enableElements(newValue));
 		type.setValue(entry.map(Entry::getType).orElse(EntryType.AZ));
-		type.setPrefWidth(PREF_WIDTH);
 
 		GridPane buttonPane = new GridPane();
 		buttonPane.add(startAZ, 0, 0);
@@ -124,20 +137,22 @@ public class EntryDialog extends Dialog<Entry> {
 
 		pane.add(new Label("Buchungstag: "), 0, 1);
 		pane.add(this.day, 1, 1);
-		pane.add(new Label(" Buchungstyp: "), 2, 1);
+		pane.add(new Label("Buchungstyp: "), 2, 1);
 		pane.add(type, 3, 1);
 
 		pane.add(new Label("Start: "), 0, 2);
 		pane.add(startTime, 1, 2);
-		pane.add(new Label(" Pause: "), 2, 2);
+		pane.add(new Label("Pause: "), 2, 2);
 		pane.add(idleTime, 3, 2);
 
 		pane.add(new Label("Ende:  "), 0, 3);
 		pane.add(endTime, 1, 3);
+		pane.add(new Label("Buchbare Zeit: "), 2, 3);
+		pane.add(bookableTime, 3, 3);
 
 		pane.add(new Label("Einträge:"), 0, 4, 4, 1);
 		pane.add(items, 0, 5, 4, 1);
-		pane.add(buttonPane, 0, 6);
+		pane.add(buttonPane, 0, 6, 4, 1);
 
 		pane.setHgap(5);
 		pane.setVgap(5);
@@ -149,6 +164,19 @@ public class EntryDialog extends Dialog<Entry> {
 
 		super.setTitle(Alltime.TITLE);
 		super.setResultConverter(this::get);
+	}
+
+	private void setBookableTime() {
+		bookableTime.setValue(Optional.ofNullable(type.getValue())
+				.filter(EntryType.AZ::equals)
+				.map(unused -> Duration.between(startTime.getValue(), endTime.getValue()).minus(idleTime.getValue()))
+				.orElse(Duration.ZERO));
+	}
+
+	private void updateBookableTime(boolean oldFocus, boolean newFocus) {
+		if (oldFocus && !newFocus) {
+			setBookableTime();
+		}
 	}
 
 	private void selectRadiobutton(EntryType newType) {
@@ -168,6 +196,7 @@ public class EntryDialog extends Dialog<Entry> {
 		startTime.setDisable(!az);
 		idleTime.setDisable(!az || disabledIdleTimeAndEndAZ);
 		endTime.setDisable(!az || disabledIdleTimeAndEndAZ);
+		bookableTime.setDisable(!az);
 		items.setDisable(az && disabledIdleTimeAndEndAZ);
 		startAZ.setDisable(!startAZ.isSelected());
 		endAZ.setDisable(!endAZ.isSelected());

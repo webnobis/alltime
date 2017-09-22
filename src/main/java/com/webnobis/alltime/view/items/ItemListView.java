@@ -3,6 +3,7 @@ package com.webnobis.alltime.view.items;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javafx.collections.FXCollections;
@@ -14,7 +15,7 @@ public class ItemListView extends ListView<Item> {
 
 	public static final Item NEW_TRIGGER = new Item("--- Neuer Eintrag ---", Duration.ZERO);
 
-	public ItemListView(int itemDurationRasterMinutes, List<String> lastDescriptions, Duration maxDurationRange, Map<String, Duration> items) {
+	public ItemListView(int itemDurationRasterMinutes, List<String> lastDescriptions, Supplier<Duration> maxDurationRange, Map<String, Duration> items) {
 		super(FXCollections.observableArrayList(items.entrySet().stream()
 				.map(Item::new)
 				.sorted()
