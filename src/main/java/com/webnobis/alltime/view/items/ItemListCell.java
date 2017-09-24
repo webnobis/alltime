@@ -6,12 +6,14 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Region;
 
 public class ItemListCell extends ListCell<Item> {
@@ -21,8 +23,6 @@ public class ItemListCell extends ListCell<Item> {
 	private final List<String> lastDescriptions;
 
 	private final Supplier<Duration> maxDurationRange;
-
-//	private ItemPane itemPane;
 
 	public ItemListCell(int itemDurationRasterMinutes, List<String> lastDescriptions, Supplier<Duration> maxDurationRange) {
 		super();
@@ -37,7 +37,7 @@ public class ItemListCell extends ListCell<Item> {
 				.map(Item::toString)
 				.map(Label::new)
 				.orElse(null));
-		
+
 		super.updateItem(item, empty);
 	}
 
@@ -46,21 +46,25 @@ public class ItemListCell extends ListCell<Item> {
 		super.startEdit();
 
 		ItemPane itemPane = new ItemPane(itemDurationRasterMinutes, lastDescriptions, getAvailableDurationRange(this.getItem()), this.getItem(), this::deleteItemAndFinishEdit);
-		itemPane.setOnKeyReleased(e -> {
-			if (e.getCode() == KeyCode.ESCAPE) {
+		itemPane.setOnKeyReleased(handleKeyReleased(itemPane));
+		super.setGraphic(itemPane);
+	}
+
+	private EventHandler<? super KeyEvent> handleKeyReleased(ItemPane itemPane) {
+		return event -> {
+			if (event.getCode() == KeyCode.ESCAPE) {
 				this.cancelEdit();
-				e.consume();
-			} else if (e.getCode() == KeyCode.ENTER) {
+				event.consume();
+			} else if (event.getCode() == KeyCode.ENTER) {
 				Item newItem = itemPane.get();
 				if (validateDescription(newItem.getKey(), ItemListView.NEW_TRIGGER.equals(this.getItem()))) {
-					this.commitEdit(itemPane.get());
+					super.commitEdit(itemPane.get());
 				} else {
-					this.cancelEdit();
+					super.cancelEdit();
 				}
-				e.consume();
+				event.consume();
 			}
-		});
-		super.setGraphic(itemPane);
+		};
 	}
 
 	private Duration getAvailableDurationRange(Item selectedItem) {
@@ -93,7 +97,7 @@ public class ItemListCell extends ListCell<Item> {
 				.filter(this::shouldDelete)
 				.ifPresent(item -> {
 					super.getListView().getItems().remove(item);
-					this.commitEdit(null);
+					super.commitEdit(null);
 				});
 		event.consume();
 	}
@@ -107,22 +111,5 @@ public class ItemListCell extends ListCell<Item> {
 				.filter(ButtonType.OK::equals)
 				.isPresent();
 	}
-/*
-	@Override
-	public void commitEdit(Item newItem) {
-		super.commitEdit(newItem);
 
-/*		super.setGraphic(Optional.ofNullable(newItem)
-				.map(item -> new Label(item.toString()))
-				.orElse(null));/
-	}
-
-	@Override
-	public void cancelEdit() {
-		super.cancelEdit();
-
-		itemPane = null;
-//		super.setGraphic(new Label(super.getItem().toString()));
-	}
-*/
 }
