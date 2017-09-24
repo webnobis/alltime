@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import javafx.event.ActionEvent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.Region;
 
 public class ItemListCell extends ListCell<Item> {
 
@@ -41,7 +44,7 @@ public class ItemListCell extends ListCell<Item> {
 	public void startEdit() {
 		super.startEdit();
 
-		itemPane = new ItemPane(itemDurationRasterMinutes, lastDescriptions, getAvailableDurationRange(this.getItem()), this.getItem());
+		itemPane = new ItemPane(itemDurationRasterMinutes, lastDescriptions, getAvailableDurationRange(this.getItem()), this.getItem(), this::deleteItemAndFinishEdit);
 		itemPane.setOnKeyReleased(e -> {
 			if (e.getCode() == KeyCode.ESCAPE) {
 				this.cancelEdit();
@@ -76,6 +79,7 @@ public class ItemListCell extends ListCell<Item> {
 			Alert alert = new Alert(AlertType.ERROR);
 			alert.setHeaderText("Fehlerhafter Eintrag");
 			alert.setContentText(String.format("Die Beschreibung %s.", (description.isEmpty()) ? "darf nicht leer sein" : "ist bereits vorhanden"));
+			alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 			alert.showAndWait();
 			return false;
 		} else {
@@ -83,12 +87,33 @@ public class ItemListCell extends ListCell<Item> {
 		}
 	}
 
+	private void deleteItemAndFinishEdit(ActionEvent event) {
+		Optional.ofNullable(super.getItem())
+				.filter(this::shouldDelete)
+				.ifPresent(item -> {
+					super.getListView().getItems().remove(item);
+					this.commitEdit(null);
+				});
+		event.consume();
+	}
+
+	private boolean shouldDelete(Item item) {
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setHeaderText("Rückfrage zum Eintrag");
+		alert.setContentText(String.format("Soll der Eintrag '%s' wirklich gelöscht werden?", item));
+		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+		return alert.showAndWait()
+				.filter(ButtonType.OK::equals)
+				.isPresent();
+	}
+
 	@Override
 	public void commitEdit(Item newItem) {
 		super.commitEdit(newItem);
 
-		Optional.ofNullable(newItem)
-				.ifPresent(item -> super.setGraphic(new Label(item.toString())));
+		super.setGraphic(Optional.ofNullable(newItem)
+				.map(item -> new Label(item.toString()))
+				.orElse(null));
 	}
 
 	@Override
