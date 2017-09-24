@@ -95,7 +95,7 @@ public abstract class LineToEntryDeserializer {
 
 	private static Map<String, Duration> toItems(String[] itemsPart) {
 		Map<String, Duration> items = new TreeMap<>();
-		for (int k = 1, v = 0; k < itemsPart.length; k++, v++) {
+		for (int k = 1, v = 0; k < itemsPart.length; k += 2, v += 2) {
 			items.put(itemsPart[k], DurationFormatter.toDuration(itemsPart[v]));
 		}
 		return items;

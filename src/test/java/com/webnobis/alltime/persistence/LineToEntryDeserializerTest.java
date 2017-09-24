@@ -42,9 +42,9 @@ public class LineToEntryDeserializerTest {
 
 	@Test
 	public void testToDayEntry() {
-		Entry expected = new DayEntry(LocalDate.of(2007, 12, 31), EntryType.KR, LongStream.rangeClosed(1, 1000)
+		Entry expected = new DayEntry(LocalDate.of(2007, 12, 31), EntryType.KR, LongStream.rangeClosed(1, 60 * 60)
 				.boxed()
-				.collect(Collectors.toMap(String::valueOf, Duration::ofMillis)));
+				.collect(Collectors.toMap(String::valueOf, Duration::ofMinutes)));
 		String line = serializer.apply(expected);
 
 		assertEquals(expected, deserializer.apply(line));

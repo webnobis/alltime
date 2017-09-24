@@ -21,7 +21,6 @@ public class ItemListView extends ListView<Item> {
 				.sorted()
 				.collect(Collectors.toList())));
 		addNewTrigger();
-
 		super.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		super.setCellFactory(unused -> new ItemListCell(itemDurationRasterMinutes, lastDescriptions, maxDurationRange));
 		super.setEditable(true);

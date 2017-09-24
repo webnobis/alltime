@@ -22,7 +22,7 @@ public class ItemListCell extends ListCell<Item> {
 
 	private final Supplier<Duration> maxDurationRange;
 
-	private ItemPane itemPane;
+//	private ItemPane itemPane;
 
 	public ItemListCell(int itemDurationRasterMinutes, List<String> lastDescriptions, Supplier<Duration> maxDurationRange) {
 		super();
@@ -33,18 +33,19 @@ public class ItemListCell extends ListCell<Item> {
 
 	@Override
 	protected void updateItem(Item item, boolean empty) {
+		super.setGraphic(Optional.ofNullable(item)
+				.map(Item::toString)
+				.map(Label::new)
+				.orElse(null));
+		
 		super.updateItem(item, empty);
-
-		if (item != null) {
-			super.setGraphic(new Label(item.toString()));
-		}
 	}
 
 	@Override
 	public void startEdit() {
 		super.startEdit();
 
-		itemPane = new ItemPane(itemDurationRasterMinutes, lastDescriptions, getAvailableDurationRange(this.getItem()), this.getItem(), this::deleteItemAndFinishEdit);
+		ItemPane itemPane = new ItemPane(itemDurationRasterMinutes, lastDescriptions, getAvailableDurationRange(this.getItem()), this.getItem(), this::deleteItemAndFinishEdit);
 		itemPane.setOnKeyReleased(e -> {
 			if (e.getCode() == KeyCode.ESCAPE) {
 				this.cancelEdit();
@@ -106,14 +107,14 @@ public class ItemListCell extends ListCell<Item> {
 				.filter(ButtonType.OK::equals)
 				.isPresent();
 	}
-
+/*
 	@Override
 	public void commitEdit(Item newItem) {
 		super.commitEdit(newItem);
 
-		super.setGraphic(Optional.ofNullable(newItem)
+/*		super.setGraphic(Optional.ofNullable(newItem)
 				.map(item -> new Label(item.toString()))
-				.orElse(null));
+				.orElse(null));/
 	}
 
 	@Override
@@ -121,7 +122,7 @@ public class ItemListCell extends ListCell<Item> {
 		super.cancelEdit();
 
 		itemPane = null;
-		super.setGraphic(new Label(super.getItem().toString()));
+//		super.setGraphic(new Label(super.getItem().toString()));
 	}
-
+*/
 }
