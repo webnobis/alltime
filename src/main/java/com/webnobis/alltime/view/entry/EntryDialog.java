@@ -15,6 +15,7 @@ import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.model.TimeAssetsSum;
 import com.webnobis.alltime.service.BookingService;
+import com.webnobis.alltime.service.CalculationService;
 import com.webnobis.alltime.service.DurationFormatter;
 import com.webnobis.alltime.view.DayTransformer;
 import com.webnobis.alltime.view.TimeTransformer;
@@ -38,189 +39,215 @@ import javafx.scene.layout.GridPane;
 
 public class EntryDialog extends Dialog<Entry> {
 
-	private static final int PREF_WIDTH = 90;
+    private static final int PREF_WIDTH = 90;
 
-	private final BookingService bookingService;
+    private final CalculationService calculationService;
 
-	private final ValueField<Duration> timeAssetsSum;
+    private final BookingService bookingService;
 
-	private final ValueField<LocalDate> day;
+    private final Duration sumBeforeDay;
 
-	private final ValueField<LocalTime> startTime;
+    private final ValueField<Duration> timeAssetsSum;
 
-	private final ValueField<Duration> idleTime;
+    private final ValueField<LocalDate> day;
 
-	private final ValueField<LocalTime> endTime;
+    private final ValueField<LocalTime> startTime;
 
-	private final ValueField<Duration> bookableTime;
+    private final ValueField<Duration> idleTime;
 
-	private final ComboBox<EntryType> type;
+    private final ValueField<LocalTime> endTime;
 
-	private final ListView<Item> items;
+    private final ValueField<Duration> bookableTime;
 
-	private final RadioButton startAZ;
+    private final ComboBox<EntryType> type;
 
-	private final RadioButton endAZ;
+    private final ListView<Item> items;
 
-	private final RadioButton bookDay;
+    private final RadioButton startAZ;
 
-	private final boolean disabledIdleTimeAndEndAZ;
+    private final RadioButton endAZ;
 
-	public EntryDialog(BookingService bookingService, TimeTransformer timeTransformer, int itemDurationRasterMinutes,
-			LocalDate day, TimeAssetsSum sum, List<String> lastDescriptions, Optional<Entry> entry) {
-		super();
-		this.bookingService = bookingService;
+    private final RadioButton bookDay;
 
-		disabledIdleTimeAndEndAZ = !entry.map(Entry::getStart).isPresent();
+    private final boolean disabledIdleTimeAndEndAZ;
 
-		timeAssetsSum = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, sum.getTimeAssetsSum());
-		timeAssetsSum.setEditable(false);
-		timeAssetsSum.setStyle(ViewStyle.READONLY + ViewStyle.BIG);
-		timeAssetsSum.setTooltip(new Tooltip(String.format("Stand: %s", DayTransformer.toText(sum.getDay()))));
-		timeAssetsSum.setPrefWidth(PREF_WIDTH * 2);
-		timeAssetsSum.setAlignment(Pos.CENTER);
+    public EntryDialog(CalculationService calculationService, BookingService bookingService,
+            TimeTransformer timeTransformer, int itemDurationRasterMinutes,
+            LocalDate day, TimeAssetsSum sum, List<String> lastDescriptions, Optional<Entry> entry) {
+        super();
+        this.calculationService = calculationService;
+        this.bookingService = bookingService;
+        sumBeforeDay = sum.getTimeAssetsSum();
 
-		this.day = new ValueField<>(DayTransformer::toDay, DayTransformer::toText, day);
-		this.day.setEditable(false);
-		this.day.setStyle(ViewStyle.READONLY);
-		this.day.setPrefWidth(PREF_WIDTH);
-		this.day.setAlignment(Pos.CENTER);
+        disabledIdleTimeAndEndAZ = !entry.map(Entry::getStart).isPresent();
 
-		LocalTime start = entry.map(Entry::getStart).orElse(timeTransformer.now(true));
-		startTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, start);
-		startTime.setPrefWidth(PREF_WIDTH);
+        timeAssetsSum = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, sumBeforeDay);
+        timeAssetsSum.setEditable(false);
+        timeAssetsSum.setStyle(ViewStyle.READONLY + ViewStyle.BIG);
+        timeAssetsSum.setPrefWidth(PREF_WIDTH * 2);
+        timeAssetsSum.setAlignment(Pos.CENTER);
+        setTimeAssetsSumTooltip(sum.getDay());
 
-		idleTime = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, entry.map(Entry::getIdleTime).orElse(Duration.ZERO));
-		idleTime.setPrefWidth(PREF_WIDTH);
+        this.day = new ValueField<>(DayTransformer::toDay, DayTransformer::toText, day);
+        this.day.setEditable(false);
+        this.day.setStyle(ViewStyle.READONLY);
+        this.day.setPrefWidth(PREF_WIDTH);
+        this.day.setAlignment(Pos.CENTER);
 
-		LocalTime end = entry.map(Entry::getEnd).orElse(timeTransformer.now(false));
-		endTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, end);
-		endTime.setPrefWidth(PREF_WIDTH);
+        LocalTime start = entry.map(Entry::getStart).orElse(timeTransformer.now(true));
+        startTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, start);
+        startTime.setPrefWidth(PREF_WIDTH);
 
-		bookableTime = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, Duration.ZERO);
-		bookableTime.setPrefWidth(PREF_WIDTH);
-		bookableTime.setEditable(false);
-		bookableTime.setStyle(ViewStyle.READONLY);
+        idleTime = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString,
+                entry.map(Entry::getIdleTime).orElse(Duration.ZERO));
+        idleTime.setPrefWidth(PREF_WIDTH);
 
-		items = new ItemListView(itemDurationRasterMinutes, lastDescriptions,
-				() -> bookableTime.getValue(),
-				entry.map(Entry::getItems).orElse(Collections.emptyMap()));
+        LocalTime end = entry.map(Entry::getEnd).orElse(timeTransformer.now(false));
+        endTime = new ValueField<>(TimeTransformer::toTime, TimeTransformer::toText, end);
+        endTime.setPrefWidth(PREF_WIDTH);
 
-		ToggleGroup group = new ToggleGroup();
-		startAZ = new RadioButton("Start AZ");
-		startAZ.setToggleGroup(group);
-		endAZ = new RadioButton("Ende AZ");
-		endAZ.setToggleGroup(group);
-		bookDay = new RadioButton("Ganzen Tag buchen");
-		bookDay.setToggleGroup(group);
+        bookableTime = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, Duration.ZERO);
+        bookableTime.setPrefWidth(PREF_WIDTH);
+        bookableTime.setEditable(false);
+        bookableTime.setStyle(ViewStyle.READONLY);
 
-		type = new ComboBox<>(FXCollections.observableArrayList(EnumSet.allOf(EntryType.class)));
-		type.setPrefWidth(PREF_WIDTH);
+        items = new ItemListView(itemDurationRasterMinutes, lastDescriptions,
+                () -> bookableTime.getValue(),
+                entry.map(Entry::getItems).orElse(Collections.emptyMap()));
 
-		startTime.focusedProperty().addListener((observable, oldFocus, newFocus) -> updateBookableTime(oldFocus, newFocus));
-		idleTime.focusedProperty().addListener((observable, oldFocus, newFocus) -> updateBookableTime(oldFocus, newFocus));
-		endTime.focusedProperty().addListener((observable, oldFocus, newFocus) -> updateBookableTime(oldFocus, newFocus));
+        ToggleGroup group = new ToggleGroup();
+        startAZ = new RadioButton("Start AZ");
+        startAZ.setToggleGroup(group);
+        endAZ = new RadioButton("Ende AZ");
+        endAZ.setToggleGroup(group);
+        bookDay = new RadioButton("Ganzen Tag buchen");
+        bookDay.setToggleGroup(group);
 
-		type.valueProperty().addListener((observable, oldValue, newValue) -> selectRadiobutton(newValue));
-		type.valueProperty().addListener((observable, oldValue, newValue) -> setBookableTime());
-		type.valueProperty().addListener((observable, oldValue, newValue) -> enableElements(newValue));
-		type.setValue(entry.map(Entry::getType).orElse(EntryType.AZ));
+        type = new ComboBox<>(FXCollections.observableArrayList(EnumSet.allOf(EntryType.class)));
+        type.setPrefWidth(PREF_WIDTH);
 
-		GridPane buttonPane = new GridPane();
-		buttonPane.add(startAZ, 0, 0);
-		buttonPane.add(endAZ, 0, 1);
-		buttonPane.add(bookDay, 0, 2);
+        startTime.focusedProperty()
+                .addListener((observable, oldFocus, newFocus) -> updateBookableTime(oldFocus, newFocus));
+        idleTime.focusedProperty()
+                .addListener((observable, oldFocus, newFocus) -> updateBookableTime(oldFocus, newFocus));
+        endTime.focusedProperty()
+                .addListener((observable, oldFocus, newFocus) -> updateBookableTime(oldFocus, newFocus));
 
-		GridPane pane = new GridPane();
-		pane.add(new Label("Zeitguthaben: "), 0, 0);
-		pane.add(timeAssetsSum, 1, 0, 3, 1);
+        type.valueProperty().addListener((observable, oldValue, newValue) -> selectRadiobutton(newValue));
+        type.valueProperty().addListener((observable, oldValue, newValue) -> updateFields());
+        type.valueProperty().addListener((observable, oldValue, newValue) -> enableElements(newValue));
+        type.setValue(entry.map(Entry::getType).orElse(EntryType.AZ));
 
-		pane.add(new Label("Buchungstag: "), 0, 1);
-		pane.add(this.day, 1, 1);
-		pane.add(new Label("Buchungstyp: "), 2, 1);
-		pane.add(type, 3, 1);
+        GridPane buttonPane = new GridPane();
+        buttonPane.add(startAZ, 0, 0);
+        buttonPane.add(endAZ, 0, 1);
+        buttonPane.add(bookDay, 0, 2);
 
-		pane.add(new Label("Start: "), 0, 2);
-		pane.add(startTime, 1, 2);
-		pane.add(new Label("Pause: "), 2, 2);
-		pane.add(idleTime, 3, 2);
+        GridPane pane = new GridPane();
+        pane.add(new Label("Zeitguthaben: "), 0, 0);
+        pane.add(timeAssetsSum, 1, 0, 3, 1);
 
-		pane.add(new Label("Ende:  "), 0, 3);
-		pane.add(endTime, 1, 3);
-		pane.add(new Label("Buchbare Zeit: "), 2, 3);
-		pane.add(bookableTime, 3, 3);
+        pane.add(new Label("Buchungstag: "), 0, 1);
+        pane.add(this.day, 1, 1);
+        pane.add(new Label("Buchungstyp: "), 2, 1);
+        pane.add(type, 3, 1);
 
-		pane.add(new Label("Einträge:"), 0, 4, 4, 1);
-		pane.add(items, 0, 5, 4, 1);
-		pane.add(buttonPane, 0, 6, 4, 1);
+        pane.add(new Label("Start: "), 0, 2);
+        pane.add(startTime, 1, 2);
+        pane.add(new Label("Pause: "), 2, 2);
+        pane.add(idleTime, 3, 2);
 
-		pane.setHgap(5);
-		pane.setVgap(5);
+        pane.add(new Label("Ende:  "), 0, 3);
+        pane.add(endTime, 1, 3);
+        pane.add(new Label("Buchbare Zeit: "), 2, 3);
+        pane.add(bookableTime, 3, 3);
 
-		DialogPane dialogPane = super.getDialogPane();
-		dialogPane.getButtonTypes().addAll(ButtonType.APPLY, ButtonType.CANCEL);
-		dialogPane.setContent(pane);
-		dialogPane.setHeaderText("Buchung");
+        pane.add(new Label("Einträge:"), 0, 4, 4, 1);
+        pane.add(items, 0, 5, 4, 1);
+        pane.add(buttonPane, 0, 6, 4, 1);
 
-		super.setTitle(Alltime.TITLE);
-		super.setResultConverter(this::get);
-	}
+        pane.setHgap(5);
+        pane.setVgap(5);
 
-	private void setBookableTime() {
-		bookableTime.setValue(Optional.ofNullable(type.getValue())
-				.filter(EntryType.AZ::equals)
-				.map(unused -> Duration.between(startTime.getValue(), endTime.getValue()).minus(idleTime.getValue()))
-				.orElse(Duration.ZERO));
-	}
+        DialogPane dialogPane = super.getDialogPane();
+        dialogPane.getButtonTypes().addAll(ButtonType.APPLY, ButtonType.CANCEL);
+        dialogPane.setContent(pane);
+        dialogPane.setHeaderText("Buchung");
 
-	private void updateBookableTime(boolean oldFocus, boolean newFocus) {
-		if (oldFocus && !newFocus) {
-			setBookableTime();
-		}
-	}
+        super.setTitle(Alltime.TITLE);
+        super.setResultConverter(this::get);
+    }
 
-	private void selectRadiobutton(EntryType newType) {
-		if (EntryType.AZ.equals(newType)) {
-			if (disabledIdleTimeAndEndAZ) {
-				startAZ.setSelected(true);
-			} else {
-				endAZ.setSelected(true);
-			}
-		} else {
-			bookDay.setSelected(true);
-		}
-	}
+    private void setTimeAssetsSumTooltip(LocalDate day) {
+        timeAssetsSum.setTooltip(new Tooltip(String.format("Stand: %s", DayTransformer.toText(day))));
+    }
 
-	private void enableElements(EntryType newType) {
-		boolean az = EntryType.AZ.equals(newType);
-		startTime.setDisable(!az);
-		idleTime.setDisable(!az || disabledIdleTimeAndEndAZ);
-		endTime.setDisable(!az || disabledIdleTimeAndEndAZ);
-		bookableTime.setDisable(!az);
-		items.setDisable(az && disabledIdleTimeAndEndAZ);
-		startAZ.setDisable(!startAZ.isSelected());
-		endAZ.setDisable(!endAZ.isSelected());
-		bookDay.setDisable(!bookDay.isSelected());
-	}
+    private void updateBookableTime(boolean oldFocus, boolean newFocus) {
+        if (oldFocus && !newFocus) {
+            updateFields();
+        }
+    }
 
-	private Entry get(ButtonType button) {
-		if (Optional.ofNullable(button)
-				.filter(ButtonType.APPLY::equals)
-				.isPresent()) {
-			if (startAZ.isSelected()) {
-				return bookingService.startAZ(day.getValue(), startTime.getValue());
-			} else {
-				Map<String, Duration> items = this.items.getItems().stream()
-						.filter(item -> !ItemListView.NEW_TRIGGER.equals(item))
-						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-				if (endAZ.isSelected()) {
-					return bookingService.endAZ(day.getValue(), startTime.getValue(), endTime.getValue(), idleTime.getValue(), items);
-				} else {
-					return bookingService.book(day.getValue(), type.getValue(), items);
-				}
-			}
-		}
-		return null;
-	}
+    private void updateFields() {
+        calculationService.calculate(day.getValue(), type.getValue(), startTime.getValue(), endTime.getValue(), idleTime.getValue()).forEach((type, calculation) -> {
+            switch (type) {
+            case IDLE_TIME:
+                idleTime.setValue(calculation);
+                break;
+            case REAL_TIME:
+                bookableTime.setValue(calculation);
+                break;
+            case TIME_ASSETS:
+                timeAssetsSum.setValue(sumBeforeDay.plus(calculation));
+                setTimeAssetsSumTooltip(day.getValue());
+                break;
+            }
+        });
+    }
+
+    private void selectRadiobutton(EntryType newType) {
+        if (EntryType.AZ.equals(newType)) {
+            if (disabledIdleTimeAndEndAZ) {
+                startAZ.setSelected(true);
+            } else {
+                endAZ.setSelected(true);
+            }
+        } else {
+            bookDay.setSelected(true);
+        }
+    }
+
+    private void enableElements(EntryType newType) {
+        boolean az = EntryType.AZ.equals(newType);
+        startTime.setDisable(!az);
+        idleTime.setDisable(!az || disabledIdleTimeAndEndAZ);
+        endTime.setDisable(!az || disabledIdleTimeAndEndAZ);
+        bookableTime.setDisable(!az);
+        items.setDisable(az && disabledIdleTimeAndEndAZ);
+        startAZ.setDisable(!startAZ.isSelected());
+        endAZ.setDisable(!endAZ.isSelected());
+        bookDay.setDisable(!bookDay.isSelected());
+    }
+
+    private Entry get(ButtonType button) {
+        if (Optional.ofNullable(button)
+                .filter(ButtonType.APPLY::equals)
+                .isPresent()) {
+            if (startAZ.isSelected()) {
+                return bookingService.startAZ(day.getValue(), startTime.getValue());
+            } else {
+                Map<String, Duration> items = this.items.getItems().stream()
+                        .filter(item -> !ItemListView.NEW_TRIGGER.equals(item))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                if (endAZ.isSelected()) {
+                    return bookingService.endAZ(day.getValue(), startTime.getValue(), endTime.getValue(),
+                            idleTime.getValue(), items);
+                } else {
+                    return bookingService.book(day.getValue(), type.getValue(), items);
+                }
+            }
+        }
+        return null;
+    }
 
 }
