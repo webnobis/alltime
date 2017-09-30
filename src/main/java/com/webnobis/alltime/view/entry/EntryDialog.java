@@ -145,22 +145,22 @@ public class EntryDialog extends Dialog<Entry> {
 		buttonPane.add(bookDay, 0, 2);
 
 		GridPane pane = new GridPane();
-		pane.add(new Label("Zeitguthaben: "), 0, 0);
+		pane.add(new Label("Zeitguthaben:"), 0, 0);
 		pane.add(timeAssetsSum, 1, 0, 3, 1);
 
-		pane.add(new Label("Buchungstag: "), 0, 1);
+		pane.add(new Label("Buchungstag:"), 0, 1);
 		pane.add(this.day, 1, 1);
-		pane.add(new Label("Buchungstyp: "), 2, 1);
+		pane.add(new Label("Buchungstyp:"), 2, 1);
 		pane.add(type, 3, 1);
 
-		pane.add(new Label("Start: "), 0, 2);
+		pane.add(new Label("Start:"), 0, 2);
 		pane.add(startTime, 1, 2);
-		pane.add(new Label("Pause: "), 2, 2);
+		pane.add(new Label("Pause:"), 2, 2);
 		pane.add(idleTime, 3, 2);
 
-		pane.add(new Label("Ende:  "), 0, 3);
+		pane.add(new Label("Ende:"), 0, 3);
 		pane.add(endTime, 1, 3);
-		pane.add(new Label("Buchbare Zeit: "), 2, 3);
+		pane.add(new Label("Buchbare Zeit:"), 2, 3);
 		pane.add(bookableTime, 3, 3);
 
 		pane.add(new Label("Einträge:"), 0, 4, 4, 1);

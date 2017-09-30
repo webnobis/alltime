@@ -1,0 +1,141 @@
+package com.webnobis.alltime.view.entry;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import com.webnobis.alltime.Alltime;
+import com.webnobis.alltime.model.Entry;
+import com.webnobis.alltime.model.EntryType;
+import com.webnobis.alltime.model.TimeAssetsSum;
+import com.webnobis.alltime.service.BookingService;
+import com.webnobis.alltime.service.CalculationService;
+import com.webnobis.alltime.service.DurationFormatter;
+import com.webnobis.alltime.view.DayTransformer;
+import com.webnobis.alltime.view.ValueField;
+import com.webnobis.alltime.view.ViewStyle;
+import com.webnobis.alltime.view.items.Item;
+import com.webnobis.alltime.view.items.ItemListView;
+
+import javafx.collections.FXCollections;
+import javafx.geometry.Pos;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.GridPane;
+
+public class EntryRangeDialog extends Dialog<List<Entry>> {
+
+	private static final int PREF_WIDTH = 90;
+
+	private final CalculationService calculationService;
+
+	private final BookingService bookingService;
+
+	private final Duration sumBeforeDay;
+
+	private final ValueField<Duration> timeAssetsSum;
+
+	private final ValueField<LocalDate> fromDay;
+
+	private final ValueField<LocalDate> untilDay;
+
+	private final ComboBox<EntryType> type;
+
+	private final ListView<Item> items;
+
+	public EntryRangeDialog(CalculationService calculationService, BookingService bookingService,
+			int itemDurationRasterMinutes, LocalDate fromDay, LocalDate untilDay,
+			TimeAssetsSum sum, List<String> lastDescriptions, Optional<Entry> firstEntry) {
+		super();
+		this.calculationService = calculationService;
+		this.bookingService = bookingService;
+		sumBeforeDay = sum.getTimeAssetsSum();
+
+		timeAssetsSum = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, sumBeforeDay);
+		timeAssetsSum.setEditable(false);
+		timeAssetsSum.setStyle(ViewStyle.READONLY + ViewStyle.BIG);
+		timeAssetsSum.setPrefWidth(PREF_WIDTH * 2);
+		timeAssetsSum.setAlignment(Pos.CENTER);
+		setTimeAssetsSumTooltip(sum.getDay());
+
+		this.fromDay = new ValueField<>(DayTransformer::toDay, DayTransformer::toText, fromDay);
+		this.fromDay.setEditable(false);
+		this.fromDay.setStyle(ViewStyle.READONLY);
+		this.fromDay.setPrefWidth(PREF_WIDTH);
+		this.fromDay.setAlignment(Pos.CENTER);
+
+		this.untilDay = new ValueField<>(DayTransformer::toDay, DayTransformer::toText, untilDay);
+		this.untilDay.setEditable(false);
+		this.untilDay.setStyle(ViewStyle.READONLY);
+		this.untilDay.setPrefWidth(PREF_WIDTH);
+		this.untilDay.setAlignment(Pos.CENTER);
+
+		items = new ItemListView(itemDurationRasterMinutes, lastDescriptions,
+				() -> Duration.ZERO,
+				firstEntry.map(Entry::getItems).orElse(Collections.emptyMap()));
+
+		type = new ComboBox<>(FXCollections.observableArrayList(EnumSet.allOf(EntryType.class)));
+		type.setPrefWidth(PREF_WIDTH);
+
+		type.valueProperty().addListener((observable, oldValue, newValue) -> updateFields());
+		type.setValue(firstEntry.map(Entry::getType).orElse(EntryType.UR));
+
+		GridPane pane = new GridPane();
+		pane.add(new Label("Zeitguthaben:"), 0, 0);
+		pane.add(timeAssetsSum, 1, 0, 5, 1);
+
+		pane.add(new Label("Buchungszeitraum:"), 0, 1);
+		pane.add(this.fromDay, 1, 1);
+		pane.add(new Label("-"), 2, 1);
+		pane.add(this.untilDay, 3, 1);
+		pane.add(new Label("Buchungstyp:"), 4, 1);
+		pane.add(type, 5, 1);
+
+		pane.add(new Label("Einträge:"), 0, 4, 6, 1);
+		pane.add(items, 0, 5, 6, 1);
+
+		pane.setHgap(5);
+		pane.setVgap(5);
+
+		DialogPane dialogPane = super.getDialogPane();
+		dialogPane.getButtonTypes().addAll(ButtonType.APPLY, ButtonType.CANCEL);
+		dialogPane.setContent(pane);
+		dialogPane.setHeaderText("Buchungen");
+
+		super.setTitle(Alltime.TITLE);
+		super.setResultConverter(this::get);
+	}
+
+	private void setTimeAssetsSumTooltip(LocalDate day) {
+		timeAssetsSum.setTooltip(new Tooltip(String.format("Stand: %s", DayTransformer.toText(day))));
+	}
+
+	private void updateFields() {
+		Duration rangeSum = calculationService.calculateTimeAssetsSum(fromDay.getValue(), untilDay.getValue(), type.getValue());
+		timeAssetsSum.setValue(sumBeforeDay.plus(rangeSum));
+		setTimeAssetsSumTooltip(fromDay.getValue());
+	}
+
+	private List<Entry> get(ButtonType button) {
+		if (Optional.ofNullable(button)
+				.filter(ButtonType.APPLY::equals)
+				.isPresent()) {
+			Map<String, Duration> items = this.items.getItems().stream()
+					.filter(item -> !ItemListView.NEW_TRIGGER.equals(item))
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+			return bookingService.book(fromDay.getValue(), untilDay.getValue(), type.getValue(), items);
+		}
+		return null;
+	}
+
+}
