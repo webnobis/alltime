@@ -194,6 +194,7 @@ public class EntryDialog extends Dialog<Entry> {
 		idleTime.setValue(calculations.get(CalculationType.IDLE_TIME));
 		bookableTime.setValue(calculations.get(CalculationType.REAL_TIME).minus(idleTime.getValue()));
 		timeAssetsSum.setValue(sumBeforeDay.plus(calculations.get(CalculationType.TIME_ASSETS)));
+		setTimeAssetsSumTooltip(day.getValue());
 	}
 
 	private void selectRadiobutton(EntryType newType) {
