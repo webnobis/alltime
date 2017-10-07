@@ -7,7 +7,7 @@ public enum EntryType {
 	UR("Urlaub"),
 	KR("krank"),
 	SM("Seminar"),
-	SO("Sondertag"),
+	SO("Sonstiges"),
 	WE("Wochenende");
 	
 	private final String description;
