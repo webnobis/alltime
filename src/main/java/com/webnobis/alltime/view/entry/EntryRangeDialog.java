@@ -7,6 +7,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.webnobis.alltime.Alltime;
@@ -14,7 +15,6 @@ import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.model.TimeAssetsSum;
 import com.webnobis.alltime.service.BookingService;
-import com.webnobis.alltime.service.CalculationService;
 import com.webnobis.alltime.service.DurationFormatter;
 import com.webnobis.alltime.view.DayTransformer;
 import com.webnobis.alltime.view.ValueField;
@@ -36,12 +36,10 @@ import javafx.scene.layout.GridPane;
 public class EntryRangeDialog extends Dialog<List<Entry>> {
 
 	private static final int PREF_WIDTH = 90;
-
-	private final CalculationService calculationService;
+	
+	private static final Set<EntryType> SELECTABLE_TYPES = EnumSet.of(EntryType.WE, EntryType.UR, EntryType.KR, EntryType.SM, EntryType.SO);
 
 	private final BookingService bookingService;
-
-	private final Duration sumBeforeDay;
 
 	private final ValueField<Duration> timeAssetsSum;
 
@@ -53,20 +51,18 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 
 	private final ListView<Item> items;
 
-	public EntryRangeDialog(CalculationService calculationService, BookingService bookingService,
+	public EntryRangeDialog(BookingService bookingService,
 			int itemDurationRasterMinutes, LocalDate fromDay, LocalDate untilDay,
 			TimeAssetsSum sum, List<String> lastDescriptions, Optional<Entry> firstEntry) {
 		super();
-		this.calculationService = calculationService;
 		this.bookingService = bookingService;
-		sumBeforeDay = sum.getTimeAssetsSum();
-
-		timeAssetsSum = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, sumBeforeDay);
+		
+		timeAssetsSum = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, sum.getTimeAssetsSum());
 		timeAssetsSum.setEditable(false);
 		timeAssetsSum.setStyle(ViewStyle.READONLY + ViewStyle.BIG);
 		timeAssetsSum.setPrefWidth(PREF_WIDTH * 2);
 		timeAssetsSum.setAlignment(Pos.CENTER);
-		setTimeAssetsSumTooltip(sum.getDay());
+		timeAssetsSum.setTooltip(new Tooltip(String.format("Stand: %s", DayTransformer.toText(sum.getDay()))));
 
 		this.fromDay = new ValueField<>(DayTransformer::toDay, DayTransformer::toText, fromDay);
 		this.fromDay.setEditable(false);
@@ -82,15 +78,16 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 
 		items = new ItemListView(itemDurationRasterMinutes, lastDescriptions,
 				() -> Duration.ZERO,
-				firstEntry.map(Entry::getItems).orElse(Collections.emptyMap()));
+				firstEntry.map(Entry::getItems)
+				.orElse(Collections.emptyMap()));
 
-		type = new ComboBox<>(FXCollections.observableArrayList(EnumSet.allOf(EntryType.class).stream()
-				.filter(type -> !EntryType.AZ.equals(type))
-				.collect(Collectors.toSet())));
+		type = new ComboBox<>(FXCollections.observableArrayList(SELECTABLE_TYPES));
 		type.setPrefWidth(PREF_WIDTH);
 
-		type.valueProperty().addListener((observable, oldValue, newValue) -> updateFields());
-		type.setValue(firstEntry.map(Entry::getType).orElse(EntryType.UR));
+		type.setValue(firstEntry.map(Entry::getType)
+				.filter(t -> type.getItems().stream()
+						.anyMatch(t::equals))
+				.orElse(EntryType.UR));
 
 		GridPane pane = new GridPane();
 		pane.add(new Label("Zeitguthaben:"), 0, 0);
@@ -116,16 +113,6 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 
 		super.setTitle(Alltime.TITLE);
 		super.setResultConverter(this::get);
-	}
-
-	private void setTimeAssetsSumTooltip(LocalDate day) {
-		timeAssetsSum.setTooltip(new Tooltip(String.format("Stand: %s", DayTransformer.toText(day))));
-	}
-
-	private void updateFields() {
-		Duration rangeSum = calculationService.calculateTimeAssetsSum(fromDay.getValue(), untilDay.getValue(), type.getValue());
-		timeAssetsSum.setValue(sumBeforeDay.plus(rangeSum));
-		setTimeAssetsSumTooltip(fromDay.getValue());
 	}
 
 	private List<Entry> get(ButtonType button) {
