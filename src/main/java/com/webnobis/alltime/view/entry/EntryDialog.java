@@ -1,5 +1,6 @@
 package com.webnobis.alltime.view.entry;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -137,7 +138,7 @@ public class EntryDialog extends Dialog<Entry> {
 		type.valueProperty().addListener((observable, oldValue, newValue) -> selectRadiobutton(newValue));
 		type.valueProperty().addListener((observable, oldValue, newValue) -> updateFields());
 		type.valueProperty().addListener((observable, oldValue, newValue) -> enableElements(newValue));
-		type.setValue(entry.map(Entry::getType).orElse(EntryType.AZ));
+		type.setValue(entry.map(Entry::getType).orElse(getDefaultType(DayOfWeek.from(day))));
 
 		GridPane buttonPane = new GridPane();
 		buttonPane.add(startAZ, 0, 0);
@@ -177,6 +178,16 @@ public class EntryDialog extends Dialog<Entry> {
 
 		super.setTitle(Alltime.TITLE);
 		super.setResultConverter(this::get);
+	}
+
+	private static EntryType getDefaultType(DayOfWeek weekday) {
+		switch (weekday) {
+		case SATURDAY:
+		case SUNDAY:
+			return EntryType.WE;
+		default:
+			return EntryType.AZ;
+		}
 	}
 
 	private void setTimeAssetsSumTooltip(LocalDate day) {
