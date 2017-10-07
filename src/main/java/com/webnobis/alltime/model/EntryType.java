@@ -3,12 +3,13 @@ package com.webnobis.alltime.model;
 public enum EntryType {
 	
 	AZ("Arbeitszeit"),
-	GT("Gleittag"),
-	UR("Urlaub"),
+	WE("Wochenende"),
+    UR("Urlaub"),
 	KR("krank"),
+	GT("Gleittag"),
+	FT("Feiertag"),
 	SM("Seminar"),
-	SO("Sonstiges"),
-	WE("Wochenende");
+	SO("Sonstiges");
 	
 	private final String description;
 
