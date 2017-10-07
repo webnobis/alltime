@@ -73,7 +73,7 @@ public class Alltime extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), findService, calculationService, bookingService, timeTransformer, itemDurationRasterMinutes);
+        Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), findService, calculationService, bookingService, timeTransformer, itemDurationRasterMinutes, 30);
         dialog.showAndWait();
     }
 
