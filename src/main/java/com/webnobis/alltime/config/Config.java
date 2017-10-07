@@ -40,6 +40,10 @@ public class Config {
 		return Integer.parseInt(properties.get(Key.MAX_COUNT_OF_DAYS.getKey()));
 	}
 
+	public int getMaxCountOfRangeBookingDays() {
+		return Integer.parseInt(properties.get(Key.MAX_COUNT_OF_RANGE_BOOKING_DAYS.getKey()));
+	}
+
 	public int getMaxCountOfDescriptions() {
 		return Integer.parseInt(properties.get(Key.MAX_COUNT_OF_DESCRIPTIONS.getKey()));
 	}

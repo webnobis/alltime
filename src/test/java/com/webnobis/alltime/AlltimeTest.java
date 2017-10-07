@@ -10,28 +10,30 @@ import org.junit.Test;
 
 public class AlltimeTest {
 
-    private Alltime alltime;
+	private Alltime alltime;
 
-    @Before
-    public void setUp() {
-        alltime = new Alltime();
-    }
+	@Before
+	public void setUp() {
+		alltime = new Alltime();
+	}
 
-    @Test
-    public void testInit() throws Exception {
-        assertNull(alltime.findService);
-        assertNull(alltime.calculationService);
-        assertNull(alltime.bookingService);
-        assertNull(alltime.timeTransformer);
-        assertFalse(alltime.itemDurationRasterMinutes > 0);
+	@Test
+	public void testInit() throws Exception {
+		assertNull(alltime.findService);
+		assertNull(alltime.calculationService);
+		assertNull(alltime.bookingService);
+		assertNull(alltime.timeTransformer);
+		assertFalse(alltime.itemDurationRasterMinutes > 0);
+		assertFalse(alltime.maxCountOfRangeBookingDays > 0);
 
-        alltime.init();
+		alltime.init();
 
-        assertNotNull(alltime.findService);
-        assertNotNull(alltime.calculationService);
-        assertNotNull(alltime.bookingService);
-        assertNotNull(alltime.timeTransformer);
-        assertTrue(alltime.itemDurationRasterMinutes > 0);
-    }
+		assertNotNull(alltime.findService);
+		assertNotNull(alltime.calculationService);
+		assertNotNull(alltime.bookingService);
+		assertNotNull(alltime.timeTransformer);
+		assertTrue(alltime.itemDurationRasterMinutes > 0);
+		assertTrue(alltime.maxCountOfRangeBookingDays > 0);
+	}
 
 }
