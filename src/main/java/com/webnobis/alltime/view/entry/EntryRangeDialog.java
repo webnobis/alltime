@@ -84,7 +84,9 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 				() -> Duration.ZERO,
 				firstEntry.map(Entry::getItems).orElse(Collections.emptyMap()));
 
-		type = new ComboBox<>(FXCollections.observableArrayList(EnumSet.allOf(EntryType.class)));
+		type = new ComboBox<>(FXCollections.observableArrayList(EnumSet.allOf(EntryType.class).stream()
+				.filter(type -> !EntryType.AZ.equals(type))
+				.collect(Collectors.toSet())));
 		type.setPrefWidth(PREF_WIDTH);
 
 		type.valueProperty().addListener((observable, oldValue, newValue) -> updateFields());
