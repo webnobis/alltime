@@ -24,7 +24,9 @@ import com.webnobis.alltime.view.items.ItemListView;
 
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
@@ -106,10 +108,11 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 		pane.setHgap(5);
 		pane.setVgap(5);
 
-		DialogPane dialogPane = super.getDialogPane();
+		DialogPane dialogPane = new ExtendedDialogPane(new CheckBox("hall)"));
 		dialogPane.getButtonTypes().addAll(ButtonType.APPLY, ButtonType.CANCEL);
 		dialogPane.setContent(pane);
 		dialogPane.setHeaderText("Buchungen");
+		super.setDialogPane(dialogPane);
 
 		super.setTitle(Alltime.TITLE);
 		super.setResultConverter(this::get);
