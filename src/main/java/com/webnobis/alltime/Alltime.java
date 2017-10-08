@@ -27,54 +27,57 @@ import javafx.stage.Stage;
 
 public class Alltime extends Application {
 
-    public static final String TITLE = Alltime.class.getSimpleName().concat(" ").concat(Version.getVersion()).concat(" (Steffen Nobis)");
+	public static final String TITLE = Alltime.class.getSimpleName().concat(" ").concat(Version.getVersion()).concat(" (Steffen Nobis)");
 
-    private static final String CONFIG_FILE = "config/config.properties";
+	private static final String CONFIG_FILE = "config/config.properties";
 
-    private static final Supplier<LocalDateTime> now = LocalDateTime::now;
+	private static final Supplier<LocalDateTime> now = LocalDateTime::now;
 
-    FindService findService;
+	FindService findService;
 
-    CalculationService calculationService;
+	CalculationService calculationService;
 
-    BookingService bookingService;
+	BookingService bookingService;
 
-    TimeTransformer timeTransformer;
+	TimeTransformer timeTransformer;
 
-    int itemDurationRasterMinutes;
+	int itemDurationRasterMinutes;
 
-    public static void main(String[] args) {
-        Application.launch(Alltime.class, args);
-    }
+	int maxCountOfRangeBookingDays;
 
-    @Override
-    public void init() throws Exception {
-        super.init();
+	public static void main(String[] args) {
+		Application.launch(Alltime.class, args);
+	}
 
-        Path configFile = Paths.get(CONFIG_FILE);
-        Config config = new Config(configFile);
-        EntryService service = createService(config, createStore(config));
-        findService = service;
-        calculationService = service;
-        bookingService = service;
-        timeTransformer = new TimeTransformer(() -> now.get().toLocalTime(), config.getTimeStartOffsetMinutes(), config.getTimeEndOffsetMinutes(), config.getTimeRasterMinutes());
-        itemDurationRasterMinutes = config.getItemDurationRasterMinutes();
-    }
+	@Override
+	public void init() throws Exception {
+		super.init();
 
-    private static EntryStore createStore(Config config) {
-        return new FileStore(config.getFileStoreRootPath(), () -> now.get().toLocalDate(), config.getMaxCountOfDays(), config.getMaxCountOfDescriptions(),
-                LineToDayDeserializer::toDay, LineToEntryDeserializer::toEntry, EntryToLineSerializer::toLine,
-                TimeAssetsSumDeserializer::toTimeAssetsSum, TimeAssetsSumSerializer::toLine);
-    }
+		Path configFile = Paths.get(CONFIG_FILE);
+		Config config = new Config(configFile);
+		EntryService service = createService(config, createStore(config));
+		findService = service;
+		calculationService = service;
+		bookingService = service;
+		timeTransformer = new TimeTransformer(() -> now.get().toLocalTime(), config.getTimeStartOffsetMinutes(), config.getTimeEndOffsetMinutes(), config.getTimeRasterMinutes());
+		itemDurationRasterMinutes = config.getItemDurationRasterMinutes();
+		maxCountOfRangeBookingDays = config.getItemDurationRasterMinutes();
+	}
 
-    private static EntryService createService(Config config, EntryStore store) {
-        return new EntryService(config.getExpectedTimes(), new IdleTimeHandler(config.getIdleTimes()), store);
-    }
+	private static EntryStore createStore(Config config) {
+		return new FileStore(config.getFileStoreRootPath(), () -> now.get().toLocalDate(), config.getMaxCountOfDays(), config.getMaxCountOfDescriptions(),
+				LineToDayDeserializer::toDay, LineToEntryDeserializer::toEntry, EntryToLineSerializer::toLine,
+				TimeAssetsSumDeserializer::toTimeAssetsSum, TimeAssetsSumSerializer::toLine);
+	}
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), findService, calculationService, bookingService, timeTransformer, itemDurationRasterMinutes, 30);
-        dialog.showAndWait();
-    }
+	private static EntryService createService(Config config, EntryStore store) {
+		return new EntryService(config.getExpectedTimes(), new IdleTimeHandler(config.getIdleTimes()), store);
+	}
+
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+		Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), findService, calculationService, bookingService, timeTransformer, itemDurationRasterMinutes, maxCountOfRangeBookingDays);
+		dialog.showAndWait();
+	}
 
 }

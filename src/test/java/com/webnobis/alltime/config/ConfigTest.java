@@ -17,6 +17,8 @@ public class ConfigTest {
 
 	private static final int MAX_COUNT_OF_DAYS = 77;
 
+	private static final int MAX_COUNT_OF_RANGE_BOOKING_DAYS = 88;
+
 	private static final int MAX_COUNT_OF_DESCRIPTIONS = 99;
 
 	private static final int TIME_RASTER_MINUTES = 3;
@@ -56,6 +58,11 @@ public class ConfigTest {
 	@Test
 	public void testGetMaxCountOfDays() {
 		assertEquals(MAX_COUNT_OF_DAYS, config.getMaxCountOfDays());
+	}
+
+	@Test
+	public void testGetMaxCountOfRangeBookingDays() {
+		assertEquals(MAX_COUNT_OF_RANGE_BOOKING_DAYS, config.getMaxCountOfRangeBookingDays());
 	}
 
 	@Test

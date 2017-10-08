@@ -57,7 +57,7 @@ public class AlltimeDialog extends Dialog<Void> {
 
 	private final int itemDurationRasterMinutes;
 
-	private final int futureDays;
+	private final int maxCountOfRangeBookingDays;
 
 	private final Label fromDaysLabel;
 
@@ -73,8 +73,9 @@ public class AlltimeDialog extends Dialog<Void> {
 
 	private final TextField stored;
 
-	public AlltimeDialog(LocalDate now, FindService findService, CalculationService calculationService, BookingService bookingService, TimeTransformer timeTransformer, int itemDurationRasterMinutes,
-			int futureDays) {
+	public AlltimeDialog(LocalDate now, FindService findService, CalculationService calculationService,
+			BookingService bookingService, TimeTransformer timeTransformer, int itemDurationRasterMinutes,
+			int maxCountOfRangeBookingDays) {
 		super();
 		this.now = now;
 		this.findService = findService;
@@ -82,7 +83,7 @@ public class AlltimeDialog extends Dialog<Void> {
 		this.bookingService = bookingService;
 		this.timeTransformer = timeTransformer;
 		this.itemDurationRasterMinutes = itemDurationRasterMinutes;
-		this.futureDays = futureDays;
+		this.maxCountOfRangeBookingDays = maxCountOfRangeBookingDays;
 
 		onlyUnfinishedDays = new CheckBox("nur unvollständige Tage");
 		onlyUnfinishedDays.setOnAction(this::updateDays);
@@ -145,7 +146,7 @@ public class AlltimeDialog extends Dialog<Void> {
 	}
 
 	private ObservableList<LocalDate> getDaysAfterNow() {
-		return FXCollections.observableArrayList(LongStream.rangeClosed(1, futureDays)
+		return FXCollections.observableArrayList(LongStream.rangeClosed(1, maxCountOfRangeBookingDays)
 				.mapToObj(now::plusDays)
 				.collect(Collectors.toList()));
 	}
