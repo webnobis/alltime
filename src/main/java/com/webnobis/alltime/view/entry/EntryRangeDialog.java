@@ -24,7 +24,6 @@ import com.webnobis.alltime.view.items.ItemListView;
 
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
-import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -52,6 +51,8 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 	private final ComboBox<EntryType> type;
 
 	private final ListView<Item> items;
+	
+	private final CheckBox deleteRange;
 
 	public EntryRangeDialog(BookingService bookingService,
 			int itemDurationRasterMinutes, LocalDate fromDay, LocalDate untilDay,
@@ -108,7 +109,9 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 		pane.setHgap(5);
 		pane.setVgap(5);
 
-		DialogPane dialogPane = new ExtendedDialogPane(new CheckBox("hall)"));
+		deleteRange = new CheckBox("Vorhandene Buchungen des Zeitraums löschen");
+		
+		DialogPane dialogPane = new ExtendedDialogPane(deleteRange);
 		dialogPane.getButtonTypes().addAll(ButtonType.APPLY, ButtonType.CANCEL);
 		dialogPane.setContent(pane);
 		dialogPane.setHeaderText("Buchungen");
@@ -125,7 +128,12 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 			Map<String, Duration> items = this.items.getItems().stream()
 					.filter(item -> !ItemListView.NEW_TRIGGER.equals(item))
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-			return bookingService.book(fromDay.getValue(), untilDay.getValue(), type.getValue(), items);
+			if (deleteRange.isSelected()) {
+				// TODO
+				throw new UnsupportedOperationException("Delete bookings within shown range is not supported by now.");
+			} else {
+				return bookingService.book(fromDay.getValue(), untilDay.getValue(), type.getValue(), items);
+			}
 		}
 		return null;
 	}

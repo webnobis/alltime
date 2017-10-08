@@ -15,7 +15,9 @@ public class ExtendedDialogPane extends DialogPane {
 		this.extendedNode = Objects.requireNonNull(extendedNode, "extendedNode is null");
 		
 		super.setExpanded(true);
-		super.setExpandableContent(null);
+		Label label = new Label();
+		label.setPrefHeight(0); // zero additional height, because the detail button area is not removable
+		super.setExpandableContent(label);
 	}
 
 	@Override
