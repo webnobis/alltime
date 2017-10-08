@@ -99,8 +99,10 @@ public class FileStore implements EntryStore {
 	}
 
 	private Stream<LocalDate> getDayStream(Path file) {
+		LocalDate now = this.now.get();
 		return readLines(file)
 				.map(dayDeserializer::apply)
+				.filter(day -> !day.isAfter(now))
 				.sorted(dayReverseComparator);
 	}
 
