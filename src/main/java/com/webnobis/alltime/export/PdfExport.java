@@ -8,10 +8,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.apache.pdfbox.io.MemoryUsageSetting;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.service.FindService;
 
@@ -51,20 +47,10 @@ public class PdfExport implements EntryExport {
 	public List<Entry> exportRange(LocalDate fromDay, LocalDate untilDay) {
 		Path pdfFile = root.resolve("test.pdf");
 		
-		PDDocument doc = new PDDocument(MemoryUsageSetting.setupMixed(Runtime.getRuntime().totalMemory() / 2));
-		try {
-			doc.save(pdfFile.toFile());
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
 		
 		
 		// TODO Auto-generated method stub
 		return null;
-	}
-	
-	private void addHeader(PDPage page) {
-		//page.set
 	}
 
 }
