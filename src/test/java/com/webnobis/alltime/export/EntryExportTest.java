@@ -1,6 +1,6 @@
 package com.webnobis.alltime.export;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,11 +49,11 @@ public class EntryExportTest {
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
-		entries = LongStream.rangeClosed(0, 20)
-				.filter(l -> l < 5 && l > 10)
+		entries = LongStream.rangeClosed(0, 100)
+				.filter(l -> l < 5 || l > 20)
 				.mapToObj(now.get()::plusDays)
 				.collect(Collectors.toMap(day -> day, day -> new DayEntry(day, EntryType.SM, Collections.singletonMap(EntryExportTest.class.getSimpleName(), Duration.ofMinutes(day.getDayOfYear()))),
-						(d1, d2) -> d1, TreeMap::new));
+						(d1, d2) -> d2, TreeMap::new));
 	}
 
 	@Before
@@ -91,7 +92,21 @@ public class EntryExportTest {
 
 	@Test
 	public void testExportRange() {
-		fail("Not yet implemented");
+		List<Entry> expected = new ArrayList<>(entries.values());
+
+		List<Entry> exported = export.exportRange(entries.firstKey(), entries.lastKey());
+		assertEquals(expected, exported);
+	}
+
+	@Test
+	public void testExportMonth() {
+		YearMonth month = YearMonth.from(now.get());
+		List<Entry> expected = entries.values().stream()
+				.filter(entry -> month.getMonth().equals(entry.getDay().getMonth()))
+				.collect(Collectors.toList());
+
+		List<Entry> exported = export.exportMonth(month);
+		assertEquals(expected, exported);
 	}
 
 	private class TestFindService implements FindService {
