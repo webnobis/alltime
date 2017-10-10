@@ -1,4 +1,4 @@
-package com.webnobis.alltime.view;
+package com.webnobis.alltime.service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

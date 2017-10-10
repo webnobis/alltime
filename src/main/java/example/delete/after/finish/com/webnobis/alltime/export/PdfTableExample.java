@@ -28,7 +28,7 @@ public class PdfTableExample {
 		Document document = new Document(pdfDocument, PageSize.A4.rotate());
 		//document.setHorizontalAlignment(HorizontalAlignment.CENTER);
 		
-		Table table = new Table(new float[]{100, 110, 120, 150}, true);
+		Table table = new Table(new float[]{1,1,3,1}, true);
 		table.setDocument(document);
 		
 		Stream.of("Ich", "bin", "die", "Überschrift")

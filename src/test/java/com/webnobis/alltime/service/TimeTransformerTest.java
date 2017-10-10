@@ -1,4 +1,4 @@
-package com.webnobis.alltime.view;
+package com.webnobis.alltime.service;
 
 import static org.junit.Assert.assertEquals;
 
@@ -7,6 +7,8 @@ import java.util.function.Supplier;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import com.webnobis.alltime.service.TimeTransformer;
 
 public class TimeTransformerTest {
 

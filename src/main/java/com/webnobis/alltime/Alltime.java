@@ -18,8 +18,8 @@ import com.webnobis.alltime.service.CalculationService;
 import com.webnobis.alltime.service.EntryService;
 import com.webnobis.alltime.service.FindService;
 import com.webnobis.alltime.service.IdleTimeHandler;
+import com.webnobis.alltime.service.TimeTransformer;
 import com.webnobis.alltime.view.AlltimeDialog;
-import com.webnobis.alltime.view.TimeTransformer;
 
 import javafx.application.Application;
 import javafx.scene.control.Dialog;

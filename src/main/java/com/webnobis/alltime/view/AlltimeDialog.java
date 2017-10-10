@@ -14,7 +14,9 @@ import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.service.BookingService;
 import com.webnobis.alltime.service.CalculationService;
+import com.webnobis.alltime.service.DayTransformer;
 import com.webnobis.alltime.service.FindService;
+import com.webnobis.alltime.service.TimeTransformer;
 import com.webnobis.alltime.view.entry.EntryDialog;
 import com.webnobis.alltime.view.entry.EntryRangeDialog;
 
