@@ -2,16 +2,16 @@ package com.webnobis.alltime.export;
 
 public enum PdfTableColumn {
 	
-	DAY("Datum", 3),
-	WEEKDAY("Tag", 1),
-	TYPE("Typ", 1),
-	START_TIME("Start", 2),
-	END_TIME("Ende", 2),
-	REAL_TIME("Gesamt", 2),
-	EXPECTED_TIME("Erwartet", 2),
-	IDLE_TIME("Pause", 2),
-	TIME_ASSETS("Guthaben", 3),
-	ITEMS("Buchungen", 5);
+	DAY("Datum", 30),
+	WEEKDAY("Tag", 10),
+	TYPE("Typ", 10),
+	START_TIME("Start", 20),
+	END_TIME("Ende", 20),
+	REAL_TIME("Gesamt", 25),
+	EXPECTED_TIME("Erwartet", 25),
+	IDLE_TIME("Pause", 25),
+	TIME_ASSETS("Guthaben", 30),
+	ITEMS("Buchungen", 70);
 	
 	private final String header;
 	

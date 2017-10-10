@@ -13,6 +13,13 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import com.itextpdf.io.font.FontConstants;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.service.FindService;
 
@@ -22,22 +29,22 @@ public class PdfExport implements EntryExport {
 
 	private static final String FILE_EXT = ".pdf";
 
+	private static final float TABLE_HEADER_FONT_SIZE = 12.5f;
+
+	private static final float TABLE_CELL_FONT_SIZE = 12f;
+
 	private final Path root;
 
 	private final Supplier<LocalDate> now;
 
 	private final FindService findService;
 
-	private final List<String> header;
+	private final PdfFont font;
 
-	private final List<String> footer;
-
-	public PdfExport(Path root, Supplier<LocalDate> now, FindService findService, List<String> header, List<String> footer) {
+	public PdfExport(Path root, Supplier<LocalDate> now, FindService findService) {
 		this.root = root;
 		this.now = now;
 		this.findService = findService;
-		this.header = header;
-		this.footer = footer;
 
 		if (!Files.exists(root)) {
 			try {
@@ -46,20 +53,28 @@ public class PdfExport implements EntryExport {
 				throw new UncheckedIOException(e);
 			}
 		}
+		try {
+			font = PdfFontFactory.createFont(FontConstants.HELVETICA);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	@Override
 	public List<Entry> exportRange(LocalDate fromDay, LocalDate untilDay) {
-        Objects.requireNonNull(fromDay, "fromDay is null");
-        Objects.requireNonNull(untilDay, "untilDay is null");
+		Objects.requireNonNull(fromDay, "fromDay is null");
+		Objects.requireNonNull(untilDay, "untilDay is null");
 
-        List<Entry> entries = findEntries(fromDay, untilDay);
-        Path pdfFile = root.resolve(fromDay.format(DateTimeFormatter.ofPattern(MONTH_FORMAT)).concat(FILE_EXT));
-		
-		
-		
-		// TODO Auto-generated method stub
-		return null;
+		List<Entry> entries = findEntries(fromDay, untilDay);
+		Path pdfFile = root.resolve(fromDay.format(DateTimeFormatter.ofPattern(MONTH_FORMAT)).concat(FILE_EXT));
+
+		try (PdfWriter writer = new PdfWriter(pdfFile.toFile()); PdfDocument pdfDocument = new PdfDocument(writer); Document document = new Document(pdfDocument, PageSize.A4.rotate())) {
+			PdfTableHandler tableHandler = new PdfTableHandler(document, font, TABLE_HEADER_FONT_SIZE, TABLE_CELL_FONT_SIZE);
+			tableHandler.addEntryTable(entries);
+			return entries;
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	private List<Entry> findEntries(LocalDate fromDay, LocalDate untilDay) {

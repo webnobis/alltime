@@ -37,10 +37,6 @@ public class EntryExportTest {
 
 	private static final TimeAssetsSum SUM_BEFORE = new TimeAssetsSum(now.get().minusWeeks(2), Duration.ofHours(4));
 
-	private static final List<String> HEADER = Collections.singletonList("header text");
-
-	private static final List<String> FOOTER = Collections.singletonList("footer text");
-
 	private static SortedMap<LocalDate, Entry> entries;
 
 	private Path tmpRoot;
@@ -59,7 +55,7 @@ public class EntryExportTest {
 	@Before
 	public void setUp() throws Exception {
 		tmpRoot = Files.createTempDirectory(EntryExportTest.class.getSimpleName());
-		export = new PdfExport(tmpRoot, now, new TestFindService(), HEADER, FOOTER);
+		export = new PdfExport(tmpRoot, now, new TestFindService());
 	}
 
 	@After
