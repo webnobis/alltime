@@ -14,13 +14,17 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import com.itextpdf.io.font.FontConstants;
+import com.itextpdf.kernel.events.Event;
+import com.itextpdf.kernel.events.PdfDocumentEvent;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
 import com.webnobis.alltime.model.Entry;
+import com.webnobis.alltime.model.TimeAssetsSum;
 import com.webnobis.alltime.service.FindService;
 
 public class PdfExport implements EntryExport {
@@ -66,11 +70,19 @@ public class PdfExport implements EntryExport {
 		Objects.requireNonNull(untilDay, "untilDay is null");
 
 		List<Entry> entries = findEntries(fromDay, untilDay);
+		TimeAssetsSum sumBefore = findService.getTimeAssetsSumBefore(fromDay);
+		TimeAssetsSum sumNow = findService.getTimeAssetsSumBefore(untilDay.plusDays(1));
 		Path pdfFile = root.resolve(fromDay.format(DateTimeFormatter.ofPattern(MONTH_FORMAT)).concat(FILE_EXT));
 
 		try (PdfWriter writer = new PdfWriter(pdfFile.toFile()); PdfDocument pdfDocument = new PdfDocument(writer); Document document = new Document(pdfDocument, PageSize.A4.rotate())) {
-			PdfTableHandler tableHandler = new PdfTableHandler(document, font, TABLE_HEADER_FONT_SIZE, TABLE_CELL_FONT_SIZE);
+			pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, this::addHeaderAndFooter);
+			
+			TableHandler tableHandler = new TableHandler(document, font, TABLE_HEADER_FONT_SIZE, TABLE_CELL_FONT_SIZE);
 			tableHandler.addEntryTable(entries);
+			document.add(new Paragraph());
+			document.add(new Paragraph());
+			tableHandler.addTimeAssetsSumTable(sumBefore, sumNow);
+			
 			return entries;
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
@@ -84,6 +96,10 @@ public class PdfExport implements EntryExport {
 				.map(findService::getEntry)
 				.filter(entry -> entry != null)
 				.collect(Collectors.toList());
+	}
+	
+	private void addHeaderAndFooter(Event event) {
+		
 	}
 
 }
