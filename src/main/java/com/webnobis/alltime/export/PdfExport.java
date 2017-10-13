@@ -19,8 +19,11 @@ import com.itextpdf.kernel.events.PdfDocumentEvent;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
 import com.webnobis.alltime.model.Entry;
@@ -99,7 +102,22 @@ public class PdfExport implements EntryExport {
 	}
 	
 	private void addHeaderAndFooter(Event event) {
-		
-	}
+		PdfDocumentEvent documentEvent = (PdfDocumentEvent) event;
+		PdfDocument pdfDocument = documentEvent.getDocument();
+		PdfPage page = documentEvent.getPage();
+		int pageNumber = pdfDocument.getPageNumber(page);
+		Rectangle pageSize = page.getPageSize();
+		float x = pageSize.getX();
+		float y = pageSize.getY();
+		PdfCanvas pdfCanvas = new PdfCanvas(page.getLastContentStream(), page.getResources(), pdfDocument);
+        pdfCanvas.beginText()
+        .setFontAndSize(font, 10)
+        .moveText(pageSize.getWidth() / 2 - 120, pageSize.getTop() - 20)
+        .showText("The Strange Case of Dr. Jekyll and Mr. Hyde")
+        .moveText(120, -pageSize.getTop() + 40)
+        .showText(String.valueOf(pageNumber))
+        .endText();
+        pdfCanvas.release();
+    }
 
 }
