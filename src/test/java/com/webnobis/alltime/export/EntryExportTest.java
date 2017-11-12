@@ -7,6 +7,7 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -54,11 +55,11 @@ public class EntryExportTest {
 
 	@Before
 	public void setUp() throws Exception {
-		tmpRoot = Files.createTempDirectory(EntryExportTest.class.getSimpleName());
+		tmpRoot = Paths.get(".");//Files.createTempDirectory(EntryExportTest.class.getSimpleName());
 		export = new PdfExport(tmpRoot, now, new TestFindService());
 	}
 
-	@After
+	//@After
 	public void tearDown() throws Exception {
 		Files.walkFileTree(tmpRoot, new FileVisitor<Path>() {
 

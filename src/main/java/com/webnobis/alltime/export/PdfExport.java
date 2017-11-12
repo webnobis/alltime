@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import com.itextpdf.io.font.FontConstants;
-import com.itextpdf.kernel.events.Event;
 import com.itextpdf.kernel.events.PdfDocumentEvent;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
@@ -36,9 +35,17 @@ public class PdfExport implements EntryExport {
 
 	private static final String FILE_EXT = ".pdf";
 
-	private static final float TABLE_HEADER_FONT_SIZE = 12.5f;
+	private static final String PAGE_TITLE = "Buchungen von %s bis %s";
 
-	private static final float TABLE_CELL_FONT_SIZE = 12f;
+	private static final String PAGE_NUMBER = "Seite %d";
+
+	private static final float PAGE_MARGIN = 2 * (72 * 1 / 2.54f); // 2 x 1cm
+
+	private static final float TABLE_HEADER_FONT_SIZE = 12f;
+
+	private static final float TABLE_CELL_FONT_SIZE = 11f;
+
+	private static final float HEADER_FOOTER_FONT_SIZE = 10f;
 
 	private final Path root;
 
@@ -78,14 +85,15 @@ public class PdfExport implements EntryExport {
 		Path pdfFile = root.resolve(fromDay.format(DateTimeFormatter.ofPattern(MONTH_FORMAT)).concat(FILE_EXT));
 
 		try (PdfWriter writer = new PdfWriter(pdfFile.toFile()); PdfDocument pdfDocument = new PdfDocument(writer); Document document = new Document(pdfDocument, PageSize.A4.rotate())) {
-			pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, this::addHeaderAndFooter);
-			
+			document.setMargins(PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN);
+			pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, event -> addHeaderAndFooter((PdfDocumentEvent) event, String.format(PAGE_TITLE, fromDay, untilDay), pdfFile));
+
 			TableHandler tableHandler = new TableHandler(document, font, TABLE_HEADER_FONT_SIZE, TABLE_CELL_FONT_SIZE);
 			tableHandler.addEntryTable(entries);
 			document.add(new Paragraph());
 			document.add(new Paragraph());
 			tableHandler.addTimeAssetsSumTable(sumBefore, sumNow);
-			
+
 			return entries;
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
@@ -100,24 +108,26 @@ public class PdfExport implements EntryExport {
 				.filter(entry -> entry != null)
 				.collect(Collectors.toList());
 	}
-	
-	private void addHeaderAndFooter(Event event) {
-		PdfDocumentEvent documentEvent = (PdfDocumentEvent) event;
-		PdfDocument pdfDocument = documentEvent.getDocument();
-		PdfPage page = documentEvent.getPage();
-		int pageNumber = pdfDocument.getPageNumber(page);
+
+	private void addHeaderAndFooter(PdfDocumentEvent event, String title, Path pdfFile) {
+		PdfDocument pdfDocument = event.getDocument();
+		PdfPage page = event.getPage();
+		String pageNumber = String.format(PAGE_NUMBER, pdfDocument.getPageNumber(page));
 		Rectangle pageSize = page.getPageSize();
-		float x = pageSize.getX();
-		float y = pageSize.getY();
+		float top = pageSize.getTop();
+		float bottom = pageSize.getBottom();
+		float width = pageSize.getWidth();
+		float textWidth = font.getWidth(title, HEADER_FOOTER_FONT_SIZE);
+		float pageNumberWidth = font.getWidth(pageNumber, HEADER_FOOTER_FONT_SIZE);
 		PdfCanvas pdfCanvas = new PdfCanvas(page.getLastContentStream(), page.getResources(), pdfDocument);
-        pdfCanvas.beginText()
-        .setFontAndSize(font, 10)
-        .moveText(pageSize.getWidth() / 2 - 120, pageSize.getTop() - 20)
-        .showText("The Strange Case of Dr. Jekyll and Mr. Hyde")
-        .moveText(120, -pageSize.getTop() + 40)
-        .showText(String.valueOf(pageNumber))
-        .endText();
-        pdfCanvas.release();
-    }
+		pdfCanvas.beginText()
+				.setFontAndSize(font, HEADER_FOOTER_FONT_SIZE)
+				.moveTo((width - textWidth) / 2, top - PAGE_MARGIN + HEADER_FOOTER_FONT_SIZE)
+				.showText(title)
+				.moveTo((width - pageNumberWidth) / 2, bottom + PAGE_MARGIN)
+				.showText(pageNumber)
+				.endText();
+		pdfCanvas.release();
+	}
 
 }
