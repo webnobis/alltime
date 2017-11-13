@@ -45,6 +45,8 @@ public class ConfigTest {
 
 	private static final Path FILE_STORE_ROOT_PATH = Paths.get("the", "store", "path");
 
+	private static final Path FILE_EXPORT_ROOT_PATH = Paths.get("the", "export", "path");
+
 	private static final String CONFIG_FILE = ConfigTest.class.getSimpleName().toLowerCase() + ".properties";
 
 	private Config config;
@@ -113,6 +115,11 @@ public class ConfigTest {
 	@Test
 	public void testGetFileStoreRootPath() {
 		assertEquals(FILE_STORE_ROOT_PATH, config.getFileStoreRootPath());
+	}
+
+	@Test
+	public void testGetFileExportRootPath() {
+		assertEquals(FILE_EXPORT_ROOT_PATH, config.getFileExportRootPath());
 	}
 
 }

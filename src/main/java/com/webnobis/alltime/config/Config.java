@@ -73,7 +73,7 @@ public class Config {
 		if (value == null) {
 			return Duration.ZERO;
 		}
-		
+
 		LocalTime timeValue = LocalTime.parse(value);
 		return Duration.ofHours(timeValue.getHour()).plusMinutes(timeValue.getMinute());
 	}
@@ -86,6 +86,10 @@ public class Config {
 
 	public Path getFileStoreRootPath() {
 		return Paths.get(properties.get(Key.FILE_STORE_ROOT_PATH.getKey()));
+	}
+
+	public Path getFileExportRootPath() {
+		return Paths.get(properties.get(Key.FILE_EXPORT_ROOT_PATH.getKey()));
 	}
 
 }

@@ -9,7 +9,8 @@ public enum Key {
 	TIME_START_OFFSET_MINUTES("time.start.offset.minutes"), 
 	TIME_END_OFFSET_MINUTES("time.end.offset.minutes"), 
 	ITEM_DURATION_RASTER_MINUTES("item.duration.raster.minutes"), 
-	FILE_STORE_ROOT_PATH("file.store.root.path");
+	FILE_STORE_ROOT_PATH("file.store.root.path"),
+	FILE_EXPORT_ROOT_PATH("file.export.root.path");
 
 	private final String key;
 

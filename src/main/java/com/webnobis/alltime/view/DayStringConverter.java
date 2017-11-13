@@ -2,6 +2,8 @@ package com.webnobis.alltime.view;
 
 import java.time.LocalDate;
 
+import com.webnobis.alltime.service.DayTransformer;
+
 import javafx.util.StringConverter;
 
 public class DayStringConverter extends StringConverter<LocalDate> {
