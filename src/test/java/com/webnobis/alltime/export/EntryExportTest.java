@@ -7,25 +7,26 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.webnobis.alltime.model.AZEntry;
 import com.webnobis.alltime.model.DayEntry;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
@@ -34,9 +35,9 @@ import com.webnobis.alltime.service.FindService;
 
 public class EntryExportTest {
 
-	private static final Supplier<LocalDate> now = () -> LocalDate.of(2010, 1, 2);
+	private static final LocalDate date = LocalDate.of(2010, 1, 2);
 
-	private static final TimeAssetsSum SUM_BEFORE = new TimeAssetsSum(now.get().minusWeeks(2), Duration.ofHours(4));
+	private static final TimeAssetsSum SUM_BEFORE = new TimeAssetsSum(date.minusWeeks(2), Duration.ofHours(4));
 
 	private static SortedMap<LocalDate, Entry> entries;
 
@@ -46,20 +47,25 @@ public class EntryExportTest {
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
-		entries = LongStream.rangeClosed(0, 100)
-				.filter(l -> l < 5 || l > 20)
-				.mapToObj(now.get()::plusDays)
-				.collect(Collectors.toMap(day -> day, day -> new DayEntry(day, EntryType.SM, Collections.singletonMap(EntryExportTest.class.getSimpleName(), Duration.ofMinutes(day.getDayOfYear()))),
-						(d1, d2) -> d2, TreeMap::new));
+		entries = Stream.concat(Stream.of(new AZEntry(date, LocalTime.of(7, 5), LocalTime.of(16, 20), Duration.ofHours(8), Duration.ofMinutes(30),
+				LongStream.rangeClosed(2, 4)
+						.boxed()
+						.collect(Collectors.toMap(i -> "Projekt-Buchung " + i, Duration::ofHours)))),
+				LongStream.rangeClosed(1, 100)
+						.filter(l -> l < 5 || l > 20)
+						.mapToObj(date::plusDays)
+						.<Entry>map(day -> new DayEntry(day, EntryType.SM,
+								Collections.singletonMap(EntryExportTest.class.getSimpleName(), Duration.ofMinutes(day.getDayOfYear())))))
+				.collect(Collectors.toMap(Entry::getDay, entry -> entry, (day1, day2) -> day2, TreeMap::new));
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		tmpRoot = Paths.get(".");//Files.createTempDirectory(EntryExportTest.class.getSimpleName());
-		export = new PdfExport(tmpRoot, now, new TestFindService());
+		tmpRoot = Files.createTempDirectory(EntryExportTest.class.getSimpleName());
+		export = new PdfExport(tmpRoot, new TestFindService());
 	}
 
-	//@After
+	@After
 	public void tearDown() throws Exception {
 		Files.walkFileTree(tmpRoot, new FileVisitor<Path>() {
 
@@ -97,7 +103,7 @@ public class EntryExportTest {
 
 	@Test
 	public void testExportMonth() {
-		YearMonth month = YearMonth.from(now.get());
+		YearMonth month = YearMonth.from(date);
 		List<Entry> expected = entries.values().stream()
 				.filter(entry -> month.getMonth().equals(entry.getDay().getMonth()))
 				.collect(Collectors.toList());

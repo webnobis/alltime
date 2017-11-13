@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -33,9 +32,13 @@ public class PdfExport implements EntryExport {
 
 	private static final String MONTH_FORMAT = "yyyyMM";
 
+	private static final String DATE_FORMAT = "dd.MM.";
+
+	private static final String DATE_FORMAT_LONG = "dd.MM.yyyy";
+
 	private static final String FILE_EXT = ".pdf";
 
-	private static final String PAGE_TITLE = "Buchungen von %s bis %s";
+	private static final String PAGE_TITLE = "Buchungen vom %s bis %s";
 
 	private static final String PAGE_NUMBER = "Seite %d";
 
@@ -49,15 +52,12 @@ public class PdfExport implements EntryExport {
 
 	private final Path root;
 
-	private final Supplier<LocalDate> now;
-
 	private final FindService findService;
 
 	private final PdfFont font;
 
-	public PdfExport(Path root, Supplier<LocalDate> now, FindService findService) {
+	public PdfExport(Path root, FindService findService) {
 		this.root = root;
-		this.now = now;
 		this.findService = findService;
 
 		if (!Files.exists(root)) {
@@ -86,7 +86,7 @@ public class PdfExport implements EntryExport {
 
 		try (PdfWriter writer = new PdfWriter(pdfFile.toFile()); PdfDocument pdfDocument = new PdfDocument(writer); Document document = new Document(pdfDocument, PageSize.A4.rotate())) {
 			document.setMargins(PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN);
-			pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, event -> addHeaderAndFooter((PdfDocumentEvent) event, String.format(PAGE_TITLE, fromDay, untilDay), pdfFile));
+			pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, event -> addHeaderAndFooter((PdfDocumentEvent) event, getTitle(fromDay, untilDay)));
 
 			TableHandler tableHandler = new TableHandler(document, font, TABLE_HEADER_FONT_SIZE, TABLE_CELL_FONT_SIZE);
 			tableHandler.addEntryTable(entries);
@@ -100,6 +100,12 @@ public class PdfExport implements EntryExport {
 		}
 	}
 
+	private static String getTitle(LocalDate fromDay, LocalDate untilDay) {
+		String from = fromDay.format(DateTimeFormatter.ofPattern((fromDay.getYear() == untilDay.getYear())? DATE_FORMAT: DATE_FORMAT_LONG));
+		String until = untilDay.format(DateTimeFormatter.ofPattern(DATE_FORMAT_LONG));
+		return String.format(PAGE_TITLE, from, until);
+	}
+
 	private List<Entry> findEntries(LocalDate fromDay, LocalDate untilDay) {
 		long days = Duration.between(fromDay.atStartOfDay(), untilDay.atStartOfDay()).toDays();
 		return LongStream.rangeClosed(0, days)
@@ -109,22 +115,26 @@ public class PdfExport implements EntryExport {
 				.collect(Collectors.toList());
 	}
 
-	private void addHeaderAndFooter(PdfDocumentEvent event, String title, Path pdfFile) {
+	private void addHeaderAndFooter(PdfDocumentEvent event, String title) {
 		PdfDocument pdfDocument = event.getDocument();
 		PdfPage page = event.getPage();
+		PdfCanvas pdfCanvas = new PdfCanvas(page.getLastContentStream(), page.getResources(), pdfDocument);
 		String pageNumber = String.format(PAGE_NUMBER, pdfDocument.getPageNumber(page));
 		Rectangle pageSize = page.getPageSize();
+		addHeaderAndFooter(pdfCanvas, pageSize, title, pageNumber);
+	}
+
+	private void addHeaderAndFooter(PdfCanvas pdfCanvas, Rectangle pageSize, String title, String pageNumber) {
 		float top = pageSize.getTop();
 		float bottom = pageSize.getBottom();
 		float width = pageSize.getWidth();
-		float textWidth = font.getWidth(title, HEADER_FOOTER_FONT_SIZE);
+		float titleWidth = font.getWidth(title, HEADER_FOOTER_FONT_SIZE);
 		float pageNumberWidth = font.getWidth(pageNumber, HEADER_FOOTER_FONT_SIZE);
-		PdfCanvas pdfCanvas = new PdfCanvas(page.getLastContentStream(), page.getResources(), pdfDocument);
 		pdfCanvas.beginText()
 				.setFontAndSize(font, HEADER_FOOTER_FONT_SIZE)
-				.moveTo((width - textWidth) / 2, top - PAGE_MARGIN + HEADER_FOOTER_FONT_SIZE)
+				.moveTo((width - titleWidth) / 2, top - PAGE_MARGIN + HEADER_FOOTER_FONT_SIZE)
 				.showText(title)
-				.moveTo((width - pageNumberWidth) / 2, bottom + PAGE_MARGIN)
+				.moveTo((width - pageNumberWidth) / 2, bottom + PAGE_MARGIN - HEADER_FOOTER_FONT_SIZE)
 				.showText(pageNumber)
 				.endText();
 		pdfCanvas.release();
