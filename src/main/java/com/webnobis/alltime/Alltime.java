@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.function.Supplier;
 
 import com.webnobis.alltime.config.Config;
+import com.webnobis.alltime.export.EntryExport;
+import com.webnobis.alltime.export.PdfExport;
 import com.webnobis.alltime.persistence.EntryStore;
 import com.webnobis.alltime.persistence.EntryToLineSerializer;
 import com.webnobis.alltime.persistence.FileStore;
@@ -38,6 +40,8 @@ public class Alltime extends Application {
 	CalculationService calculationService;
 
 	BookingService bookingService;
+	
+	EntryExport entryExport;
 
 	TimeTransformer timeTransformer;
 
@@ -59,6 +63,7 @@ public class Alltime extends Application {
 		findService = service;
 		calculationService = service;
 		bookingService = service;
+		entryExport = new PdfExport(config.getFileExportRootPath(), findService);
 		timeTransformer = new TimeTransformer(() -> now.get().toLocalTime(), config.getTimeStartOffsetMinutes(), config.getTimeEndOffsetMinutes(), config.getTimeRasterMinutes());
 		itemDurationRasterMinutes = config.getItemDurationRasterMinutes();
 		maxCountOfRangeBookingDays = config.getItemDurationRasterMinutes();
@@ -76,7 +81,7 @@ public class Alltime extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), findService, calculationService, bookingService, timeTransformer, itemDurationRasterMinutes, maxCountOfRangeBookingDays);
+		Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), findService, calculationService, bookingService, entryExport, timeTransformer, itemDurationRasterMinutes, maxCountOfRangeBookingDays);
 		dialog.showAndWait();
 	}
 

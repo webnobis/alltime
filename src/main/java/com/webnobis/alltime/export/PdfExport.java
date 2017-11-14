@@ -54,8 +54,6 @@ public class PdfExport implements EntryExport {
 
 	private final FindService findService;
 
-	private final PdfFont font;
-
 	public PdfExport(Path root, FindService findService) {
 		this.root = root;
 		this.findService = findService;
@@ -66,11 +64,6 @@ public class PdfExport implements EntryExport {
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
 			}
-		}
-		try {
-			font = PdfFontFactory.createFont(FontConstants.HELVETICA);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
 		}
 	}
 
@@ -85,8 +78,9 @@ public class PdfExport implements EntryExport {
 		Path pdfFile = root.resolve(fromDay.format(DateTimeFormatter.ofPattern(MONTH_FORMAT)).concat(FILE_EXT));
 
 		try (PdfWriter writer = new PdfWriter(pdfFile.toFile()); PdfDocument pdfDocument = new PdfDocument(writer); Document document = new Document(pdfDocument, PageSize.A4.rotate())) {
+			PdfFont font = PdfFontFactory.createFont(FontConstants.HELVETICA);
 			document.setMargins(PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN);
-			pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, event -> addHeaderAndFooter((PdfDocumentEvent) event, getTitle(fromDay, untilDay)));
+			pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, event -> addHeaderAndFooter((PdfDocumentEvent) event, font, getTitle(fromDay, untilDay)));
 
 			TableHandler tableHandler = new TableHandler(document, font, TABLE_HEADER_FONT_SIZE, TABLE_CELL_FONT_SIZE);
 			tableHandler.addEntryTable(entries);
@@ -115,16 +109,16 @@ public class PdfExport implements EntryExport {
 				.collect(Collectors.toList());
 	}
 
-	private void addHeaderAndFooter(PdfDocumentEvent event, String title) {
+	private void addHeaderAndFooter(PdfDocumentEvent event, PdfFont font, String title) {
 		PdfDocument pdfDocument = event.getDocument();
 		PdfPage page = event.getPage();
 		PdfCanvas pdfCanvas = new PdfCanvas(page.getLastContentStream(), page.getResources(), pdfDocument);
 		String pageNumber = String.format(PAGE_NUMBER, pdfDocument.getPageNumber(page));
 		Rectangle pageSize = page.getPageSize();
-		addHeaderAndFooter(pdfCanvas, pageSize, title, pageNumber);
+		addHeaderAndFooter(pdfCanvas, pageSize, font, title, pageNumber);
 	}
 
-	private void addHeaderAndFooter(PdfCanvas pdfCanvas, Rectangle pageSize, String title, String pageNumber) {
+	private void addHeaderAndFooter(PdfCanvas pdfCanvas, Rectangle pageSize, PdfFont font, String title, String pageNumber) {
 		float top = pageSize.getTop();
 		float bottom = pageSize.getBottom();
 		float width = pageSize.getWidth();

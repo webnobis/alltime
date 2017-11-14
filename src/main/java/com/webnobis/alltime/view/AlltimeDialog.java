@@ -2,6 +2,7 @@ package com.webnobis.alltime.view;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import com.webnobis.alltime.Alltime;
+import com.webnobis.alltime.export.EntryExport;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.service.BookingService;
@@ -46,6 +48,8 @@ public class AlltimeDialog extends Dialog<Void> {
 
     private static final String RANGE_STORED = "%dx %s (%s-%s) gespeichert";
 
+    private static final String MONTH_EXPORTED = "Monat %s exportiert. Anzahl der Einträge: %d";
+
     private static final Comparator<LocalDate> dayComparator = (d1, d2) -> d1.compareTo(d2);
 
     private final LocalDate now;
@@ -55,6 +59,8 @@ public class AlltimeDialog extends Dialog<Void> {
     private final CalculationService calculationService;
 
     private final BookingService bookingService;
+    
+    private final EntryExport entryExport;
 
     private final TimeTransformer timeTransformer;
 
@@ -77,13 +83,14 @@ public class AlltimeDialog extends Dialog<Void> {
     private final TextField stored;
 
     public AlltimeDialog(LocalDate now, FindService findService, CalculationService calculationService,
-            BookingService bookingService, TimeTransformer timeTransformer, int itemDurationRasterMinutes,
-            int maxCountOfRangeBookingDays) {
+            BookingService bookingService, EntryExport entryExport, TimeTransformer timeTransformer,
+            int itemDurationRasterMinutes, int maxCountOfRangeBookingDays) {
         super();
         this.now = now;
         this.findService = findService;
         this.calculationService = calculationService;
         this.bookingService = bookingService;
+        this.entryExport = entryExport;
         this.timeTransformer = timeTransformer;
         this.itemDurationRasterMinutes = itemDurationRasterMinutes;
         this.maxCountOfRangeBookingDays = maxCountOfRangeBookingDays;
@@ -129,7 +136,11 @@ public class AlltimeDialog extends Dialog<Void> {
         pane.add(stored, 0, 2, 3, 1);
 
         DialogPane dialogPane = super.getDialogPane();
-        dialogPane.getButtonTypes().addAll(ButtonType.CLOSE);
+        ExportMonthButton exportMonthButton = new ExportMonthButton(dialogPane, this::exportMonth);
+        YearMonth month = YearMonth.from(now);
+        exportMonthButton.addButton(month.minusMonths(1));
+        exportMonthButton.addButton(month);
+        dialogPane.getButtonTypes().add(ButtonType.CLOSE);
         dialogPane.setContent(pane);
         dialogPane.setHeaderText("Alltime");
 
@@ -222,6 +233,12 @@ public class AlltimeDialog extends Dialog<Void> {
                                         stored.setVisible(true);
                                     });
                         }));
+    }
+    
+    private void exportMonth(YearMonth month, String monthText) {
+    	List<Entry> entries = entryExport.exportMonth(month);
+    	stored.setText(String.format(MONTH_EXPORTED, monthText, entries.size()));
+    	stored.setVisible(true);
     }
 
 }

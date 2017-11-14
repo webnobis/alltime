@@ -22,6 +22,7 @@ public class AlltimeTest {
 		assertNull(alltime.findService);
 		assertNull(alltime.calculationService);
 		assertNull(alltime.bookingService);
+		assertNull(alltime.entryExport);
 		assertNull(alltime.timeTransformer);
 		assertFalse(alltime.itemDurationRasterMinutes > 0);
 		assertFalse(alltime.maxCountOfRangeBookingDays > 0);
@@ -31,6 +32,7 @@ public class AlltimeTest {
 		assertNotNull(alltime.findService);
 		assertNotNull(alltime.calculationService);
 		assertNotNull(alltime.bookingService);
+		assertNotNull(alltime.entryExport);
 		assertNotNull(alltime.timeTransformer);
 		assertTrue(alltime.itemDurationRasterMinutes > 0);
 		assertTrue(alltime.maxCountOfRangeBookingDays > 0);
