@@ -29,7 +29,9 @@ import javafx.stage.Stage;
 
 public class Alltime extends Application {
 
-	public static final String TITLE = Alltime.class.getSimpleName().concat(" ").concat(Version.getVersion()).concat(" (Steffen Nobis)");
+	public static final String AUTHOR = "Steffen Nobis";
+
+	public static final String TITLE = String.format("%s %s (%s)", Alltime.class.getSimpleName(), Version.getVersion(), AUTHOR);
 
 	private static final String CONFIG_FILE = "config/config.properties";
 

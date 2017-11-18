@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -18,12 +19,18 @@ import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.geom.Rectangle;
+import com.itextpdf.kernel.pdf.CompressionConstants;
 import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfDocumentInfo;
 import com.itextpdf.kernel.pdf.PdfPage;
+import com.itextpdf.kernel.pdf.PdfString;
+import com.itextpdf.kernel.pdf.PdfVersion;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.WriterProperties;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
+import com.webnobis.alltime.Alltime;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.TimeAssetsSum;
 import com.webnobis.alltime.service.FindService;
@@ -77,9 +84,17 @@ public class PdfExport implements EntryExport {
 		TimeAssetsSum sumNow = findService.getTimeAssetsSumBefore(untilDay.plusDays(1));
 		Path pdfFile = root.resolve(fromDay.format(DateTimeFormatter.ofPattern(MONTH_FORMAT)).concat(FILE_EXT));
 
-		try (PdfWriter writer = new PdfWriter(pdfFile.toFile()); PdfDocument pdfDocument = new PdfDocument(writer); Document document = new Document(pdfDocument, PageSize.A4.rotate())) {
+		WriterProperties properties = new WriterProperties();
+		properties.setCompressionLevel(CompressionConstants.BEST_SPEED);
+		properties.setFullCompressionMode(true);
+		properties.setPdfVersion(PdfVersion.PDF_2_0);
+		properties.setInitialDocumentId(new PdfString(UUID.randomUUID().toString()));
+		properties.setCompressionLevel(CompressionConstants.BEST_SPEED);
+		try (PdfWriter writer = new PdfWriter(Files.newOutputStream(pdfFile), properties); PdfDocument pdfDocument = new PdfDocument(writer); Document document = new Document(pdfDocument, PageSize.A4.rotate())) {
+			
 			PdfFont font = PdfFontFactory.createFont(FontConstants.HELVETICA);
 			document.setMargins(PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN);
+			addDocumentHeader(pdfDocument.getDocumentInfo());
 			pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, event -> addHeaderAndFooter((PdfDocumentEvent) event, font, getTitle(fromDay, untilDay)));
 
 			TableHandler tableHandler = new TableHandler(document, font, TABLE_HEADER_FONT_SIZE, TABLE_CELL_FONT_SIZE);
@@ -107,6 +122,14 @@ public class PdfExport implements EntryExport {
 				.map(findService::getEntry)
 				.filter(entry -> entry != null)
 				.collect(Collectors.toList());
+	}
+	
+	private void addDocumentHeader(PdfDocumentInfo pdfDocumentInfo) {
+		pdfDocumentInfo.addCreationDate();
+		pdfDocumentInfo.setCreator(Alltime.AUTHOR);
+		pdfDocumentInfo.setAuthor(Alltime.AUTHOR);
+		pdfDocumentInfo.setTitle(Alltime.TITLE);
+		pdfDocumentInfo.setSubject(Alltime.TITLE);
 	}
 
 	private void addHeaderAndFooter(PdfDocumentEvent event, PdfFont font, String title) {
