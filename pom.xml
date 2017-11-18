@@ -8,6 +8,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.main.class>com.webnobis.alltime.Alltime</project.main.class>
 	</properties>
 
 	<build>
@@ -58,8 +59,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<classpathPrefix>config/</classpathPrefix>
-							<mainClass>com.webnobis.alltime.Alltime</mainClass>
+							<mainClass>${project.main.class}</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

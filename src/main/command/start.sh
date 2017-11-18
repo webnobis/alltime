@@ -1,2 +1,2 @@
 #!/bin/sh
-${java.home}/bin/java -jar ${project.build.finalName}.${project.packaging}
+${java.home}/bin/java -cp lib/*:${project.build.finalName}.${project.packaging} ${project.main.class}

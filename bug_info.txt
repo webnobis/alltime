@@ -1,5 +1,0 @@
-Start from windows, which works:
-
-C:\\NONBKU\\Java\\jdk1.8.0_121\\jre/bin/java -cp lib/*;alltime_2.0.6.jar com.webnobis.alltime.Alltime
-
-Classpath separator in linux is ":".
