@@ -37,124 +37,130 @@ import com.webnobis.alltime.service.FindService;
 
 public class PdfExport implements EntryExport {
 
-	private static final String MONTH_FORMAT = "yyyyMM";
+    private static final String MONTH_FORMAT = "yyyyMM";
 
-	private static final String DATE_FORMAT = "dd.MM.";
+    private static final String DATE_FORMAT = "dd.MM.";
 
-	private static final String DATE_FORMAT_LONG = "dd.MM.yyyy";
+    private static final String DATE_FORMAT_LONG = "dd.MM.yyyy";
 
-	private static final String FILE_EXT = ".pdf";
+    private static final String FILE_EXT = ".pdf";
 
-	private static final String PAGE_TITLE = "Buchungen vom %s bis %s";
+    private static final String PAGE_TITLE = "Buchungen vom %s bis %s";
 
-	private static final String PAGE_NUMBER = "Seite %d";
+    private static final String PAGE_NUMBER = "Seite %d";
 
-	private static final float PAGE_MARGIN = 2 * (72 * 1 / 2.54f); // 2 x 1cm
+    private static final float PAGE_MARGIN = 2 * (72 * 1 / 2.54f); // 2 x 1cm
 
-	private static final float TABLE_HEADER_FONT_SIZE = 12f;
+    private static final float TABLE_HEADER_FONT_SIZE = 12f;
 
-	private static final float TABLE_CELL_FONT_SIZE = 11f;
+    private static final float TABLE_CELL_FONT_SIZE = 11f;
 
-	private static final float HEADER_FOOTER_FONT_SIZE = 10f;
+    private static final float HEADER_FOOTER_FONT_SIZE = 10f;
 
-	private final Path root;
+    private final Path root;
 
-	private final FindService findService;
+    private final FindService findService;
 
-	public PdfExport(Path root, FindService findService) {
-		this.root = root;
-		this.findService = findService;
+    public PdfExport(Path root, FindService findService) {
+        this.root = root;
+        this.findService = findService;
 
-		if (!Files.exists(root)) {
-			try {
-				Files.createDirectories(root);
-			} catch (IOException e) {
-				throw new UncheckedIOException(e);
-			}
-		}
-	}
+        if (!Files.exists(root)) {
+            try {
+                Files.createDirectories(root);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+    }
 
-	@Override
-	public List<Entry> exportRange(LocalDate fromDay, LocalDate untilDay) {
-		Objects.requireNonNull(fromDay, "fromDay is null");
-		Objects.requireNonNull(untilDay, "untilDay is null");
+    @Override
+    public List<Entry> exportRange(LocalDate fromDay, LocalDate untilDay) {
+        Objects.requireNonNull(fromDay, "fromDay is null");
+        Objects.requireNonNull(untilDay, "untilDay is null");
 
-		List<Entry> entries = findEntries(fromDay, untilDay);
-		TimeAssetsSum sumBefore = findService.getTimeAssetsSumBefore(fromDay);
-		TimeAssetsSum sumNow = findService.getTimeAssetsSumBefore(untilDay.plusDays(1));
-		Path pdfFile = root.resolve(fromDay.format(DateTimeFormatter.ofPattern(MONTH_FORMAT)).concat(FILE_EXT));
+        List<Entry> entries = findEntries(fromDay, untilDay);
+        TimeAssetsSum sumBefore = findService.getTimeAssetsSumBefore(fromDay);
+        TimeAssetsSum sumNow = findService.getTimeAssetsSumBefore(untilDay.plusDays(1));
+        Path pdfFile = root.resolve(fromDay.format(DateTimeFormatter.ofPattern(MONTH_FORMAT)).concat(FILE_EXT));
 
-		WriterProperties properties = new WriterProperties();
-		properties.setCompressionLevel(CompressionConstants.BEST_SPEED);
-		properties.setFullCompressionMode(true);
-		properties.setPdfVersion(PdfVersion.PDF_2_0);
-		properties.setInitialDocumentId(new PdfString(UUID.randomUUID().toString()));
-		properties.setCompressionLevel(CompressionConstants.BEST_SPEED);
-		try (PdfWriter writer = new PdfWriter(Files.newOutputStream(pdfFile), properties); PdfDocument pdfDocument = new PdfDocument(writer); Document document = new Document(pdfDocument, PageSize.A4.rotate())) {
-			
-			PdfFont font = PdfFontFactory.createFont(FontConstants.HELVETICA);
-			document.setMargins(PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN);
-			addDocumentHeader(pdfDocument.getDocumentInfo());
-			pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, event -> addHeaderAndFooter((PdfDocumentEvent) event, font, getTitle(fromDay, untilDay)));
+        WriterProperties properties = new WriterProperties();
+        properties.setCompressionLevel(CompressionConstants.BEST_SPEED);
+        properties.setFullCompressionMode(true);
+        properties.setPdfVersion(PdfVersion.PDF_2_0);
+        properties.setInitialDocumentId(new PdfString(UUID.randomUUID().toString()));
+        properties.setCompressionLevel(CompressionConstants.BEST_SPEED);
+        try (PdfWriter writer = new PdfWriter(Files.newOutputStream(pdfFile), properties);
+                PdfDocument pdfDocument = new PdfDocument(writer);
+                Document document = new Document(pdfDocument, PageSize.A4.rotate())) {
 
-			TableHandler tableHandler = new TableHandler(document, font, TABLE_HEADER_FONT_SIZE, TABLE_CELL_FONT_SIZE);
-			tableHandler.addEntryTable(entries);
-			document.add(new Paragraph());
-			document.add(new Paragraph());
-			tableHandler.addTimeAssetsSumTable(sumBefore, sumNow);
+            PdfFont font = PdfFontFactory.createFont(FontConstants.HELVETICA);
+            document.setMargins(PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN);
+            addDocumentHeader(pdfDocument.getDocumentInfo());
+            pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, event -> addHeaderAndFooter((PdfDocumentEvent) event, font, getTitle(fromDay, untilDay)));
 
-			return entries;
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
-	}
+            TableHandler tableHandler = new TableHandler(document, font, TABLE_HEADER_FONT_SIZE, TABLE_CELL_FONT_SIZE);
+            tableHandler.addEntryTable(entries);
+            document.add(new Paragraph());
+            document.add(new Paragraph());
+            tableHandler.addTimeAssetsSumTable(sumBefore, sumNow);
 
-	private static String getTitle(LocalDate fromDay, LocalDate untilDay) {
-		String from = fromDay.format(DateTimeFormatter.ofPattern((fromDay.getYear() == untilDay.getYear())? DATE_FORMAT: DATE_FORMAT_LONG));
-		String until = untilDay.format(DateTimeFormatter.ofPattern(DATE_FORMAT_LONG));
-		return String.format(PAGE_TITLE, from, until);
-	}
+            return entries;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
-	private List<Entry> findEntries(LocalDate fromDay, LocalDate untilDay) {
-		long days = Duration.between(fromDay.atStartOfDay(), untilDay.atStartOfDay()).toDays();
-		return LongStream.rangeClosed(0, days)
-				.mapToObj(fromDay::plusDays)
-				.map(findService::getEntry)
-				.filter(entry -> entry != null)
-				.collect(Collectors.toList());
-	}
-	
-	private void addDocumentHeader(PdfDocumentInfo pdfDocumentInfo) {
-		pdfDocumentInfo.addCreationDate();
-		pdfDocumentInfo.setCreator(Alltime.AUTHOR);
-		pdfDocumentInfo.setAuthor(Alltime.AUTHOR);
-		pdfDocumentInfo.setTitle(Alltime.TITLE);
-		pdfDocumentInfo.setSubject(Alltime.TITLE);
-	}
+    private static String getTitle(LocalDate fromDay, LocalDate untilDay) {
+        String from = fromDay.format(DateTimeFormatter.ofPattern((fromDay.getYear() == untilDay.getYear()) ? DATE_FORMAT : DATE_FORMAT_LONG));
+        String until = untilDay.format(DateTimeFormatter.ofPattern(DATE_FORMAT_LONG));
+        return String.format(PAGE_TITLE, from, until);
+    }
 
-	private void addHeaderAndFooter(PdfDocumentEvent event, PdfFont font, String title) {
-		PdfDocument pdfDocument = event.getDocument();
-		PdfPage page = event.getPage();
-		PdfCanvas pdfCanvas = new PdfCanvas(page.getLastContentStream(), page.getResources(), pdfDocument);
-		String pageNumber = String.format(PAGE_NUMBER, pdfDocument.getPageNumber(page));
-		Rectangle pageSize = page.getPageSize();
-		addHeaderAndFooter(pdfCanvas, pageSize, font, title, pageNumber);
-	}
+    private List<Entry> findEntries(LocalDate fromDay, LocalDate untilDay) {
+        long days = Duration.between(fromDay.atStartOfDay(), untilDay.atStartOfDay()).toDays();
+        return LongStream.rangeClosed(0, days)
+                .mapToObj(fromDay::plusDays)
+                .map(findService::getEntry)
+                .filter(entry -> entry != null)
+                .collect(Collectors.toList());
+    }
 
-	private void addHeaderAndFooter(PdfCanvas pdfCanvas, Rectangle pageSize, PdfFont font, String title, String pageNumber) {
-		float top = pageSize.getTop();
-		float bottom = pageSize.getBottom();
-		float width = pageSize.getWidth();
-		float titleWidth = font.getWidth(title, HEADER_FOOTER_FONT_SIZE);
-		float pageNumberWidth = font.getWidth(pageNumber, HEADER_FOOTER_FONT_SIZE);
-		pdfCanvas.beginText()
-				.setFontAndSize(font, HEADER_FOOTER_FONT_SIZE)
-				.moveTo((width - titleWidth) / 2, top - PAGE_MARGIN + HEADER_FOOTER_FONT_SIZE)
-				.showText(title)
-				.moveTo((width - pageNumberWidth) / 2, bottom + PAGE_MARGIN - HEADER_FOOTER_FONT_SIZE)
-				.showText(pageNumber)
-				.endText();
-		pdfCanvas.release();
-	}
+    private void addDocumentHeader(PdfDocumentInfo pdfDocumentInfo) {
+        pdfDocumentInfo.addCreationDate();
+        pdfDocumentInfo.setCreator(Alltime.AUTHOR);
+        pdfDocumentInfo.setAuthor(Alltime.AUTHOR);
+        pdfDocumentInfo.setTitle(Alltime.TITLE);
+        pdfDocumentInfo.setSubject(Alltime.TITLE);
+    }
+
+    private void addHeaderAndFooter(PdfDocumentEvent event, PdfFont font, String title) {
+        PdfDocument pdfDocument = event.getDocument();
+        PdfPage page = event.getPage();
+
+        PdfCanvas pdfCanvas = new PdfCanvas(page.getLastContentStream(), page.getResources(), pdfDocument);
+        String pageNumber = String.format(PAGE_NUMBER, pdfDocument.getPageNumber(page));
+        Rectangle pageSize = page.getPageSize();
+        addHeaderAndFooter(pdfCanvas, pageSize, font, title, pageNumber);
+    }
+
+    private void addHeaderAndFooter(PdfCanvas pdfCanvas, Rectangle pageSize, PdfFont font, String title, String pageNumber) {
+        float y = pageSize.getY();
+        float width = pageSize.getWidth();
+        float height = pageSize.getHeight();
+        float titleWidth = font.getWidth(title, HEADER_FOOTER_FONT_SIZE);
+        float pageNumberWidth = font.getWidth(pageNumber, HEADER_FOOTER_FONT_SIZE);
+        pdfCanvas.beginText()
+                .setFontAndSize(font, HEADER_FOOTER_FONT_SIZE)
+                .moveText((width - titleWidth) / 2, height - PAGE_MARGIN + HEADER_FOOTER_FONT_SIZE)
+                .showText(title)
+                .endText();
+        pdfCanvas.beginText()
+                .setFontAndSize(font, HEADER_FOOTER_FONT_SIZE)
+                .moveText((width - pageNumberWidth) / 2, y + PAGE_MARGIN - HEADER_FOOTER_FONT_SIZE)
+                .showText(pageNumber)
+                .endText();
+        pdfCanvas.release();
+    }
 
 }
