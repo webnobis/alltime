@@ -17,11 +17,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -44,22 +42,34 @@ public class EntryStoreTest {
 
 	private static final LocalDate DAY5 = DAY3.plusMonths(2).plusDays(1);
 
-	private static final String LAST_DESCRIPTION_1 = "test 1 2 3";
+	private static final String LAST_DESCRIPTION_1 = "zuletzt test 1 2 3";
 
-	private static final String LAST_DESCRIPTION_2 = "erster test 1 2 3";
+	private static final String LAST_DESCRIPTION_2 = "nach erster test 1 2 3";
+
+	private static final String LAST_DESCRIPTION_3 = "nach zweiter test 1 2 3";
+
+	private static final String LAST_DESCRIPTION_4 = "erster test 1 2 3";
 
 	private static final int MAX_DAY_COUNT = 4;
 
 	private static final int MAX_DESCRIPTION_COUNT = 3;
 
-	private static final Map<String, Duration> items = Stream.of(LAST_DESCRIPTION_1, LAST_DESCRIPTION_2)
-			.collect(Collectors.toMap(s -> s, unused -> Duration.ZERO));
+	private static final List<String> descriptions = Arrays.asList(LAST_DESCRIPTION_1, LAST_DESCRIPTION_2, LAST_DESCRIPTION_3, LAST_DESCRIPTION_4);
+
+	private static final List<LocalDate> days = Arrays.asList(DAY5, DAY4, DAY3, DAY2);
 
 	private static final Supplier<LocalDate> now = () -> DAY5;
 
 	private static final Function<String, LocalDate> dayDeserializer = text -> LocalDate.parse(text);
 
-	private static final Function<String, Entry> entryDeserializer = text -> new DayEntry(dayDeserializer.apply(text), EntryType.UR, items);
+	private static final Function<String, Entry> entryDeserializer = text -> {
+		LocalDate day = dayDeserializer.apply(text);
+		return new DayEntry(day, EntryType.UR, Optional.of(days.indexOf(day))
+				.filter(i -> i > -1)
+				.map(descriptions::get)
+				.map(d -> Collections.singletonMap(d, Duration.ZERO))
+				.orElse(Collections.emptyMap()));
+	};
 
 	private static final Function<Entry, String> entrySerializer = entry -> entry.getDay().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
@@ -149,7 +159,7 @@ public class EntryStoreTest {
 
 	@Test
 	public void testGetLastDescriptions() throws IOException {
-		List<String> expected = Arrays.asList(LAST_DESCRIPTION_2, LAST_DESCRIPTION_1);
+		List<String> expected = Arrays.asList(LAST_DESCRIPTION_4, LAST_DESCRIPTION_2, LAST_DESCRIPTION_3);
 		assertEquals(expected, store.getLastDescriptions());
 	}
 
