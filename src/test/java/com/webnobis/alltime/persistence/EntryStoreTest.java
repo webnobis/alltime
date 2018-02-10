@@ -54,7 +54,7 @@ public class EntryStoreTest {
 
 	private static final int MAX_DESCRIPTION_COUNT = 3;
 
-	private static final List<String> descriptions = Arrays.asList(LAST_DESCRIPTION_1, LAST_DESCRIPTION_2, LAST_DESCRIPTION_3, LAST_DESCRIPTION_4);
+	private static final List<String> descriptions = Arrays.asList(LAST_DESCRIPTION_2, LAST_DESCRIPTION_4, LAST_DESCRIPTION_3, LAST_DESCRIPTION_1);
 
 	private static final List<LocalDate> days = Arrays.asList(DAY5, DAY4, DAY3, DAY2);
 
