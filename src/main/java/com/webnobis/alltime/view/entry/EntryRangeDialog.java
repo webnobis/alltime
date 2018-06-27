@@ -1,7 +1,9 @@
 package com.webnobis.alltime.view.entry;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -37,19 +39,19 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 
 	private static final int PREF_WIDTH = 90;
 	
-	private static final Set<EntryType> SELECTABLE_TYPES = EnumSet.of(EntryType.WE, EntryType.UR, EntryType.KR, EntryType.SM, EntryType.SO);
+	private static final Set<EntryType> SELECTABLE_TYPES = EnumSet.of(EntryType.WE, EntryType.UR, EntryType.KR, EntryType.SM, EntryType.FT, EntryType.SO);
 
 	private final BookingService bookingService;
 
-	private final ValueField<Duration> timeAssetsSum;
+	final ValueField<Duration> timeAssetsSum;
 
-	private final ValueField<LocalDate> fromDay;
+	final ValueField<LocalDate> fromDay;
 
-	private final ValueField<LocalDate> untilDay;
+	final ValueField<LocalDate> untilDay;
 
-	private final ComboBox<EntryType> type;
+	final ComboBox<EntryType> type;
 
-	private final ListView<Item> items;
+	final ListView<Item> items;
 
 	public EntryRangeDialog(BookingService bookingService,
 			int itemDurationRasterMinutes, LocalDate fromDay, LocalDate untilDay,
@@ -87,7 +89,7 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 		type.setValue(firstEntry.map(Entry::getType)
 				.filter(t -> type.getItems().stream()
 						.anyMatch(t::equals))
-				.orElse(EntryType.UR));
+				.orElse(getDefaultType(fromDay, untilDay)));
 
 		GridPane pane = new GridPane();
 		pane.add(new Label("Zeitguthaben:"), 0, 0);
@@ -115,7 +117,7 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 		super.setResultConverter(this::get);
 	}
 
-	private List<Entry> get(ButtonType button) {
+	List<Entry> get(ButtonType button) {
 		if (Optional.ofNullable(button)
 				.filter(ButtonType.APPLY::equals)
 				.isPresent()) {
@@ -125,6 +127,17 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 			return bookingService.book(fromDay.getValue(), untilDay.getValue(), type.getValue(), items);
 		}
 		return null;
+	}
+	
+	private static EntryType getDefaultType(LocalDate fromDay, LocalDate untilDay) {
+		if (fromDay != null && untilDay != null) {
+			if (Period.between(fromDay, untilDay).getDays() < 3) {
+				if (DayOfWeek.SATURDAY.equals(fromDay.getDayOfWeek()) && DayOfWeek.SUNDAY.equals(untilDay.getDayOfWeek())) {
+					return EntryType.WE;
+				}
+			}
+		}
+		return EntryType.UR;
 	}
 
 }
