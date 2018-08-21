@@ -50,6 +50,7 @@ public class AZEntry extends AbstractEntry implements Entry {
 		return Optional.ofNullable(start)
 				.flatMap(startTime -> Optional.ofNullable(end)
 						.map(endTime -> Duration.between(startTime, endTime)))
+				.map(realTime -> (realTime.isNegative())? realTime.plusDays(1L): realTime)
 				.orElse(Duration.ZERO);
 	}
 
