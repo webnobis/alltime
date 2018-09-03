@@ -1,6 +1,5 @@
 package com.webnobis.alltime.view;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
@@ -38,207 +37,211 @@ import javafx.scene.layout.GridPane;
 
 public class AlltimeDialog extends Dialog<Void> {
 
-    private static final int PREF_WIDTH = 120;
+	private static final int PREF_WIDTH = 120;
 
-    private static final String DAYS_LABEL = "Verfügbare Tage:";
+	private static final String DAYS_LABEL = "Verfügbare Tage:";
 
-    private static final String FROM_DAYS_LABEL = "Zeitraum von:";
+	private static final String FROM_DAYS_LABEL = "Zeitraum von:";
 
-    private static final String STORED = "%s (%s) gespeichert";
+	private static final String STORED = "%s (%s) gespeichert";
 
-    private static final String RANGE_STORED = "%dx %s (%s-%s) gespeichert";
+	private static final String RANGE_STORED = "%dx %s (%s-%s) gespeichert";
 
-    private static final String MONTH_EXPORTED = "Monat %s exportiert. Anzahl der Einträge: %d";
+	private static final String MONTH_EXPORTED = "Monat %s exportiert. Anzahl der Einträge: %d";
 
-    private static final Comparator<LocalDate> dayComparator = (d1, d2) -> d1.compareTo(d2);
+	private static final Comparator<LocalDate> dayComparator = (d1, d2) -> d1.compareTo(d2);
 
-    private final LocalDate now;
+	private final LocalDate now;
 
-    private final FindService findService;
+	private final FindService findService;
 
-    private final CalculationService calculationService;
+	private final CalculationService calculationService;
 
-    private final BookingService bookingService;
-    
-    private final EntryExport entryExport;
+	private final BookingService bookingService;
 
-    private final TimeTransformer timeTransformer;
+	private final EntryExport entryExport;
 
-    private final int itemDurationRasterMinutes;
+	private final TimeTransformer timeTransformer;
 
-    private final int maxCountOfRangeBookingDays;
+	private final int itemDurationRasterMinutes;
 
-    private final Label fromDaysLabel;
+	private final int maxCountOfRangeBookingDays;
 
-    private final ComboBox<LocalDate> fromDays;
+	private final Label fromDaysLabel;
 
-    private final CheckBox onlyUnfinishedDays;
+	private final ComboBox<LocalDate> fromDays;
 
-    private final Label untilDaysLabel;
+	private final CheckBox onlyUnfinishedDays;
 
-    private final ComboBox<LocalDate> untilDays;
+	private final Label untilDaysLabel;
 
-    private final CheckBox bookRange;
+	private final ComboBox<LocalDate> untilDays;
 
-    private final TextField stored;
+	private final CheckBox bookRange;
 
-    public AlltimeDialog(LocalDate now, FindService findService, CalculationService calculationService,
-            BookingService bookingService, EntryExport entryExport, TimeTransformer timeTransformer,
-            int itemDurationRasterMinutes, int maxCountOfRangeBookingDays) {
-        super();
-        this.now = now;
-        this.findService = findService;
-        this.calculationService = calculationService;
-        this.bookingService = bookingService;
-        this.entryExport = entryExport;
-        this.timeTransformer = timeTransformer;
-        this.itemDurationRasterMinutes = itemDurationRasterMinutes;
-        this.maxCountOfRangeBookingDays = maxCountOfRangeBookingDays;
+	private final TextField stored;
 
-        onlyUnfinishedDays = new CheckBox("nur unvollständige Tage");
-        onlyUnfinishedDays.setOnAction(this::updateDays);
+	public AlltimeDialog(LocalDate now, FindService findService, CalculationService calculationService,
+			BookingService bookingService, EntryExport entryExport, TimeTransformer timeTransformer,
+			int itemDurationRasterMinutes, int maxCountOfRangeBookingDays) {
+		super();
+		this.now = now;
+		this.findService = findService;
+		this.calculationService = calculationService;
+		this.bookingService = bookingService;
+		this.entryExport = entryExport;
+		this.timeTransformer = timeTransformer;
+		this.itemDurationRasterMinutes = itemDurationRasterMinutes;
+		this.maxCountOfRangeBookingDays = maxCountOfRangeBookingDays;
 
-        fromDaysLabel = new Label(DAYS_LABEL);
-        fromDaysLabel.setPrefWidth(PREF_WIDTH);
+		onlyUnfinishedDays = new CheckBox("nur unvollständige Tage");
+		onlyUnfinishedDays.setOnAction(this::updateDays);
 
-        ObservableList<LocalDate> daysUntilNow = getDaysUntilNow();
-        fromDays = new ComboBox<>(daysUntilNow);
-        fromDays.setConverter(new DayStringConverter());
-        fromDays.setValue(now);
-        fromDays.setOnAction(this::showEntryDialog);
+		fromDaysLabel = new Label(DAYS_LABEL);
+		fromDaysLabel.setPrefWidth(PREF_WIDTH);
 
-        untilDaysLabel = new Label("bis:");
-        untilDaysLabel.setPrefWidth(PREF_WIDTH);
-        untilDaysLabel.setDisable(true);
+		ObservableList<LocalDate> daysUntilNow = getDaysUntilNow();
+		fromDays = new ComboBox<>(daysUntilNow);
+		fromDays.setConverter(new DayStringConverter());
+		fromDays.setValue(now);
+		fromDays.setOnAction(this::showEntryDialog);
 
-        untilDays = new ComboBox<>(getDaysAfterFirstDay(daysUntilNow));
-        untilDays.setConverter(new DayStringConverter());
-        untilDays.setOnAction(this::showEntryRangeDialog);
-        untilDays.setDisable(true);
+		untilDaysLabel = new Label("bis:");
+		untilDaysLabel.setPrefWidth(PREF_WIDTH);
+		untilDaysLabel.setDisable(true);
 
-        bookRange = new CheckBox("ganzen Zeitraum buchen");
-        bookRange.setOnAction(this::switchDialog);
+		untilDays = new ComboBox<>(daysUntilNow);
+		untilDays.setConverter(new DayStringConverter());
+		untilDays.setOnAction(this::showEntryRangeDialog);
+		untilDays.setDisable(true);
 
-        stored = new TextField();
-        stored.setPrefWidth(300);
-        stored.setAlignment(Pos.CENTER);
-        stored.setStyle(ViewStyle.READONLY);
+		bookRange = new CheckBox("ganzen Zeitraum buchen");
+		bookRange.setOnAction(this::switchDialog);
 
-        GridPane pane = new GridPane();
-        pane.setHgap(10);
-        pane.setVgap(5);
-        pane.add(fromDaysLabel, 0, 0);
-        pane.add(fromDays, 1, 0);
-        pane.add(onlyUnfinishedDays, 2, 0);
-        pane.add(untilDaysLabel, 0, 1);
-        pane.add(untilDays, 1, 1);
-        pane.add(bookRange, 2, 1);
-        pane.add(stored, 0, 2, 3, 1);
+		stored = new TextField();
+		stored.setPrefWidth(300);
+		stored.setAlignment(Pos.CENTER);
+		stored.setStyle(ViewStyle.READONLY);
 
-        DialogPane dialogPane = super.getDialogPane();
-        ExportMonthButton exportMonthButton = new ExportMonthButton(dialogPane, this::exportMonth);
-        YearMonth month = YearMonth.from(now);
-        exportMonthButton.addButton(month.minusMonths(1));
-        exportMonthButton.addButton(month);
-        dialogPane.getButtonTypes().add(ButtonType.CLOSE);
-        dialogPane.setContent(pane);
-        dialogPane.setHeaderText("Alltime");
+		GridPane pane = new GridPane();
+		pane.setHgap(10);
+		pane.setVgap(5);
+		pane.add(fromDaysLabel, 0, 0);
+		pane.add(fromDays, 1, 0);
+		pane.add(onlyUnfinishedDays, 2, 0);
+		pane.add(untilDaysLabel, 0, 1);
+		pane.add(untilDays, 1, 1);
+		pane.add(bookRange, 2, 1);
+		pane.add(stored, 0, 2, 3, 1);
 
-        super.setTitle(Alltime.TITLE);
-        super.setResultConverter(button -> null);
+		DialogPane dialogPane = super.getDialogPane();
+		ExportMonthButton exportMonthButton = new ExportMonthButton(dialogPane, this::exportMonth);
+		YearMonth month = YearMonth.from(now);
+		exportMonthButton.addButton(month.minusMonths(1));
+		exportMonthButton.addButton(month);
+		dialogPane.getButtonTypes().add(ButtonType.CLOSE);
+		dialogPane.setContent(pane);
+		dialogPane.setHeaderText("Alltime");
 
-        showEntryDialog(now);
-    }
+		super.setTitle(Alltime.TITLE);
+		super.setResultConverter(button -> null);
 
-    private ObservableList<LocalDate> getDaysUntilNow() {
-        return FXCollections.observableArrayList(findService.getLastDays().stream().min(dayComparator)
-                .map(minDay -> ChronoUnit.DAYS.between(minDay, now))
-                .map(count -> LongStream.rangeClosed(0, count)
-                        .mapToObj(now::minusDays)
-                        .filter(day -> !onlyUnfinishedDays.isSelected() || !isFinish(day))
-                        .collect(Collectors.toList()))
-                .orElse(Collections.singletonList(now)));
-    }
+		showEntryDialog(now);
+	}
 
-    private ObservableList<LocalDate> getDaysAfterFirstDay(List<LocalDate> daysUntilNow) {
-        long firstRangeBookingDay = daysUntilNow.stream()
-                .map(day -> Duration.between(now.atStartOfDay(), day.atStartOfDay()))
-                .map(Duration::toDays)
-                .sorted()
-                .findFirst()
-                .orElse(0L);
-        return FXCollections.observableArrayList(LongStream.rangeClosed(firstRangeBookingDay, maxCountOfRangeBookingDays)
-                .mapToObj(now::plusDays)
-                .collect(Collectors.toList()));
-    }
+	private ObservableList<LocalDate> getDaysUntilNow() {
+		return FXCollections.observableArrayList(findService.getLastDays().stream().min(dayComparator)
+				.map(minDay -> ChronoUnit.DAYS.between(minDay, now))
+				.map(count -> LongStream.rangeClosed(0, count)
+						.mapToObj(now::minusDays)
+						.filter(day -> !onlyUnfinishedDays.isSelected() || !isFinish(day))
+						.collect(Collectors.toList()))
+				.orElse(Collections.singletonList(now)));
+	}
 
-    private boolean isFinish(LocalDate day) {
-        return Optional.ofNullable(findService.getEntry(day))
-                .map(entry -> !EntryType.AZ.equals(entry.getType()) || entry.getEnd() != null)
-                .orElse(false);
-    }
+	private ObservableList<LocalDate> getDaysAfterFirstDay(LocalDate firstDay) {
+		return FXCollections.observableArrayList(LongStream.rangeClosed(1, maxCountOfRangeBookingDays)
+				.mapToObj(firstDay::plusDays)
+				.collect(Collectors.toList()));
+	}
 
-    private void updateDays(ActionEvent event) {
-        fromDays.setItems(getDaysUntilNow());
-    }
+	private boolean isFinish(LocalDate day) {
+		return Optional.ofNullable(findService.getEntry(day))
+				.map(entry -> !EntryType.AZ.equals(entry.getType()) || entry.getEnd() != null)
+				.orElse(false);
+	}
 
-    private void showEntryDialog(ActionEvent event) {
-        event.consume();
+	private void updateDays(ActionEvent event) {
+		fromDays.setItems(getDaysUntilNow());
+	}
 
-        if (!bookRange.isSelected()) {
-            showEntryDialog(fromDays.getValue());
-        }
-    }
+	private void updateUntilDays() {
+		untilDays.setItems(getDaysAfterFirstDay(fromDays.getValue()));
+	}
 
-    private void showEntryDialog(LocalDate selectedDay) {
-        stored.setVisible(false);
-        Optional.ofNullable(selectedDay)
-                .ifPresent(day -> {
-                    Dialog<Entry> entryDialog = new EntryDialog(calculationService, bookingService, timeTransformer, itemDurationRasterMinutes,
-                            day, findService.getTimeAssetsSumBefore(day), findService.getLastDescriptions(), Optional.ofNullable(findService.getEntry(day)));
-                    entryDialog.showAndWait()
-                            .ifPresent(entry -> {
-                                stored.setText(String.format(STORED, entry.getType().name(), DayTransformer.toText(day)));
-                                stored.setVisible(true);
-                            });
-                });
-    }
+	private void showEntryDialog(ActionEvent event) {
+		event.consume();
 
-    private void switchDialog(ActionEvent event) {
-        event.consume();
+		if (bookRange.isSelected()) {
+			updateUntilDays();
+		} else {
+			showEntryDialog(fromDays.getValue());
+		}
+	}
 
-        fromDaysLabel.setText((bookRange.isSelected()) ? FROM_DAYS_LABEL : DAYS_LABEL);
-        untilDaysLabel.setDisable(!bookRange.isSelected());
-        untilDays.setDisable(!bookRange.isSelected());
-    }
+	private void showEntryDialog(LocalDate selectedDay) {
+		stored.setVisible(false);
+		Optional.ofNullable(selectedDay)
+				.ifPresent(day -> {
+					Dialog<Entry> entryDialog = new EntryDialog(calculationService, bookingService, timeTransformer, itemDurationRasterMinutes,
+							day, findService.getTimeAssetsSumBefore(day), findService.getLastDescriptions(), Optional.ofNullable(findService.getEntry(day)));
+					entryDialog.showAndWait()
+							.ifPresent(entry -> {
+								stored.setText(String.format(STORED, entry.getType().name(), DayTransformer.toText(day)));
+								stored.setVisible(true);
+							});
+				});
+	}
 
-    private void showEntryRangeDialog(ActionEvent event) {
-        event.consume();
+	private void switchDialog(ActionEvent event) {
+		event.consume();
 
-        showEntryRangeDialog(fromDays.getValue(), untilDays.getValue());
-    }
+		fromDaysLabel.setText((bookRange.isSelected()) ? FROM_DAYS_LABEL : DAYS_LABEL);
+		untilDaysLabel.setDisable(!bookRange.isSelected());
+		untilDays.setDisable(!bookRange.isSelected());
+		
+		if (bookRange.isSelected()) {
+			updateUntilDays();
+		}
+	}
 
-    private void showEntryRangeDialog(LocalDate selectedFromDay, LocalDate selectedUntilDay) {
-        stored.setVisible(false);
-        Optional.ofNullable(selectedFromDay)
-                .ifPresent(fromDay -> Optional.ofNullable(selectedUntilDay)
-                        .filter(fromDay::isBefore)
-                        .ifPresent(untilDay -> {
-                            Dialog<List<Entry>> entryRangeDialog = new EntryRangeDialog(bookingService, itemDurationRasterMinutes,
-                                    fromDay, untilDay, findService.getTimeAssetsSumBefore(fromDay), findService.getLastDescriptions(), Optional.ofNullable(findService.getEntry(fromDay)));
-                            entryRangeDialog.showAndWait()
-                                    .ifPresent(entries -> {
-                                        stored.setText(String.format(RANGE_STORED, entries.size(), entries.get(0).getType().name(), DayTransformer.toText(fromDay),
-                                                DayTransformer.toText(untilDay)));
-                                        stored.setVisible(true);
-                                    });
-                        }));
-    }
-    
-    private void exportMonth(YearMonth month, String monthText) {
-    	List<Entry> entries = entryExport.exportMonth(month);
-    	stored.setText(String.format(MONTH_EXPORTED, monthText, entries.size()));
-    	stored.setVisible(true);
-    }
+	private void showEntryRangeDialog(ActionEvent event) {
+		event.consume();
+
+		showEntryRangeDialog(fromDays.getValue(), untilDays.getValue());
+	}
+
+	private void showEntryRangeDialog(LocalDate selectedFromDay, LocalDate selectedUntilDay) {
+		stored.setVisible(false);
+		Optional.ofNullable(selectedFromDay)
+				.ifPresent(fromDay -> Optional.ofNullable(selectedUntilDay)
+						.filter(fromDay::isBefore)
+						.ifPresent(untilDay -> {
+							Dialog<List<Entry>> entryRangeDialog = new EntryRangeDialog(bookingService, itemDurationRasterMinutes,
+									fromDay, untilDay, findService.getTimeAssetsSumBefore(fromDay), findService.getLastDescriptions(), Optional.ofNullable(findService.getEntry(fromDay)));
+							entryRangeDialog.showAndWait()
+									.ifPresent(entries -> {
+										stored.setText(String.format(RANGE_STORED, entries.size(), entries.get(0).getType().name(), DayTransformer.toText(fromDay),
+												DayTransformer.toText(untilDay)));
+										stored.setVisible(true);
+									});
+						}));
+	}
+
+	private void exportMonth(YearMonth month, String monthText) {
+		List<Entry> entries = entryExport.exportMonth(month);
+		stored.setText(String.format(MONTH_EXPORTED, monthText, entries.size()));
+		stored.setVisible(true);
+	}
 
 }
