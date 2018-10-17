@@ -23,7 +23,7 @@ import com.webnobis.alltime.model.TimeAssetsSum;
 
 public class FileStore implements EntryStore {
 
-	static final TimeAssetsSum ALTERNATIVE_START_IF_MISSING = new TimeAssetsSum(LocalDate.of(0, 1, 1), Duration.ZERO);
+	private static final Function<LocalDate, TimeAssetsSum> alternateStartIfMissingFunction = day -> new TimeAssetsSum(day.minusDays(1), Duration.ZERO);
 
 	private static final String MONTH_FORMAT = "yyyyMM";
 
@@ -135,7 +135,7 @@ public class FileStore implements EntryStore {
 	public TimeAssetsSum getTimeAssetsSumBefore(LocalDate day) {
 		return getTimeAssetsSumsBeforeStream(Objects.requireNonNull(day, "day is null"))
 				.findFirst()
-				.orElse(ALTERNATIVE_START_IF_MISSING);
+				.orElseGet(() -> alternateStartIfMissingFunction.apply(day));
 	}
 
 	private Stream<TimeAssetsSum> getTimeAssetsSumsBeforeStream(LocalDate day) {
@@ -151,8 +151,15 @@ public class FileStore implements EntryStore {
 
 	private void updateTimeAssetsSums(Entry entry) {
 		LocalDate day = entry.getDay();
-		List<String> lines = Stream.concat(getTimeAssetsSumsBeforeStream(day),
-				Stream.of(new TimeAssetsSum(day, getTimeAssetsSumBefore(day).getTimeAssetsSum().plus(entry.getTimeAssets()))))
+		TimeAssetsSum lastSum = getTimeAssetsSumBefore(day);
+		long limit = Duration.between(lastSum.getDay().atStartOfDay(), day.atStartOfDay()).toDays();
+		List<String> lines = Stream.concat(getTimeAssetsSumsBeforeStream(day), Stream.concat(
+						Stream.iterate(lastSum.getDay(), d -> d.plusDays(1))
+							.limit(limit)
+							.map(d -> new TimeAssetsSum(d, lastSum.getTimeAssetsSum())),
+						Stream.of(new TimeAssetsSum(day, lastSum.getTimeAssetsSum().plus(entry.getTimeAssets())))))
+				.distinct()
+				.sorted(timeAssetsSumReverseComparator)
 				.map(timeAssetsSumSerializer::apply)
 				.collect(Collectors.toList());
 

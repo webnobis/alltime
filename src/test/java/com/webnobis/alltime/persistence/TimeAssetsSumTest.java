@@ -26,6 +26,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.webnobis.alltime.model.AZEntry;
+import com.webnobis.alltime.model.DayEntry;
+import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.model.GTEntry;
 import com.webnobis.alltime.model.TimeAssetsSum;
 
@@ -33,11 +35,11 @@ public class TimeAssetsSumTest {
 
 	private static final String SPLIT = ";";
 
-	private static final List<LocalDate> days = IntStream.rangeClosed(1, 5)
-			.mapToObj(d -> LocalDate.of(2000, 1, d))
+	private static final List<LocalDate> days = IntStream.rangeClosed(1, 5).mapToObj(d -> LocalDate.of(2000, 1, d))
 			.collect(Collectors.toList());
 
-	private static final Function<TimeAssetsSum, String> timeAssetsSumSerializer = sum -> sum.getDay().format(DateTimeFormatter.ISO_LOCAL_DATE).concat(SPLIT).concat(sum.getTimeAssetsSum().toString());
+	private static final Function<TimeAssetsSum, String> timeAssetsSumSerializer = sum -> sum.getDay()
+			.format(DateTimeFormatter.ISO_LOCAL_DATE).concat(SPLIT).concat(sum.getTimeAssetsSum().toString());
 
 	private static final Function<String, TimeAssetsSum> timeAssetsSumDeserializer = text -> {
 		String[] split = text.split(SPLIT);
@@ -68,7 +70,8 @@ public class TimeAssetsSumTest {
 
 		tmpRoot = Files.createTempDirectory(EntryStoreTest.class.getSimpleName());
 
-		store = new FileStore(tmpRoot, now, 0, 0, text -> null, text -> null, entry -> entry.toString(), timeAssetsSumDeserializer, timeAssetsSumSerializer);
+		store = new FileStore(tmpRoot, now, 0, 0, text -> null, text -> null, entry -> entry.toString(),
+				timeAssetsSumDeserializer, timeAssetsSumSerializer);
 	}
 
 	@After
@@ -107,8 +110,7 @@ public class TimeAssetsSumTest {
 		Duration d4 = Duration.ofMinutes(-45);
 
 		LocalTime startAndEnd = LocalTime.of(10, 10);
-		Stream.of(d1, d2, d3, d4)
-				.map(Duration::negated)
+		Stream.of(d1, d2, d3, d4).map(Duration::negated)
 				.map(d -> new AZEntry(now.get(), startAndEnd, startAndEnd, d, Duration.ZERO, Collections.emptyMap()))
 				.forEach(store::storeEntry);
 
@@ -118,10 +120,25 @@ public class TimeAssetsSumTest {
 
 	@Test
 	public void testGetTimeAssetsSumBeforeOutOfRange() {
-		assertEquals(FileStore.ALTERNATIVE_START_IF_MISSING, store.getTimeAssetsSumBefore(LocalDate.now()));
+		assertEquals(new TimeAssetsSum(LocalDate.now().minusDays(1), Duration.ZERO),
+				store.getTimeAssetsSumBefore(LocalDate.now()));
 
 		LocalDate day = now.get();
 		store.storeEntry(new GTEntry(day, Duration.ofHours(8), Collections.emptyMap()));
-		assertEquals(FileStore.ALTERNATIVE_START_IF_MISSING, store.getTimeAssetsSumBefore(day));
+		assertEquals(new TimeAssetsSum(day.minusDays(1), Duration.ZERO), store.getTimeAssetsSumBefore(day));
+	}
+
+	@Test
+	public void testGetTimeAssetsSumDayBefore() {
+		LocalDate day = LocalDate.of(2018, 10, 17);
+		TimeAssetsSum s1 = new TimeAssetsSum(day.minusDays(32), Duration.ZERO);
+		TimeAssetsSum s2 = new TimeAssetsSum(day.minusMonths(1), Duration.ZERO);
+		TimeAssetsSum s3 = new TimeAssetsSum(day.minusDays(3), Duration.ZERO);
+		TimeAssetsSum s4 = new TimeAssetsSum(day, Duration.ZERO);
+
+		Stream.of(s3, s1, s2, s4).map(s -> new DayEntry(s.getDay(), EntryType.KR, Collections.emptyMap()))
+				.peek(store::storeEntry)
+				.map(DayEntry::getDay)
+				.forEach(d -> assertEquals(d.minusDays(1), store.getTimeAssetsSumBefore(d).getDay()));
 	}
 }
