@@ -12,10 +12,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.itextpdf.kernel.color.Color;
+import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.property.HorizontalAlignment;
 import com.itextpdf.layout.property.UnitValue;
@@ -72,8 +73,8 @@ public class TableHandler {
 	}
 
 	private Cell headerToCell(String text) {
-		return new Cell().setBold().setFont(font).setFontSize(headerFontSize).setBackgroundColor(Color.GRAY, 0.5f)
-				.add(text);
+		return new Cell().setBold().setFont(font).setFontSize(headerFontSize).setBackgroundColor(ColorConstants.GRAY, 0.5f)
+				.add(new Paragraph(text));
 	}
 
 	private void addEntryTableRow(Table table, int row, Entry entry) {
@@ -106,9 +107,9 @@ public class TableHandler {
 
 	private Cell contentToCell(int row, String text) {
 		Cell cell = new Cell().setFont(font).setFontSize(cellFontSize)
-				.add(Optional.ofNullable(text)
-						.orElse(""));
-		return (row % 2 > 0) ? cell.setBackgroundColor(Color.LIGHT_GRAY, 0.5f) : cell;
+				.add(new Paragraph(Optional.ofNullable(text)
+						.orElse("")));
+		return (row % 2 > 0) ? cell.setBackgroundColor(ColorConstants.LIGHT_GRAY, 0.5f) : cell;
 	}
 
 	private String toString(Map<String, Duration> items) {
@@ -128,7 +129,7 @@ public class TableHandler {
 
 		Table table = new Table(TimeAssetsSumTableRow.WEIDTH_WEIGHTS, true);
 		table.setDocument(document);
-		table.setWidthPercent(40f);
+		table.setWidth(new UnitValue(UnitValue.PERCENT, 40f));
 		table.setHorizontalAlignment(HorizontalAlignment.RIGHT);
 
 		addTimeAssetsSumTableRows(table, sumBefore, sumNow);
