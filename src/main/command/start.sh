@@ -1,2 +1,2 @@
 #!/bin/sh
-${java.home}/bin/java -cp lib/*:${project.build.finalName}.${project.packaging} ${project.main.class}
+${java.home}/bin/java  {env.OpenJFX}/lib  -cp lib/*:${project.build.finalName}.${project.packaging} ${project.main.class}
