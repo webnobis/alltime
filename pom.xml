@@ -42,6 +42,7 @@
 
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.0</version>
 				<configuration>
@@ -52,7 +53,7 @@
 					<dependency>
 						<groupId>org.ow2.asm</groupId>
 						<artifactId>asm</artifactId>
-						<version>6.2</version>
+						<version>7.0</version>
 					</dependency>
 				</dependencies>
 			</plugin>
@@ -92,12 +93,12 @@
 						</goals>
 						<configuration>
 							<outputDirectory>${project.build.directory}/modules</outputDirectory>
-							<includeScope>runtime</includeScope>
+							<includeScope>compile</includeScope>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
+			<!--plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.6.0</version>
@@ -112,22 +113,22 @@
 							<executable>jar</executable>
 							<arguments>
 								<argument>
-									--update
+									-.-update
 								</argument>
 								<argument>
-									--file=${project.build.directory}/modules/${project.build.finalName}.jar
+									-.-file=${project.build.directory}/modules/${project.build.finalName}.jar
 								</argument>
 								<argument>
-									--main-class=${project.main.class}
+									-.-main-class=${project.main.class}
 								</argument>
 								<argument>
-									--module-version=${project.version}
+									-.-module-version=${project.version}
 								</argument>
 							</arguments>
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -184,15 +185,26 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-surefire-plugin</artifactId> 
-				<version>2.22.0</version> <configuration -->
-			<!-- Sets the VM argument line used when unit tests are run. -->
-			<!--argLine>${surefireArgLine}</argLine -->
-			<!-- Excludes integration tests when unit tests are run. -->
-			<!--excludes> <exclude>**/IT*.java</exclude> </excludes> <forkCount>0</forkCount> 
-				</configuration> <dependencies> <dependency> <groupId>org.apache.maven.surefire</groupId> 
-				<artifactId>surefire-junit47</artifactId> <version>2.22.0</version> </dependency> 
-				</dependencies> </plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.22.1</version>
+				<configuration>
+					<argLine>
+						--illegal-access=permit
+					</argLine>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.22.1</version>
+				<configuration>
+					<argLine>
+						--illegal-access=permit
+					</argLine>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

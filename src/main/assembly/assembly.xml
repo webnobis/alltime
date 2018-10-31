@@ -8,6 +8,13 @@
 
 	<fileSets>
 		<!-- adds jar package, start files and configuration to the zip package -->
+		<!--fileSet>
+			<directory>/home/steffen/Projekte/open-javafx-sdk-11/lib</directory>
+			<outputDirectory>lib</outputDirectory>
+			<includes>
+				<include>*.jar</include>
+			</includes>
+		</fileSet-->
 		<fileSet>
 			<directory>${project.build.directory}/modules</directory>
 			<outputDirectory>lib</outputDirectory>
