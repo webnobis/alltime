@@ -1,1 +1,1 @@
-${java.home}\bin\java -cp lib\*;${project.build.finalName}.${project.packaging} ${project.main.class}
+${java.home}\bin\java -cp 'lib\*' -p 'module' -m com.webnobis.alltime.Alltime/${project.main.class}

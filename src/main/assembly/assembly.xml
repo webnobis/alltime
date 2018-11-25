@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <assembly>
 	<id>bin</id>
 	<!-- Generates a zip package containing the needed files -->
@@ -7,29 +8,24 @@
 	</formats>
 
 	<fileSets>
-		<!-- adds jar package, start files and configuration to the zip package -->
-		<!--fileSet>
-			<directory>/home/steffen/Projekte/open-javafx-sdk-11/lib</directory>
-			<outputDirectory>lib</outputDirectory>
-			<includes>
-				<include>*.jar</include>
-			</includes>
-		</fileSet-->
 		<fileSet>
 			<directory>${project.build.directory}/modules</directory>
-			<outputDirectory>lib</outputDirectory>
+			<outputDirectory>modules</outputDirectory>
 			<includes>
 				<include>*.jar</include>
 			</includes>
 			<excludes>
-				<exclude>${project.build.finalName}.jar</exclude>
+				<exclude>log4j-api*.jar</exclude>
+				<exclude>log4j-core*.jar</exclude>
 			</excludes>
 		</fileSet>
 		<fileSet>
+			<!-- No modules support only as class path -->
 			<directory>${project.build.directory}/modules</directory>
-			<outputDirectory></outputDirectory>
+			<outputDirectory>lib</outputDirectory>
 			<includes>
-				<include>${project.build.finalName}.jar</include>
+				<include>log4j-api*.jar</include>
+				<include>log4j-core*.jar</include>
 			</includes>
 		</fileSet>
 		<fileSet>
