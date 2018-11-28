@@ -42,3 +42,11 @@ Logausgaben der Anwendung
 #### lib
 
 Externe Libraries, die von der Anwendung benötigt werden
+
+#### modules
+
+Java Module der Anwendung
+
+### Voraussetzung
+
+Java 11
