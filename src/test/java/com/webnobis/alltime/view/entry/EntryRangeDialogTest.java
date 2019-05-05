@@ -12,20 +12,17 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.model.TimeAssetsSum;
-import com.webnobis.alltime.rule.JavaFxInitRule;
-import com.webnobis.alltime.rule.JavaFxRule;
 import com.webnobis.alltime.service.BookingService;
 
 import javafx.scene.control.ButtonType;
 
+@Ignore
 public class EntryRangeDialogTest {
 
 	private static final LocalDate SA = LocalDate.of(2018, 6, 23);
@@ -38,11 +35,11 @@ public class EntryRangeDialogTest {
 
 	private TestBookingService service;
 
-	@ClassRule
-	public static TestRule javaFxInitRule = new JavaFxInitRule();
+//	@ClassRule
+//	public static TestRule javaFxInitRule = new JavaFxInitRule();
 
-	@Rule
-	public TestRule javaFxRule = new JavaFxRule();
+//	@Rule
+//	public TestRule javaFxRule = new JavaFxRule();
 
 	@Before
 	public void setUp() throws Exception {
