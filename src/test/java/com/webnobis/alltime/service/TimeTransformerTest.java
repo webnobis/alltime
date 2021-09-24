@@ -8,8 +8,6 @@ import java.util.function.Supplier;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.webnobis.alltime.service.TimeTransformer;
-
 public class TimeTransformerTest {
 
 	private static final Supplier<LocalTime> NOW = () -> LocalTime.of(4, 51, 14);

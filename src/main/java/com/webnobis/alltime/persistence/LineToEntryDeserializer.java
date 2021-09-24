@@ -1,9 +1,5 @@
 package com.webnobis.alltime.persistence;
 
-import static com.webnobis.alltime.persistence.LineDefinition.ATTRIBUTE_SEPARATOR;
-import static com.webnobis.alltime.persistence.LineDefinition.MISSING_VALUE;
-import static com.webnobis.alltime.persistence.LineDefinition.TIME_FORMAT;
-
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;

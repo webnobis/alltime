@@ -1,6 +1,6 @@
 package com.webnobis.alltime.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.time.Duration;
 import java.time.LocalDate;
