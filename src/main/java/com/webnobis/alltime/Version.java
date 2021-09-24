@@ -1,28 +1,42 @@
 package com.webnobis.alltime;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
-public enum Version {
-
-	VERSION;
+/**
+ * Version
+ * 
+ * @author steffen
+ *
+ */
+public abstract class Version {
 
 	private static final String VERSION_FILE = "version.properties";
 
-	private final String version;
+	private static final AtomicReference<String> versionRef = new AtomicReference<>();
 
 	private Version() {
-		try (BufferedReader in = new BufferedReader(new InputStreamReader(ClassLoader.getSystemResourceAsStream(VERSION_FILE)))) {
-			version = (in.ready()) ? in.readLine() : "unknown";
+	}
+
+	private static String readVersion() {
+		try (BufferedInputStream in = new BufferedInputStream(ClassLoader.getSystemResourceAsStream(VERSION_FILE))) {
+			return new String(in.readAllBytes(), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
 	}
 
+	/**
+	 * Reads the version from 'version.properties'
+	 * 
+	 * @return version
+	 */
 	public static String getVersion() {
-		return VERSION.version;
+		return versionRef.updateAndGet(version -> Optional.ofNullable(version).orElseGet(Version::readVersion));
 	}
 
 }

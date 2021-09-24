@@ -26,6 +26,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -33,7 +34,10 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
 
 public class AlltimeDialog extends Dialog<Void> {
 
@@ -141,11 +145,13 @@ public class AlltimeDialog extends Dialog<Void> {
 		exportMonthButton.addButton(month);
 		dialogPane.getButtonTypes().add(ButtonType.CLOSE);
 		dialogPane.setContent(pane);
-		dialogPane.setHeaderText("Alltime");
+		dialogPane.setHeaderText(Alltime.class.getSimpleName());
+		Stage stage = (Stage)dialogPane.getScene().getWindow();
+		stage.getIcons().add(new Image(ClassLoader.getSystemResourceAsStream("time.gif")));
 
 		super.setTitle(Alltime.TITLE);
 		super.setResultConverter(button -> null);
-
+		
 		showEntryDialog(now);
 	}
 
