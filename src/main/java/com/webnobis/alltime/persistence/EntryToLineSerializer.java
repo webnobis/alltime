@@ -1,5 +1,14 @@
 package com.webnobis.alltime.persistence;
 
+import static com.webnobis.alltime.persistence.LineDefinition.A;
+import static com.webnobis.alltime.persistence.LineDefinition.ATTRIBUTE_SEPARATOR;
+import static com.webnobis.alltime.persistence.LineDefinition.DAY_FORMAT;
+import static com.webnobis.alltime.persistence.LineDefinition.E;
+import static com.webnobis.alltime.persistence.LineDefinition.I;
+import static com.webnobis.alltime.persistence.LineDefinition.MISSING_VALUE;
+import static com.webnobis.alltime.persistence.LineDefinition.R;
+import static com.webnobis.alltime.persistence.LineDefinition.TIME_FORMAT;
+
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;

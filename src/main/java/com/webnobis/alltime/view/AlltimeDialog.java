@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
-import com.webnobis.alltime.Alltime;
+import com.webnobis.alltime.config.Release;
 import com.webnobis.alltime.export.EntryExport;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
@@ -143,36 +143,32 @@ public class AlltimeDialog extends Dialog<Void> {
 		exportMonthButton.addButton(month);
 		dialogPane.getButtonTypes().add(ButtonType.CLOSE);
 		dialogPane.setContent(pane);
-		dialogPane.setHeaderText(Alltime.class.getSimpleName());
-		Stage stage = (Stage)dialogPane.getScene().getWindow();
+		dialogPane.setHeaderText(Release.HEADER.getValue());
+		Stage stage = (Stage) dialogPane.getScene().getWindow();
 		stage.getIcons().add(new Image(ClassLoader.getSystemResourceAsStream("time.gif")));
 
-		super.setTitle(Alltime.TITLE);
+		super.setTitle(Release.TITLE.getValue());
 		super.setResultConverter(button -> null);
-		
+
 		showEntryDialog(now);
 	}
 
 	private ObservableList<LocalDate> getDaysUntilNow() {
 		return FXCollections.observableArrayList(findService.getLastDays().stream().min(dayComparator)
 				.map(minDay -> ChronoUnit.DAYS.between(minDay, now))
-				.map(count -> LongStream.rangeClosed(0, count)
-						.mapToObj(now::minusDays)
-						.filter(day -> !onlyUnfinishedDays.isSelected() || !isFinish(day))
-						.collect(Collectors.toList()))
+				.map(count -> LongStream.rangeClosed(0, count).mapToObj(now::minusDays)
+						.filter(day -> !onlyUnfinishedDays.isSelected() || !isFinish(day)).collect(Collectors.toList()))
 				.orElse(Collections.singletonList(now)));
 	}
 
 	private ObservableList<LocalDate> getDaysAfterFirstDay(LocalDate firstDay) {
 		return FXCollections.observableArrayList(LongStream.rangeClosed(1, maxCountOfRangeBookingDays)
-				.mapToObj(firstDay::plusDays)
-				.collect(Collectors.toList()));
+				.mapToObj(firstDay::plusDays).collect(Collectors.toList()));
 	}
 
 	private boolean isFinish(LocalDate day) {
 		return Optional.ofNullable(findService.getEntry(day))
-				.map(entry -> !EntryType.AZ.equals(entry.getType()) || entry.getEnd() != null)
-				.orElse(false);
+				.map(entry -> !EntryType.AZ.equals(entry.getType()) || entry.getEnd() != null).orElse(false);
 	}
 
 	private void updateDays(ActionEvent event) {
@@ -195,16 +191,15 @@ public class AlltimeDialog extends Dialog<Void> {
 
 	private void showEntryDialog(LocalDate selectedDay) {
 		stored.setVisible(false);
-		Optional.ofNullable(selectedDay)
-				.ifPresent(day -> {
-					Dialog<Entry> entryDialog = new EntryDialog(calculationService, bookingService, timeTransformer, itemDurationRasterMinutes,
-							day, findService.getTimeAssetsSumBefore(day), findService.getLastDescriptions(), Optional.ofNullable(findService.getEntry(day)));
-					entryDialog.showAndWait()
-							.ifPresent(entry -> {
-								stored.setText(String.format(STORED, entry.getType().name(), DayTransformer.toText(day)));
-								stored.setVisible(true);
-							});
-				});
+		Optional.ofNullable(selectedDay).ifPresent(day -> {
+			Dialog<Entry> entryDialog = new EntryDialog(calculationService, bookingService, timeTransformer,
+					itemDurationRasterMinutes, day, findService.getTimeAssetsSumBefore(day),
+					findService.getLastDescriptions(), Optional.ofNullable(findService.getEntry(day)));
+			entryDialog.showAndWait().ifPresent(entry -> {
+				stored.setText(String.format(STORED, entry.getType().name(), DayTransformer.toText(day)));
+				stored.setVisible(true);
+			});
+		});
 	}
 
 	private void switchDialog(ActionEvent event) {
@@ -213,7 +208,7 @@ public class AlltimeDialog extends Dialog<Void> {
 		fromDaysLabel.setText((bookRange.isSelected()) ? FROM_DAYS_LABEL : DAYS_LABEL);
 		untilDaysLabel.setDisable(!bookRange.isSelected());
 		untilDays.setDisable(!bookRange.isSelected());
-		
+
 		if (bookRange.isSelected()) {
 			updateUntilDays();
 		}
@@ -227,19 +222,17 @@ public class AlltimeDialog extends Dialog<Void> {
 
 	private void showEntryRangeDialog(LocalDate selectedFromDay, LocalDate selectedUntilDay) {
 		stored.setVisible(false);
-		Optional.ofNullable(selectedFromDay)
-				.ifPresent(fromDay -> Optional.ofNullable(selectedUntilDay)
-						.filter(fromDay::isBefore)
-						.ifPresent(untilDay -> {
-							Dialog<List<Entry>> entryRangeDialog = new EntryRangeDialog(bookingService, itemDurationRasterMinutes,
-									fromDay, untilDay, findService.getTimeAssetsSumBefore(fromDay), findService.getLastDescriptions(), Optional.ofNullable(findService.getEntry(fromDay)));
-							entryRangeDialog.showAndWait()
-									.ifPresent(entries -> {
-										stored.setText(String.format(RANGE_STORED, entries.size(), entries.get(0).getType().name(), DayTransformer.toText(fromDay),
-												DayTransformer.toText(untilDay)));
-										stored.setVisible(true);
-									});
-						}));
+		Optional.ofNullable(selectedFromDay).ifPresent(
+				fromDay -> Optional.ofNullable(selectedUntilDay).filter(fromDay::isBefore).ifPresent(untilDay -> {
+					Dialog<List<Entry>> entryRangeDialog = new EntryRangeDialog(bookingService,
+							itemDurationRasterMinutes, fromDay, untilDay, findService.getTimeAssetsSumBefore(fromDay),
+							findService.getLastDescriptions(), Optional.ofNullable(findService.getEntry(fromDay)));
+					entryRangeDialog.showAndWait().ifPresent(entries -> {
+						stored.setText(String.format(RANGE_STORED, entries.size(), entries.get(0).getType().name(),
+								DayTransformer.toText(fromDay), DayTransformer.toText(untilDay)));
+						stored.setVisible(true);
+					});
+				}));
 	}
 
 	private void exportMonth(YearMonth month, String monthText) {

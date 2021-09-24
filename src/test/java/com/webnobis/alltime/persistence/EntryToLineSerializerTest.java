@@ -1,6 +1,6 @@
 package com.webnobis.alltime.persistence;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -10,9 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.webnobis.alltime.model.AZEntry;
 import com.webnobis.alltime.model.DayEntry;
@@ -20,7 +20,7 @@ import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.model.GTEntry;
 
-public class EntryToLineSerializerTest {
+class EntryToLineSerializerTest {
 
 	private static final LocalDate DAY = LocalDate.of(1999, Month.DECEMBER, 31);
 
@@ -50,34 +50,34 @@ public class EntryToLineSerializerTest {
 
 	private Function<Entry, String> serializer;
 
-	@BeforeClass
-	public static void setUpClass() {
+	@BeforeAll
+	static void setUpClass() {
 		items = new HashMap<>();
 		items.put(ITEM1_KEY, ITEM1_VALUE);
 		items.put(ITEM2_KEY, ITEM2_VALUE);
 	}
 
-	@Before
-	public void setUp() {
+	@BeforeEach
+	void setUp() {
 		serializer = EntryToLineSerializer::toLine;
 	}
 
 	@Test
-	public void testAZEntryToLine() {
+	void testAZEntryToLine() {
 		Entry entry = new AZEntry(DAY, START, END, EXPECTED_TIME, IDLE_TIME, items);
 
 		assertEquals(AZ_LINE, serializer.apply(entry));
 	}
 
 	@Test
-	public void testUREntryToLine() {
+	void testUREntryToLine() {
 		Entry entry = new DayEntry(DAY, EntryType.UR, items);
 
 		assertEquals(UR_LINE, serializer.apply(entry));
 	}
 
 	@Test
-	public void testGTEntryToLine() {
+	void testGTEntryToLine() {
 		Entry entry = new GTEntry(DAY, EXPECTED_TIME, items);
 
 		assertEquals(GT_LINE, serializer.apply(entry));

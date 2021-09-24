@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.function.Supplier;
 
 import com.webnobis.alltime.config.Config;
+import com.webnobis.alltime.config.Release;
 import com.webnobis.alltime.export.EntryExport;
 import com.webnobis.alltime.export.PdfExport;
 import com.webnobis.alltime.persistence.EntryStore;
@@ -29,12 +30,6 @@ import javafx.stage.Stage;
 
 public class Alltime extends Application {
 
-	public static final String AUTHOR = "Steffen Nobis";
-
-	public static final String TITLE = String.format("%s %s (%s)", Alltime.class.getSimpleName(), Version.getVersion(), AUTHOR);
-
-	private static final String CONFIG_FILE = "config/config.properties";
-
 	private static final Supplier<LocalDateTime> now = LocalDateTime::now;
 
 	FindService findService;
@@ -42,7 +37,7 @@ public class Alltime extends Application {
 	CalculationService calculationService;
 
 	BookingService bookingService;
-	
+
 	EntryExport entryExport;
 
 	TimeTransformer timeTransformer;
@@ -59,22 +54,24 @@ public class Alltime extends Application {
 	public void init() throws Exception {
 		super.init();
 
-		Path configFile = Paths.get(CONFIG_FILE);
+		Path configFile = Paths.get(Release.CONFIG.getValue());
 		Config config = new Config(configFile);
 		EntryService service = createService(config, createStore(config));
 		findService = service;
 		calculationService = service;
 		bookingService = service;
 		entryExport = new PdfExport(config.getFileExportRootPath(), findService);
-		timeTransformer = new TimeTransformer(() -> now.get().toLocalTime(), config.getTimeStartOffsetMinutes(), config.getTimeEndOffsetMinutes(), config.getTimeRasterMinutes());
+		timeTransformer = new TimeTransformer(() -> now.get().toLocalTime(), config.getTimeStartOffsetMinutes(),
+				config.getTimeEndOffsetMinutes(), config.getTimeRasterMinutes());
 		itemDurationRasterMinutes = config.getItemDurationRasterMinutes();
 		maxCountOfRangeBookingDays = config.getItemDurationRasterMinutes();
 	}
 
 	private static EntryStore createStore(Config config) {
-		return new FileStore(config.getFileStoreRootPath(), () -> now.get().toLocalDate(), config.getMaxCountOfDays(), config.getMaxCountOfDescriptions(),
-				LineToDayDeserializer::toDay, LineToEntryDeserializer::toEntry, EntryToLineSerializer::toLine,
-				TimeAssetsSumDeserializer::toTimeAssetsSum, TimeAssetsSumSerializer::toLine);
+		return new FileStore(config.getFileStoreRootPath(), () -> now.get().toLocalDate(), config.getMaxCountOfDays(),
+				config.getMaxCountOfDescriptions(), LineToDayDeserializer::toDay, LineToEntryDeserializer::toEntry,
+				EntryToLineSerializer::toLine, TimeAssetsSumDeserializer::toTimeAssetsSum,
+				TimeAssetsSumSerializer::toLine);
 	}
 
 	private static EntryService createService(Config config, EntryStore store) {
@@ -83,7 +80,8 @@ public class Alltime extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), findService, calculationService, bookingService, entryExport, timeTransformer, itemDurationRasterMinutes, maxCountOfRangeBookingDays);
+		Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), findService, calculationService,
+				bookingService, entryExport, timeTransformer, itemDurationRasterMinutes, maxCountOfRangeBookingDays);
 		dialog.showAndWait();
 	}
 
