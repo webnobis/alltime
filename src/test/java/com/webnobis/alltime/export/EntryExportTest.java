@@ -1,6 +1,6 @@
 package com.webnobis.alltime.export;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -21,10 +21,10 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.webnobis.alltime.model.AZEntry;
 import com.webnobis.alltime.model.DayEntry;
@@ -33,7 +33,7 @@ import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.model.TimeAssetsSum;
 import com.webnobis.alltime.service.FindService;
 
-public class EntryExportTest {
+class EntryExportTest {
 
 	private static final LocalDate date = LocalDate.of(2010, 1, 2);
 
@@ -45,28 +45,28 @@ public class EntryExportTest {
 
 	private EntryExport export;
 
-	@BeforeClass
-	public static void setUpClass() throws Exception {
-		entries = Stream.concat(Stream.of(new AZEntry(date, LocalTime.of(7, 5), LocalTime.of(16, 20), Duration.ofHours(8), Duration.ofMinutes(30),
-				LongStream.rangeClosed(2, 4)
-						.boxed()
-						.collect(Collectors.toMap(i -> "Projekt-Buchung " + i, Duration::ofHours)))),
-				LongStream.rangeClosed(1, 100)
-						.filter(l -> l < 5 || l > 20)
-						.mapToObj(date::plusDays)
-						.<Entry>map(day -> new DayEntry(day, EntryType.SM,
-								Collections.singletonMap(EntryExportTest.class.getSimpleName(), Duration.ofMinutes(day.getDayOfYear())))))
+	@BeforeAll
+	static void setUpClass() throws Exception {
+		entries = Stream
+				.concat(Stream.of(new AZEntry(date, LocalTime.of(7, 5), LocalTime.of(16, 20), Duration.ofHours(8),
+						Duration.ofMinutes(30),
+						LongStream.rangeClosed(2, 4).boxed()
+								.collect(Collectors.toMap(i -> "Projekt-Buchung " + i, Duration::ofHours)))),
+						LongStream.rangeClosed(1, 100).filter(l -> l < 5 || l > 20).mapToObj(date::plusDays)
+								.<Entry>map(day -> new DayEntry(day, EntryType.SM,
+										Collections.singletonMap(EntryExportTest.class.getSimpleName(),
+												Duration.ofMinutes(day.getDayOfYear())))))
 				.collect(Collectors.toMap(Entry::getDay, entry -> entry, (day1, day2) -> day2, TreeMap::new));
 	}
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		tmpRoot = Files.createTempDirectory(EntryExportTest.class.getSimpleName());
 		export = new PdfExport(tmpRoot, new TestFindService());
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterEach
+	void tearDown() throws Exception {
 		Files.walkFileTree(tmpRoot, new FileVisitor<Path>() {
 
 			@Override
@@ -94,7 +94,7 @@ public class EntryExportTest {
 	}
 
 	@Test
-	public void testExportRange() {
+	void testExportRange() {
 		List<Entry> expected = new ArrayList<>(entries.values());
 
 		List<Entry> exported = export.exportRange(entries.firstKey(), entries.lastKey());
@@ -102,11 +102,10 @@ public class EntryExportTest {
 	}
 
 	@Test
-	public void testExportMonth() {
+	void testExportMonth() {
 		YearMonth month = YearMonth.from(date);
 		List<Entry> expected = entries.values().stream()
-				.filter(entry -> month.getMonth().equals(entry.getDay().getMonth()))
-				.collect(Collectors.toList());
+				.filter(entry -> month.getMonth().equals(entry.getDay().getMonth())).collect(Collectors.toList());
 
 		List<Entry> exported = export.exportMonth(month);
 		assertEquals(expected, exported);

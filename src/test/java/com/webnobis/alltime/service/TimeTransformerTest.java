@@ -1,16 +1,14 @@
 package com.webnobis.alltime.service;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalTime;
 import java.util.function.Supplier;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.webnobis.alltime.service.TimeTransformer;
-
-public class TimeTransformerTest {
+class TimeTransformerTest {
 
 	private static final Supplier<LocalTime> NOW = () -> LocalTime.of(4, 51, 14);
 
@@ -22,31 +20,31 @@ public class TimeTransformerTest {
 
 	private TimeTransformer transformer;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		transformer = new TimeTransformer(NOW, START_OFFSET, END_OFFSET, MINUTES_RASTER);
 	}
 
 	@Test
-	public void testToTime() {
+	void testToTime() {
 		LocalTime expected = LocalTime.of(23, 59);
 		assertEquals(expected, TimeTransformer.toTime("23:59"));
 	}
 
 	@Test
-	public void testToText() {
+	void testToText() {
 		String expected = "12:13";
 		assertEquals(expected, TimeTransformer.toText(LocalTime.of(12, 13, 59)));
 	}
 
 	@Test
-	public void testStartNow() {
+	void testStartNow() {
 		LocalTime expected = LocalTime.of(4, 45);
 		assertEquals(expected, transformer.now(true));
 	}
 
 	@Test
-	public void testEndNow() {
+	void testEndNow() {
 		LocalTime expected = LocalTime.of(5, 0);
 		assertEquals(expected, transformer.now(false));
 	}

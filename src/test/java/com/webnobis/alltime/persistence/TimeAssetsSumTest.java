@@ -1,6 +1,6 @@
 package com.webnobis.alltime.persistence;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -21,9 +21,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.webnobis.alltime.model.AZEntry;
 import com.webnobis.alltime.model.DayEntry;
@@ -31,7 +31,7 @@ import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.model.GTEntry;
 import com.webnobis.alltime.model.TimeAssetsSum;
 
-public class TimeAssetsSumTest {
+class TimeAssetsSumTest {
 
 	private static final String SPLIT = ";";
 
@@ -52,8 +52,8 @@ public class TimeAssetsSumTest {
 
 	private EntryStore store;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		now = new Supplier<LocalDate>() {
 
 			private int i;
@@ -74,8 +74,8 @@ public class TimeAssetsSumTest {
 				timeAssetsSumDeserializer, timeAssetsSumSerializer);
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterEach
+	void tearDown() throws Exception {
 		Files.walkFileTree(tmpRoot, new FileVisitor<Path>() {
 
 			@Override
@@ -103,7 +103,7 @@ public class TimeAssetsSumTest {
 	}
 
 	@Test
-	public void testGetTimeAssetsSumBefore() {
+	void testGetTimeAssetsSumBefore() {
 		Duration d1 = Duration.ofDays(2).plusHours(2);
 		Duration d2 = Duration.ofHours(-8);
 		Duration d3 = Duration.ZERO;
@@ -119,7 +119,7 @@ public class TimeAssetsSumTest {
 	}
 
 	@Test
-	public void testGetTimeAssetsSumBeforeOutOfRange() {
+	void testGetTimeAssetsSumBeforeOutOfRange() {
 		assertEquals(new TimeAssetsSum(LocalDate.now().minusDays(1), Duration.ZERO),
 				store.getTimeAssetsSumBefore(LocalDate.now()));
 
@@ -129,7 +129,7 @@ public class TimeAssetsSumTest {
 	}
 
 	@Test
-	public void testGetTimeAssetsSumDayBefore() {
+	void testGetTimeAssetsSumDayBefore() {
 		LocalDate day = LocalDate.of(2018, 10, 17);
 		TimeAssetsSum s1 = new TimeAssetsSum(day.minusDays(32), Duration.ZERO);
 		TimeAssetsSum s2 = new TimeAssetsSum(day.minusMonths(1), Duration.ZERO);
@@ -137,8 +137,7 @@ public class TimeAssetsSumTest {
 		TimeAssetsSum s4 = new TimeAssetsSum(day, Duration.ZERO);
 
 		Stream.of(s3, s1, s2, s4).map(s -> new DayEntry(s.getDay(), EntryType.KR, Collections.emptyMap()))
-				.peek(store::storeEntry)
-				.map(DayEntry::getDay)
+				.peek(store::storeEntry).map(DayEntry::getDay)
 				.forEach(d -> assertEquals(d.minusDays(1), store.getTimeAssetsSumBefore(d).getDay()));
 	}
 }

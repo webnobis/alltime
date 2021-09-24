@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.webnobis.alltime.Alltime;
+import com.webnobis.alltime.config.Release;
 import com.webnobis.alltime.model.CalculationType;
 import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
@@ -176,7 +176,7 @@ public class EntryDialog extends Dialog<Entry> {
 		dialogPane.setContent(pane);
 		dialogPane.setHeaderText("Buchung");
 
-		super.setTitle(Alltime.TITLE);
+		super.setTitle(Release.TITLE.getValue());
 		super.setResultConverter(this::get);
 	}
 

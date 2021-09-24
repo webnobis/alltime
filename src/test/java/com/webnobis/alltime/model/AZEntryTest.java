@@ -1,6 +1,6 @@
 package com.webnobis.alltime.model;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -8,13 +8,10 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class AZEntryTest {
+class AZEntryTest {
 
 	private static final LocalDate DAY = LocalDate.of(2018, 8, 21);
 	
@@ -30,55 +27,43 @@ public class AZEntryTest {
 	
 	private Entry entry;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		entry = new AZEntry(DAY, START, END, EXPECTED_TIME, IDLE_TIME, ITEMS);
 	}
 
-	@After
-	public void tearDown() throws Exception {
-	}
-
 	@Test
-	public void testGetStart() {
+	void testGetStart() {
 		assertEquals(START, entry.getStart());
 	}
 
 	@Test
-	public void testGetEnd() {
+	void testGetEnd() {
 		assertEquals(END, entry.getEnd());
 	}
 
 	@Test
-	public void testGetExpectedTime() {
+	void testGetExpectedTime() {
 		assertEquals(EXPECTED_TIME, entry.getExpectedTime());
 	}
 
 	@Test
-	public void testGetIdleTime() {
+	void testGetIdleTime() {
 		assertEquals(IDLE_TIME, entry.getIdleTime());
 	}
 
 	@Test
-	public void testGetRealTime() {
+	void testGetRealTime() {
 		assertEquals(Duration.between(START, END), entry.getRealTime());
 	}
 
 	@Test
-	public void testGetTimeAssets() {
+	void testGetTimeAssets() {
 		testGetTimeAssets(Duration.between(START, END));
 	}
 
 	@Test
-	public void testGetTimeAssetsOverMidnight() {
+	void testGetTimeAssetsOverMidnight() {
 		entry = new AZEntry(entry.getDay(), entry.getEnd(), entry.getStart(), entry.getExpectedTime(), entry.getIdleTime(), entry.getItems());
 		testGetTimeAssets(Duration.between(END, START).plusDays(1));
 	}
@@ -89,17 +74,17 @@ public class AZEntryTest {
 	}
 
 	@Test
-	public void testGetDay() {
+	void testGetDay() {
 		assertEquals(DAY, entry.getDay());
 	}
 
 	@Test
-	public void testGetType() {
+	void testGetType() {
 		assertEquals(EntryType.AZ, entry.getType());
 	}
 
 	@Test
-	public void testGetItems() {
+	void testGetItems() {
 		assertEquals(ITEMS, entry.getItems());
 	}
 

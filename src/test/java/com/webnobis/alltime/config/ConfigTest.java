@@ -1,7 +1,7 @@
 package com.webnobis.alltime.config;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -10,10 +10,10 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ConfigTest {
+class ConfigTest {
 
 	private static final int MAX_COUNT_OF_DAYS = 77;
 
@@ -51,49 +51,49 @@ public class ConfigTest {
 
 	private Config config;
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	void setUp() throws Exception {
 		URI uri = this.getClass().getClassLoader().getResource(CONFIG_FILE).toURI();
 		config = new Config(Paths.get(uri));
 	}
 
 	@Test
-	public void testGetMaxCountOfDays() {
+	void testGetMaxCountOfDays() {
 		assertEquals(MAX_COUNT_OF_DAYS, config.getMaxCountOfDays());
 	}
 
 	@Test
-	public void testGetMaxCountOfRangeBookingDays() {
+	void testGetMaxCountOfRangeBookingDays() {
 		assertEquals(MAX_COUNT_OF_RANGE_BOOKING_DAYS, config.getMaxCountOfRangeBookingDays());
 	}
 
 	@Test
-	public void testGetMaxCountOfDescriptions() {
+	void testGetMaxCountOfDescriptions() {
 		assertEquals(MAX_COUNT_OF_DESCRIPTIONS, config.getMaxCountOfDescriptions());
 	}
 
 	@Test
-	public void testGetTimeRasterMinutes() {
+	void testGetTimeRasterMinutes() {
 		assertEquals(TIME_RASTER_MINUTES, config.getTimeRasterMinutes());
 	}
 
 	@Test
-	public void testGetTimeStartOffsetMinutes() {
+	void testGetTimeStartOffsetMinutes() {
 		assertEquals(TIME_START_OFFSET_MINUTES, config.getTimeStartOffsetMinutes());
 	}
 
 	@Test
-	public void testGetTimeEndOffsetMinutes() {
+	void testGetTimeEndOffsetMinutes() {
 		assertEquals(TIME_END_OFFSET_MINUTES, config.getTimeEndOffsetMinutes());
 	}
 
 	@Test
-	public void testGetItemDurationRasterMinutes() {
+	void testGetItemDurationRasterMinutes() {
 		assertEquals(ITEM_DURATION_RASTER_MINUTES, config.getItemDurationRasterMinutes());
 	}
 
 	@Test
-	public void testGetExpectedTimes() {
+	void testGetExpectedTimes() {
 		Map<DayOfWeek, Duration> map = config.getExpectedTimes();
 		assertEquals(7, map.size());
 
@@ -104,7 +104,7 @@ public class ConfigTest {
 	}
 
 	@Test
-	public void testGetIdleTimes() {
+	void testGetIdleTimes() {
 		Map<Duration, Duration> map = config.getIdleTimes();
 		assertEquals(2, map.size());
 
@@ -113,12 +113,12 @@ public class ConfigTest {
 	}
 
 	@Test
-	public void testGetFileStoreRootPath() {
+	void testGetFileStoreRootPath() {
 		assertEquals(FILE_STORE_ROOT_PATH, config.getFileStoreRootPath());
 	}
 
 	@Test
-	public void testGetFileExportRootPath() {
+	void testGetFileExportRootPath() {
 		assertEquals(FILE_EXPORT_ROOT_PATH, config.getFileExportRootPath());
 	}
 
