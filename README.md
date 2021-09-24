@@ -49,4 +49,4 @@ Java Module der Anwendung
 
 ### Voraussetzung
 
-Java 11
+Java 17
