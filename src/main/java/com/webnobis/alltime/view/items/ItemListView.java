@@ -15,11 +15,10 @@ public class ItemListView extends ListView<Item> {
 
 	public static final Item NEW_TRIGGER = new Item("--- Neuer Eintrag ---", Duration.ZERO);
 
-	public ItemListView(int itemDurationRasterMinutes, List<String> lastDescriptions, Supplier<Duration> maxDurationRange, Map<String, Duration> items) {
-		super(FXCollections.observableArrayList(items.entrySet().stream()
-				.map(Item::new)
-				.sorted()
-				.collect(Collectors.toList())));
+	public ItemListView(int itemDurationRasterMinutes, List<String> lastDescriptions,
+			Supplier<Duration> maxDurationRange, Map<String, Duration> items) {
+		super(FXCollections
+				.observableArrayList(items.entrySet().stream().map(Item::new).sorted().collect(Collectors.toList())));
 		addNewTrigger();
 		super.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		super.setCellFactory(unused -> new ItemListCell(itemDurationRasterMinutes, lastDescriptions, maxDurationRange));
@@ -32,7 +31,8 @@ public class ItemListView extends ListView<Item> {
 	}
 
 	private void changedItem(Change<? extends Item> change) {
-		if (change.next() && change.wasReplaced() && super.getItems().stream().map(Item::getKey).noneMatch(NEW_TRIGGER.getKey()::equals)) {
+		if (change.next() && change.wasReplaced()
+				&& super.getItems().stream().map(Item::getKey).noneMatch(NEW_TRIGGER.getKey()::equals)) {
 			addNewTrigger();
 		}
 	}

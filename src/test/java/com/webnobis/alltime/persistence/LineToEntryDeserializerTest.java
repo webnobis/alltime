@@ -26,7 +26,8 @@ class LineToEntryDeserializerTest {
 
 	@Test
 	void testToAZEntry() {
-		Entry expected = new AZEntry(LocalDate.of(2000, 3, 4), LocalTime.of(7, 5), LocalTime.of(16, 2), Duration.ZERO, Duration.ofMinutes(2), Collections.emptyMap());
+		Entry expected = new AZEntry(LocalDate.of(2000, 3, 4), LocalTime.of(7, 5), LocalTime.of(16, 2), Duration.ZERO,
+				Duration.ofMinutes(2), Collections.emptyMap());
 		String line = serializer.apply(expected);
 
 		assertEquals(expected, deserializer.apply(line));
@@ -43,8 +44,7 @@ class LineToEntryDeserializerTest {
 	@Test
 	void testToDayEntry() {
 		Entry expected = new DayEntry(LocalDate.of(2007, 12, 31), EntryType.KR, LongStream.rangeClosed(1, 60 * 60)
-				.boxed()
-				.collect(Collectors.toMap(String::valueOf, Duration::ofMinutes)));
+				.boxed().collect(Collectors.toMap(String::valueOf, Duration::ofMinutes)));
 		String line = serializer.apply(expected);
 
 		assertEquals(expected, deserializer.apply(line));

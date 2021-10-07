@@ -13,8 +13,7 @@ public interface EntryExport {
 	List<Entry> exportRange(LocalDate fromDay, LocalDate untilDay);
 
 	default List<Entry> exportMonth(YearMonth month) {
-		return Optional.ofNullable(month)
-				.map(m -> exportRange(m.atDay(1), m.atEndOfMonth()))
+		return Optional.ofNullable(month).map(m -> exportRange(m.atDay(1), m.atEndOfMonth()))
 				.orElseGet(Collections::emptyList);
 	}
 

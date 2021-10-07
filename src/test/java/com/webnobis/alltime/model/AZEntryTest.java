@@ -14,9 +14,9 @@ import org.junit.jupiter.api.Test;
 class AZEntryTest {
 
 	private static final LocalDate DAY = LocalDate.of(2018, 8, 21);
-	
+
 	private static final LocalTime START = LocalTime.of(8, 30);
-	
+
 	private static final LocalTime END = LocalTime.of(16, 50);
 
 	private static final Duration EXPECTED_TIME = Duration.ofHours(8);
@@ -24,7 +24,7 @@ class AZEntryTest {
 	private static final Map<String, Duration> ITEMS = Collections.singletonMap("key", Duration.ofMinutes(1));
 
 	private static final Duration IDLE_TIME = Duration.ofMinutes(30);
-	
+
 	private Entry entry;
 
 	@BeforeEach
@@ -64,7 +64,8 @@ class AZEntryTest {
 
 	@Test
 	void testGetTimeAssetsOverMidnight() {
-		entry = new AZEntry(entry.getDay(), entry.getEnd(), entry.getStart(), entry.getExpectedTime(), entry.getIdleTime(), entry.getItems());
+		entry = new AZEntry(entry.getDay(), entry.getEnd(), entry.getStart(), entry.getExpectedTime(),
+				entry.getIdleTime(), entry.getItems());
 		testGetTimeAssets(Duration.between(END, START).plusDays(1));
 	}
 

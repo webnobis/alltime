@@ -18,7 +18,8 @@ public abstract class TimeAssetsSumSerializer {
 
 	public static String toLine(TimeAssetsSum timeAssetsSum) {
 		Objects.requireNonNull(timeAssetsSum, "timeAssetsSum is null");
-		return toText(timeAssetsSum.getDay()).concat(ATTRIBUTE_SEPARATOR).concat(toText(timeAssetsSum.getTimeAssetsSum()));
+		return toText(timeAssetsSum.getDay()).concat(ATTRIBUTE_SEPARATOR)
+				.concat(toText(timeAssetsSum.getTimeAssetsSum()));
 	}
 
 	private static String toText(LocalDate day) {

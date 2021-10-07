@@ -16,7 +16,7 @@ public abstract class LineToDayDeserializer {
 
 	public static LocalDate toDay(String line) {
 		Objects.requireNonNull(line, "line is null");
-		
+
 		if (!line.contains(ATTRIBUTE_SEPARATOR)) {
 			throw new NoSuchElementException("missing day within line: ".concat(line));
 		}

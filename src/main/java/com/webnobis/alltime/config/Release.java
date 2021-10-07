@@ -11,7 +11,7 @@ public enum Release {
 
 	VERSION, AUTHOR, TITLE, HEADER, CONFIG;
 
-	private static final String RELEASE_FILE = "release.properties";
+	static final String RELEASE_FILE = "release.properties";
 
 	private static final AtomicReference<Properties> releaseRef = new AtomicReference<>();
 

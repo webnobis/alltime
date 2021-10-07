@@ -74,8 +74,8 @@ public class EntryDialog extends Dialog<Entry> {
 	private final boolean disabledIdleTimeAndEndAZ;
 
 	public EntryDialog(CalculationService calculationService, BookingService bookingService,
-			TimeTransformer timeTransformer, int itemDurationRasterMinutes,
-			LocalDate day, TimeAssetsSum sum, List<String> lastDescriptions, Optional<Entry> entry) {
+			TimeTransformer timeTransformer, int itemDurationRasterMinutes, LocalDate day, TimeAssetsSum sum,
+			List<String> lastDescriptions, Optional<Entry> entry) {
 		super();
 		this.calculationService = calculationService;
 		this.bookingService = bookingService;
@@ -113,8 +113,7 @@ public class EntryDialog extends Dialog<Entry> {
 		bookableTime.setEditable(false);
 		bookableTime.setStyle(ViewStyle.READONLY);
 
-		items = new ItemListView(itemDurationRasterMinutes, lastDescriptions,
-				() -> bookableTime.getValue(),
+		items = new ItemListView(itemDurationRasterMinutes, lastDescriptions, () -> bookableTime.getValue(),
 				entry.map(Entry::getItems).orElse(Collections.emptyMap()));
 
 		ToggleGroup group = new ToggleGroup();
@@ -201,7 +200,8 @@ public class EntryDialog extends Dialog<Entry> {
 	}
 
 	private void updateFields() {
-		Map<CalculationType, Duration> calculations = calculationService.calculate(day.getValue(), type.getValue(), startTime.getValue(), endTime.getValue(), idleTime.getValue());
+		Map<CalculationType, Duration> calculations = calculationService.calculate(day.getValue(), type.getValue(),
+				startTime.getValue(), endTime.getValue(), idleTime.getValue());
 		idleTime.setValue(calculations.get(CalculationType.IDLE_TIME));
 		bookableTime.setValue(calculations.get(CalculationType.REAL_TIME).minus(idleTime.getValue()));
 		timeAssetsSum.setValue(sumBeforeDay.plus(calculations.get(CalculationType.TIME_ASSETS)));
@@ -233,9 +233,7 @@ public class EntryDialog extends Dialog<Entry> {
 	}
 
 	private Entry get(ButtonType button) {
-		if (Optional.ofNullable(button)
-				.filter(ButtonType.APPLY::equals)
-				.isPresent()) {
+		if (Optional.ofNullable(button).filter(ButtonType.APPLY::equals).isPresent()) {
 			if (startAZ.isSelected()) {
 				return bookingService.startAZ(day.getValue(), startTime.getValue());
 			} else {

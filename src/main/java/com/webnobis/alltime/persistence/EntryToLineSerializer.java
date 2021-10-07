@@ -30,20 +30,15 @@ public abstract class EntryToLineSerializer {
 
 	public static String toLine(Entry entry) {
 		Objects.requireNonNull(entry, "entry is null");
-		
+
 		return Stream.concat(getAttributeStream(entry), getItemStream(entry))
 				.collect(Collectors.joining(ATTRIBUTE_SEPARATOR));
 	}
 
 	private static Stream<String> getAttributeStream(Entry entry) {
-		return Stream.of(toText(entry.getDay()),
-				toText(entry.getType()),
-				toText(entry.getStart()),
-				toText(entry.getEnd()),
-				toText(R, entry.getRealTime()),
-				toText(E, entry.getExpectedTime()),
-				toText(I, entry.getIdleTime()),
-				toText(A, entry.getTimeAssets()));
+		return Stream.of(toText(entry.getDay()), toText(entry.getType()), toText(entry.getStart()),
+				toText(entry.getEnd()), toText(R, entry.getRealTime()), toText(E, entry.getExpectedTime()),
+				toText(I, entry.getIdleTime()), toText(A, entry.getTimeAssets()));
 	}
 
 	private static Stream<String> getItemStream(Entry entry) {
@@ -52,28 +47,22 @@ public abstract class EntryToLineSerializer {
 	}
 
 	private static String toText(LocalDate day) {
-		return Optional.ofNullable(day)
-				.map(d -> d.format(DateTimeFormatter.ofPattern(DAY_FORMAT)))
+		return Optional.ofNullable(day).map(d -> d.format(DateTimeFormatter.ofPattern(DAY_FORMAT)))
 				.orElse(MISSING_VALUE);
 	}
 
 	private static String toText(EntryType type) {
-		return Optional.ofNullable(type)
-				.map(EntryType::name)
-				.orElse(MISSING_VALUE);
+		return Optional.ofNullable(type).map(EntryType::name).orElse(MISSING_VALUE);
 	}
 
 	private static String toText(LocalTime time) {
-		return Optional.ofNullable(time)
-				.map(t -> t.format(DateTimeFormatter.ofPattern(TIME_FORMAT)))
+		return Optional.ofNullable(time).map(t -> t.format(DateTimeFormatter.ofPattern(TIME_FORMAT)))
 				.orElse(MISSING_VALUE);
 	}
 
 	private static String toText(LineDefinition prefix, Duration duration) {
 		return Optional.ofNullable(prefix).map(LineDefinition::name).orElse("")
-				.concat(Optional.ofNullable(duration)
-						.map(DurationFormatter::toString)
-						.orElse(MISSING_VALUE));
+				.concat(Optional.ofNullable(duration).map(DurationFormatter::toString).orElse(MISSING_VALUE));
 	}
 
 }

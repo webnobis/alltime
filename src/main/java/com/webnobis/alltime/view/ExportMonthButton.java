@@ -26,11 +26,13 @@ public class ExportMonthButton {
 	}
 
 	public void addButton(YearMonth month) {
-		String monthText = Objects.requireNonNull(month, "month is null").format(DateTimeFormatter.ofPattern(MONTH_FORMAT));
+		String monthText = Objects.requireNonNull(month, "month is null")
+				.format(DateTimeFormatter.ofPattern(MONTH_FORMAT));
 		ButtonType buttonType = new ButtonType(String.format(EXPORT_BUTTON_LABEL, monthText));
 		dialogPane.getButtonTypes().add(buttonType);
 		Node button = dialogPane.lookupButton(buttonType);
-		button.addEventFilter(ActionEvent.ACTION, event -> export(event, month, monthText)); // avoid dialog close on consume
+		button.addEventFilter(ActionEvent.ACTION, event -> export(event, month, monthText)); // avoid dialog close on
+																								// consume
 	}
 
 	private void export(ActionEvent event, YearMonth month, String monthText) {

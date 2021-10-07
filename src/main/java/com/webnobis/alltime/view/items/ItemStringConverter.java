@@ -20,8 +20,10 @@ public class ItemStringConverter extends StringConverter<Item> {
 	@Override
 	public Item fromString(String text) {
 		Matcher matcher = textPattern.matcher(text);
-		return (matcher.find()) ? new Item(matcher.group(2),
-				(matcher.group(1).isEmpty()) ? Duration.ZERO : DurationFormatter.toDuration(matcher.group(1))) : null;
+		return (matcher.find())
+				? new Item(matcher.group(2),
+						(matcher.group(1).isEmpty()) ? Duration.ZERO : DurationFormatter.toDuration(matcher.group(1)))
+				: null;
 	}
 
 }

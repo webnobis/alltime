@@ -4,12 +4,9 @@ import java.time.DayOfWeek;
 
 public enum WeekdayKey {
 
-	EXPECTED_TIME_MO(DayOfWeek.MONDAY, "expected.time.mo"), 
-	EXPECTED_TIME_DI(DayOfWeek.TUESDAY, "expected.time.di"), 
-	EXPECTED_TIME_MI(DayOfWeek.WEDNESDAY, "expected.time.mi"), 
-	EXPECTED_TIME_DO(DayOfWeek.THURSDAY, "expected.time.do"), 
-	EXPECTED_TIME_FR(DayOfWeek.FRIDAY, "expected.time.fr"), 
-	EXPECTED_TIME_SA(DayOfWeek.SATURDAY, "expected.time.sa"), 
+	EXPECTED_TIME_MO(DayOfWeek.MONDAY, "expected.time.mo"), EXPECTED_TIME_DI(DayOfWeek.TUESDAY, "expected.time.di"),
+	EXPECTED_TIME_MI(DayOfWeek.WEDNESDAY, "expected.time.mi"), EXPECTED_TIME_DO(DayOfWeek.THURSDAY, "expected.time.do"),
+	EXPECTED_TIME_FR(DayOfWeek.FRIDAY, "expected.time.fr"), EXPECTED_TIME_SA(DayOfWeek.SATURDAY, "expected.time.sa"),
 	EXPECTED_TIME_SO(DayOfWeek.SUNDAY, "expected.time.so");
 
 	private final DayOfWeek weekday;

@@ -23,7 +23,8 @@ import com.webnobis.alltime.model.TimeAssetsSum;
 
 public class FileStore implements EntryStore {
 
-	private static final Function<LocalDate, TimeAssetsSum> alternateStartIfMissingFunction = day -> new TimeAssetsSum(day.minusDays(1), Duration.ZERO);
+	private static final Function<LocalDate, TimeAssetsSum> alternateStartIfMissingFunction = day -> new TimeAssetsSum(
+			day.minusDays(1), Duration.ZERO);
 
 	private static final String MONTH_FORMAT = "yyyyMM";
 
@@ -33,9 +34,11 @@ public class FileStore implements EntryStore {
 
 	private static final Comparator<LocalDate> dayReverseComparator = (d1, d2) -> d2.compareTo(d1);
 
-	private static final Comparator<Entry> entryReverseComparator = (e1, e2) -> dayReverseComparator.compare(e1.getDay(), e2.getDay());
+	private static final Comparator<Entry> entryReverseComparator = (e1, e2) -> dayReverseComparator
+			.compare(e1.getDay(), e2.getDay());
 
-	private static final Comparator<TimeAssetsSum> timeAssetsSumReverseComparator = (s1, s2) -> dayReverseComparator.compare(s1.getDay(), s2.getDay());
+	private static final Comparator<TimeAssetsSum> timeAssetsSumReverseComparator = (s1, s2) -> dayReverseComparator
+			.compare(s1.getDay(), s2.getDay());
 
 	private final Path root;
 
@@ -56,10 +59,8 @@ public class FileStore implements EntryStore {
 	private final Function<TimeAssetsSum, String> timeAssetsSumSerializer;
 
 	public FileStore(Path root, Supplier<LocalDate> now, int maxDayCount, int maxDescriptionCount,
-			Function<String, LocalDate> dayDeserializer,
-			Function<String, Entry> entryDeserializer,
-			Function<Entry, String> entrySerializer,
-			Function<String, TimeAssetsSum> timeAssetsSumDeserializer,
+			Function<String, LocalDate> dayDeserializer, Function<String, Entry> entryDeserializer,
+			Function<Entry, String> entrySerializer, Function<String, TimeAssetsSum> timeAssetsSumDeserializer,
 			Function<TimeAssetsSum, String> timeAssetsSumSerializer) {
 		this.root = root;
 		this.now = now;
@@ -83,13 +84,8 @@ public class FileStore implements EntryStore {
 	@Override
 	public List<LocalDate> getLastDays() {
 		YearMonth currentMonth = YearMonth.from(now.get());
-		return LongStream.range(0, maxDayCount)
-				.mapToObj(currentMonth::minusMonths)
-				.map(this::toMonthFile)
-				.filter(Files::exists)
-				.flatMap(this::getDayStream)
-				.limit(maxDayCount)
-				.collect(Collectors.toList());
+		return LongStream.range(0, maxDayCount).mapToObj(currentMonth::minusMonths).map(this::toMonthFile)
+				.filter(Files::exists).flatMap(this::getDayStream).limit(maxDayCount).collect(Collectors.toList());
 	}
 
 	private Path toMonthFile(YearMonth month) {
@@ -98,9 +94,7 @@ public class FileStore implements EntryStore {
 
 	private Stream<LocalDate> getDayStream(Path file) {
 		LocalDate now = this.now.get();
-		return readLines(file)
-				.map(dayDeserializer::apply)
-				.filter(day -> !day.isAfter(now))
+		return readLines(file).map(dayDeserializer::apply).filter(day -> !day.isAfter(now))
 				.sorted(dayReverseComparator);
 	}
 
@@ -117,11 +111,8 @@ public class FileStore implements EntryStore {
 	}
 
 	private Entry getEntry(Path file, LocalDate day) {
-		return readLines(file)
-				.filter(line -> day.equals(dayDeserializer.apply(line)))
-				.findFirst()
-				.map(entryDeserializer::apply)
-				.orElse(null);
+		return readLines(file).filter(line -> day.equals(dayDeserializer.apply(line))).findFirst()
+				.map(entryDeserializer::apply).orElse(null);
 	}
 
 	@Override
@@ -133,16 +124,13 @@ public class FileStore implements EntryStore {
 
 	@Override
 	public TimeAssetsSum getTimeAssetsSumBefore(LocalDate day) {
-		return getTimeAssetsSumsBeforeStream(Objects.requireNonNull(day, "day is null"))
-				.findFirst()
+		return getTimeAssetsSumsBeforeStream(Objects.requireNonNull(day, "day is null")).findFirst()
 				.orElseGet(() -> alternateStartIfMissingFunction.apply(day));
 	}
 
 	private Stream<TimeAssetsSum> getTimeAssetsSumsBeforeStream(LocalDate day) {
-		return readLines(toTimeAssetsFile())
-				.map(timeAssetsSumDeserializer::apply)
-				.filter(sum -> sum.getDay().isBefore(day))
-				.sorted(timeAssetsSumReverseComparator);
+		return readLines(toTimeAssetsFile()).map(timeAssetsSumDeserializer::apply)
+				.filter(sum -> sum.getDay().isBefore(day)).sorted(timeAssetsSumReverseComparator);
 	}
 
 	private Path toTimeAssetsFile() {
@@ -153,14 +141,12 @@ public class FileStore implements EntryStore {
 		LocalDate day = entry.getDay();
 		TimeAssetsSum lastSum = getTimeAssetsSumBefore(day);
 		long limit = Duration.between(lastSum.getDay().atStartOfDay(), day.atStartOfDay()).toDays();
-		List<String> lines = Stream.concat(getTimeAssetsSumsBeforeStream(day), Stream.concat(
-						Stream.iterate(lastSum.getDay(), d -> d.plusDays(1))
-							.limit(limit)
-							.map(d -> new TimeAssetsSum(d, lastSum.getTimeAssetsSum())),
+		List<String> lines = Stream
+				.concat(getTimeAssetsSumsBeforeStream(day), Stream.concat(
+						Stream.iterate(lastSum.getDay(), d -> d.plusDays(1)).limit(limit)
+								.map(d -> new TimeAssetsSum(d, lastSum.getTimeAssetsSum())),
 						Stream.of(new TimeAssetsSum(day, lastSum.getTimeAssetsSum().plus(entry.getTimeAssets())))))
-				.distinct()
-				.sorted(timeAssetsSumReverseComparator)
-				.map(timeAssetsSumSerializer::apply)
+				.distinct().sorted(timeAssetsSumReverseComparator).map(timeAssetsSumSerializer::apply)
 				.collect(Collectors.toList());
 
 		try {
@@ -176,8 +162,7 @@ public class FileStore implements EntryStore {
 
 		LocalDate day = entry.getDay();
 		Path monthFile = toMonthFile(YearMonth.from(day));
-		List<String> lines = readLines(monthFile)
-				.filter(line -> !day.equals(dayDeserializer.apply(line)))
+		List<String> lines = readLines(monthFile).filter(line -> !day.equals(dayDeserializer.apply(line)))
 				.collect(Collectors.toList());
 		lines.add(entrySerializer.apply(entry));
 
@@ -197,20 +182,10 @@ public class FileStore implements EntryStore {
 	@Override
 	public List<String> getLastDescriptions() {
 		YearMonth currentMonth = YearMonth.from(now.get());
-		return LongStream.range(0, maxDayCount)
-				.mapToObj(currentMonth::minusMonths)
-				.map(this::toMonthFile)
-				.filter(Files::exists)
-				.flatMap(this::readLines)
-				.map(entryDeserializer::apply)
-				.sorted(entryReverseComparator)
-				.flatMap(entry -> entry.getItems()
-						.keySet().stream()
-						.sorted())
-				.distinct()
-				.limit(maxDescriptionCount)
-				.sorted()
-				.collect(Collectors.toList());
+		return LongStream.range(0, maxDayCount).mapToObj(currentMonth::minusMonths).map(this::toMonthFile)
+				.filter(Files::exists).flatMap(this::readLines).map(entryDeserializer::apply)
+				.sorted(entryReverseComparator).flatMap(entry -> entry.getItems().keySet().stream().sorted()).distinct()
+				.limit(maxDescriptionCount).sorted().collect(Collectors.toList());
 	}
 
 }

@@ -1,7 +1,5 @@
 package com.webnobis.alltime;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.function.Supplier;
 
@@ -32,6 +30,8 @@ public class Alltime extends Application {
 
 	private static final Supplier<LocalDateTime> now = LocalDateTime::now;
 
+	static
+
 	FindService findService;
 
 	CalculationService calculationService;
@@ -54,8 +54,7 @@ public class Alltime extends Application {
 	public void init() throws Exception {
 		super.init();
 
-		Path configFile = Paths.get(Release.CONFIG.getValue());
-		Config config = new Config(configFile);
+		Config config = new Config(ClassLoader.getSystemResourceAsStream(Release.CONFIG.getValue()));
 		EntryService service = createService(config, createStore(config));
 		findService = service;
 		calculationService = service;

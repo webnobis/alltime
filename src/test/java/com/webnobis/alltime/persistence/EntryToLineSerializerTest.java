@@ -40,11 +40,14 @@ class EntryToLineSerializerTest {
 
 	private static final Duration ITEM2_VALUE = Duration.ofHours(3).plusMinutes(15);
 
-	private static final String AZ_LINE = "31.12.1999;AZ;08:30;17:15;R08:45;E08:00;I00:05;A00:40;03:15;" + ITEM2_KEY + ";04:30;" + ITEM1_KEY;
+	private static final String AZ_LINE = "31.12.1999;AZ;08:30;17:15;R08:45;E08:00;I00:05;A00:40;03:15;" + ITEM2_KEY
+			+ ";04:30;" + ITEM1_KEY;
 
-	private static final String UR_LINE = "31.12.1999;UR;-;-;R00:00;E00:00;I00:00;A00:00;03:15;" + ITEM2_KEY + ";04:30;" + ITEM1_KEY;
+	private static final String UR_LINE = "31.12.1999;UR;-;-;R00:00;E00:00;I00:00;A00:00;03:15;" + ITEM2_KEY + ";04:30;"
+			+ ITEM1_KEY;
 
-	private static final String GT_LINE = "31.12.1999;GT;-;-;R00:00;E08:00;I00:00;A-08:00;03:15;" + ITEM2_KEY + ";04:30;" + ITEM1_KEY;
+	private static final String GT_LINE = "31.12.1999;GT;-;-;R00:00;E08:00;I00:00;A-08:00;03:15;" + ITEM2_KEY
+			+ ";04:30;" + ITEM1_KEY;
 
 	private static Map<String, Duration> items;
 

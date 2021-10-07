@@ -16,7 +16,8 @@ public class IdleTimeHandler {
 	private final NavigableMap<Duration, Duration> idleTimes;
 
 	public IdleTimeHandler(Map<Duration, Duration> idleTimes) {
-		this.idleTimes = Collections.unmodifiableNavigableMap(new TreeMap<>(Objects.requireNonNull(idleTimes, "idleTimes is null")));
+		this.idleTimes = Collections
+				.unmodifiableNavigableMap(new TreeMap<>(Objects.requireNonNull(idleTimes, "idleTimes is null")));
 	}
 
 	public Duration getIdleTime(LocalDate day, LocalTime start, LocalTime end, Duration idleTime) {
@@ -40,10 +41,8 @@ public class IdleTimeHandler {
 			return Duration.ZERO;
 		}
 		Duration lastIdleTime = idleTimes.get(limit);
-		Duration idleTimesBefore = Duration.ofMillis(idleTimes.headMap(limit)
-				.values().stream()
-				.mapToLong(Duration::toMillis)
-				.sum());
+		Duration idleTimesBefore = Duration
+				.ofMillis(idleTimes.headMap(limit).values().stream().mapToLong(Duration::toMillis).sum());
 		Duration idleTimePart = realTime.minus(limit);
 		return idleTimesBefore.plus((lastIdleTime.minus(idleTimePart).isNegative()) ? lastIdleTime : idleTimePart);
 	}

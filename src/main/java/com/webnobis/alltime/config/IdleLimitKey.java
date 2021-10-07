@@ -18,9 +18,7 @@ public enum IdleLimitKey {
 	}
 
 	public String getDurationPart(String key) {
-		return Optional.ofNullable(key)
-				.filter(s -> s.startsWith(this.key))
-				.map(s -> s.substring(this.key.length()))
+		return Optional.ofNullable(key).filter(s -> s.startsWith(this.key)).map(s -> s.substring(this.key.length()))
 				.orElseThrow(() -> new NoSuchElementException("no idle time limit key: " + key));
 	}
 

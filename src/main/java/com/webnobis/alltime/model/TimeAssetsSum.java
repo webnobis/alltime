@@ -6,7 +6,7 @@ import java.time.LocalDate;
 public class TimeAssetsSum {
 
 	private final LocalDate day;
-	
+
 	private final Duration timeAssetsSum;
 
 	public TimeAssetsSum(LocalDate day, Duration timeAssetsSum) {

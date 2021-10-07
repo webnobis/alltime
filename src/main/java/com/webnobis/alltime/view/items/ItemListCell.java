@@ -24,7 +24,8 @@ public class ItemListCell extends ListCell<Item> {
 
 	private final Supplier<Duration> maxDurationRange;
 
-	public ItemListCell(int itemDurationRasterMinutes, List<String> lastDescriptions, Supplier<Duration> maxDurationRange) {
+	public ItemListCell(int itemDurationRasterMinutes, List<String> lastDescriptions,
+			Supplier<Duration> maxDurationRange) {
 		super();
 		this.itemDurationRasterMinutes = itemDurationRasterMinutes;
 		this.lastDescriptions = lastDescriptions;
@@ -33,10 +34,7 @@ public class ItemListCell extends ListCell<Item> {
 
 	@Override
 	protected void updateItem(Item item, boolean empty) {
-		super.setGraphic(Optional.ofNullable(item)
-				.map(Item::toString)
-				.map(Label::new)
-				.orElse(null));
+		super.setGraphic(Optional.ofNullable(item).map(Item::toString).map(Label::new).orElse(null));
 
 		super.updateItem(item, empty);
 	}
@@ -45,7 +43,8 @@ public class ItemListCell extends ListCell<Item> {
 	public void startEdit() {
 		super.startEdit();
 
-		ItemPane itemPane = new ItemPane(itemDurationRasterMinutes, lastDescriptions, getAvailableDurationRange(this.getItem()), this.getItem(), this::deleteItemAndFinishEdit);
+		ItemPane itemPane = new ItemPane(itemDurationRasterMinutes, lastDescriptions,
+				getAvailableDurationRange(this.getItem()), this.getItem(), this::deleteItemAndFinishEdit);
 		itemPane.setOnKeyReleased(handleKeyReleased(itemPane));
 		super.setGraphic(itemPane);
 	}
@@ -68,22 +67,19 @@ public class ItemListCell extends ListCell<Item> {
 	}
 
 	private Duration getAvailableDurationRange(Item selectedItem) {
-		Duration booked = super.getListView().getItems().stream()
-				.filter(item -> !item.equals(selectedItem))
-				.map(Item::getValue)
-				.reduce((d1, d2) -> d1.plus(d2))
-				.orElse(Duration.ZERO);
+		Duration booked = super.getListView().getItems().stream().filter(item -> !item.equals(selectedItem))
+				.map(Item::getValue).reduce((d1, d2) -> d1.plus(d2)).orElse(Duration.ZERO);
 
-		return Optional.ofNullable(maxDurationRange.get())
-				.map(d -> d.minus(booked))
-				.orElse(Duration.ZERO);
+		return Optional.ofNullable(maxDurationRange.get()).map(d -> d.minus(booked)).orElse(Duration.ZERO);
 	}
 
 	private boolean validateDescription(String description, boolean newItem) {
-		if (description.isEmpty() || (newItem && super.getListView().getItems().stream().map(Item::getKey).anyMatch(description::equals))) {
+		if (description.isEmpty() || (newItem
+				&& super.getListView().getItems().stream().map(Item::getKey).anyMatch(description::equals))) {
 			Alert alert = new Alert(AlertType.ERROR);
 			alert.setHeaderText("Fehlerhafter Eintrag");
-			alert.setContentText(String.format("Die Beschreibung %s.", (description.isEmpty()) ? "darf nicht leer sein" : "ist bereits vorhanden"));
+			alert.setContentText(String.format("Die Beschreibung %s.",
+					(description.isEmpty()) ? "darf nicht leer sein" : "ist bereits vorhanden"));
 			alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 			alert.showAndWait();
 			return false;
@@ -93,12 +89,10 @@ public class ItemListCell extends ListCell<Item> {
 	}
 
 	private void deleteItemAndFinishEdit(ActionEvent event) {
-		Optional.ofNullable(super.getItem())
-				.filter(this::shouldDelete)
-				.ifPresent(item -> {
-					super.getListView().getItems().remove(item);
-					super.commitEdit(null);
-				});
+		Optional.ofNullable(super.getItem()).filter(this::shouldDelete).ifPresent(item -> {
+			super.getListView().getItems().remove(item);
+			super.commitEdit(null);
+		});
 		event.consume();
 	}
 
@@ -107,9 +101,7 @@ public class ItemListCell extends ListCell<Item> {
 		alert.setHeaderText("Rückfrage zum Eintrag");
 		alert.setContentText(String.format("Soll der Eintrag '%s' wirklich gelöscht werden?", item));
 		alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-		return alert.showAndWait()
-				.filter(ButtonType.OK::equals)
-				.isPresent();
+		return alert.showAndWait().filter(ButtonType.OK::equals).isPresent();
 	}
 
 }

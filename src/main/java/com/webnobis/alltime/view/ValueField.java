@@ -15,7 +15,8 @@ public class ValueField<V> extends TextField {
 
 	private V value;
 
-	public ValueField(Function<String, V> textToValueTransformer, Function<V, String> valueToTextTransformer, V defaultValue) {
+	public ValueField(Function<String, V> textToValueTransformer, Function<V, String> valueToTextTransformer,
+			V defaultValue) {
 		super();
 		this.textToValueTransformer = textToValueTransformer;
 		this.valueToTextTransformer = valueToTextTransformer;
@@ -31,7 +32,8 @@ public class ValueField<V> extends TextField {
 			} catch (RuntimeException e) {
 				Alert alert = new Alert(AlertType.ERROR);
 				alert.setHeaderText("Fehlerhafter Eintrag");
-				alert.setContentText(String.format("Der Inhalt '%s' ist ungültig:%s%s", getText(), (char) Character.LINE_SEPARATOR, e.getMessage()));
+				alert.setContentText(String.format("Der Inhalt '%s' ist ungültig:%s%s", getText(),
+						(char) Character.LINE_SEPARATOR, e.getMessage()));
 				alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 				alert.showAndWait();
 				setValue(value);

@@ -17,10 +17,12 @@ public abstract class TimeAssetsSumDeserializer {
 		Objects.requireNonNull(line, "line is null");
 
 		if (!line.contains(ATTRIBUTE_SEPARATOR)) {
-			throw new NoSuchElementException(String.format("missing attributes, separated with %s within line: %s", ATTRIBUTE_SEPARATOR, line));
+			throw new NoSuchElementException(
+					String.format("missing attributes, separated with %s within line: %s", ATTRIBUTE_SEPARATOR, line));
 		}
 
-		return new TimeAssetsSum(LineToDayDeserializer.toDay(line), DurationFormatter.toDuration(line.split(ATTRIBUTE_SEPARATOR)[1]));
+		return new TimeAssetsSum(LineToDayDeserializer.toDay(line),
+				DurationFormatter.toDuration(line.split(ATTRIBUTE_SEPARATOR)[1]));
 	}
 
 }

@@ -37,11 +37,13 @@ public abstract class LineToEntryDeserializer {
 		Objects.requireNonNull(line, "line is null");
 
 		if (!line.contains(ATTRIBUTE_SEPARATOR)) {
-			throw new NoSuchElementException(String.format("missing attributes, separated with %s within line: %s", ATTRIBUTE_SEPARATOR, line));
+			throw new NoSuchElementException(
+					String.format("missing attributes, separated with %s within line: %s", ATTRIBUTE_SEPARATOR, line));
 		}
 		String[] attributes = line.split(ATTRIBUTE_SEPARATOR);
 		if (attributes.length < MIN_ATTRIBUTE_SEPARATOR) {
-			throw new NoSuchElementException(String.format("found %d instead of %d attributes within line: %s", attributes.length, MIN_ATTRIBUTE_SEPARATOR, line));
+			throw new NoSuchElementException(String.format("found %d instead of %d attributes within line: %s",
+					attributes.length, MIN_ATTRIBUTE_SEPARATOR, line));
 		}
 
 		LocalDate day = LineToDayDeserializer.toDay(line);

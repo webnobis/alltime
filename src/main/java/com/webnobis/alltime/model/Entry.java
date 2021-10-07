@@ -6,15 +6,15 @@ import java.time.LocalTime;
 import java.util.Map;
 
 public interface Entry {
-	
+
 	LocalDate getDay();
-	
+
 	EntryType getType();
-	
+
 	default LocalTime getStart() {
 		return null;
 	}
-	
+
 	default LocalTime getEnd() {
 		return null;
 	}
@@ -34,7 +34,7 @@ public interface Entry {
 	default Duration getTimeAssets() {
 		return Duration.ZERO;
 	}
-	
+
 	Map<String, Duration> getItems();
-	
+
 }

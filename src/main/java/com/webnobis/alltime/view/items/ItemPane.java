@@ -29,14 +29,15 @@ public class ItemPane extends GridPane implements Supplier<Item> {
 
 	private final TextField description;
 
-	public ItemPane(int itemDurationRasterMinutes, List<String> lastDescriptions, Duration durationRange, Item item, EventHandler<ActionEvent> deleteHandler) {
+	public ItemPane(int itemDurationRasterMinutes, List<String> lastDescriptions, Duration durationRange, Item item,
+			EventHandler<ActionEvent> deleteHandler) {
 		super();
 
-		duration = new ComboBox<>(FXCollections.observableArrayList(getSelectableDurations(itemDurationRasterMinutes, durationRange)));
+		duration = new ComboBox<>(
+				FXCollections.observableArrayList(getSelectableDurations(itemDurationRasterMinutes, durationRange)));
 		duration.setConverter(new DurationStringConverter());
-		duration.setValue(Optional.ofNullable(item.getValue())
-				.orElse(duration.getItems().stream().findFirst()
-						.orElse(null)));
+		duration.setValue(
+				Optional.ofNullable(item.getValue()).orElse(duration.getItems().stream().findFirst().orElse(null)));
 		duration.setPrefWidth(PREF_WIDTH);
 
 		delete = new Button("Löschen");
@@ -68,12 +69,9 @@ public class ItemPane extends GridPane implements Supplier<Item> {
 	}
 
 	private List<Duration> getSelectableDurations(int rasterMinutes, Duration durationRange) {
-		return Optional.ofNullable(durationRange)
-				.filter(range -> !range.isNegative())
-				.map(range -> LongStream.rangeClosed(-range.toMinutes(), 0)
-						.map(Math::abs)
-						.filter(minutes -> minutes % rasterMinutes < 1)
-						.mapToObj(Duration::ofMinutes)
+		return Optional.ofNullable(durationRange).filter(range -> !range.isNegative())
+				.map(range -> LongStream.rangeClosed(-range.toMinutes(), 0).map(Math::abs)
+						.filter(minutes -> minutes % rasterMinutes < 1).mapToObj(Duration::ofMinutes)
 						.collect(Collectors.toList()))
 				.orElse(Collections.emptyList());
 	}

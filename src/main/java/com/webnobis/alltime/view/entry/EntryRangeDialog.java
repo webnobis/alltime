@@ -38,8 +38,9 @@ import javafx.scene.layout.GridPane;
 public class EntryRangeDialog extends Dialog<List<Entry>> {
 
 	private static final int PREF_WIDTH = 90;
-	
-	private static final Set<EntryType> SELECTABLE_TYPES = EnumSet.of(EntryType.WE, EntryType.UR, EntryType.KR, EntryType.SM, EntryType.FT, EntryType.SO);
+
+	private static final Set<EntryType> SELECTABLE_TYPES = EnumSet.of(EntryType.WE, EntryType.UR, EntryType.KR,
+			EntryType.SM, EntryType.FT, EntryType.SO);
 
 	private final BookingService bookingService;
 
@@ -53,13 +54,13 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 
 	final ListView<Item> items;
 
-	public EntryRangeDialog(BookingService bookingService,
-			int itemDurationRasterMinutes, LocalDate fromDay, LocalDate untilDay,
-			TimeAssetsSum sum, List<String> lastDescriptions, Optional<Entry> firstEntry) {
+	public EntryRangeDialog(BookingService bookingService, int itemDurationRasterMinutes, LocalDate fromDay,
+			LocalDate untilDay, TimeAssetsSum sum, List<String> lastDescriptions, Optional<Entry> firstEntry) {
 		super();
 		this.bookingService = bookingService;
-		
-		timeAssetsSum = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, sum.getTimeAssetsSum());
+
+		timeAssetsSum = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString,
+				sum.getTimeAssetsSum());
 		timeAssetsSum.setEditable(false);
 		timeAssetsSum.setStyle(ViewStyle.READONLY + ViewStyle.BIG);
 		timeAssetsSum.setPrefWidth(PREF_WIDTH * 2);
@@ -78,17 +79,13 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 		this.untilDay.setPrefWidth(PREF_WIDTH);
 		this.untilDay.setAlignment(Pos.CENTER);
 
-		items = new ItemListView(itemDurationRasterMinutes, lastDescriptions,
-				() -> Duration.ZERO,
-				firstEntry.map(Entry::getItems)
-				.orElse(Collections.emptyMap()));
+		items = new ItemListView(itemDurationRasterMinutes, lastDescriptions, () -> Duration.ZERO,
+				firstEntry.map(Entry::getItems).orElse(Collections.emptyMap()));
 
 		type = new ComboBox<>(FXCollections.observableArrayList(SELECTABLE_TYPES));
 		type.setPrefWidth(PREF_WIDTH);
 
-		type.setValue(firstEntry.map(Entry::getType)
-				.filter(t -> type.getItems().stream()
-						.anyMatch(t::equals))
+		type.setValue(firstEntry.map(Entry::getType).filter(t -> type.getItems().stream().anyMatch(t::equals))
 				.orElse(getDefaultType(fromDay, untilDay)));
 
 		GridPane pane = new GridPane();
@@ -118,9 +115,7 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 	}
 
 	List<Entry> get(ButtonType button) {
-		if (Optional.ofNullable(button)
-				.filter(ButtonType.APPLY::equals)
-				.isPresent()) {
+		if (Optional.ofNullable(button).filter(ButtonType.APPLY::equals).isPresent()) {
 			Map<String, Duration> items = this.items.getItems().stream()
 					.filter(item -> !ItemListView.NEW_TRIGGER.equals(item))
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -128,11 +123,12 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 		}
 		return null;
 	}
-	
+
 	private static EntryType getDefaultType(LocalDate fromDay, LocalDate untilDay) {
 		if (fromDay != null && untilDay != null) {
 			if (Period.between(fromDay, untilDay).getDays() < 3) {
-				if (DayOfWeek.SATURDAY.equals(fromDay.getDayOfWeek()) && DayOfWeek.SUNDAY.equals(untilDay.getDayOfWeek())) {
+				if (DayOfWeek.SATURDAY.equals(fromDay.getDayOfWeek())
+						&& DayOfWeek.SUNDAY.equals(untilDay.getDayOfWeek())) {
 					return EntryType.WE;
 				}
 			}

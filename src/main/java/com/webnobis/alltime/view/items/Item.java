@@ -68,10 +68,8 @@ public class Item implements Map.Entry<String, Duration>, Comparable<Item> {
 
 	@Override
 	public String toString() {
-		return Optional.ofNullable(value)
-				.filter(v -> !Duration.ZERO.equals(v))
-				.map(v -> DurationFormatter.toString(v).concat(", ").concat(key))
-				.orElse(key);
+		return Optional.ofNullable(value).filter(v -> !Duration.ZERO.equals(v))
+				.map(v -> DurationFormatter.toString(v).concat(", ").concat(key)).orElse(key);
 	}
 
 }

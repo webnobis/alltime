@@ -17,7 +17,8 @@ public class AZEntry extends AbstractEntry implements Entry {
 
 	private final Duration idleTime;
 
-	public AZEntry(LocalDate day, LocalTime start, LocalTime end, Duration expectedTime, Duration idleTime, Map<String, Duration> items) {
+	public AZEntry(LocalDate day, LocalTime start, LocalTime end, Duration expectedTime, Duration idleTime,
+			Map<String, Duration> items) {
 		super(day, EntryType.AZ, items);
 		this.start = start;
 		this.end = end;
@@ -48,10 +49,8 @@ public class AZEntry extends AbstractEntry implements Entry {
 	@Override
 	public Duration getRealTime() {
 		return Optional.ofNullable(start)
-				.flatMap(startTime -> Optional.ofNullable(end)
-						.map(endTime -> Duration.between(startTime, endTime)))
-				.map(realTime -> (realTime.isNegative())? realTime.plusDays(1L): realTime)
-				.orElse(Duration.ZERO);
+				.flatMap(startTime -> Optional.ofNullable(end).map(endTime -> Duration.between(startTime, endTime)))
+				.map(realTime -> (realTime.isNegative()) ? realTime.plusDays(1L) : realTime).orElse(Duration.ZERO);
 	}
 
 	@Override
