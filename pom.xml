@@ -10,6 +10,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.module>com.webnobis.alltime</project.module>
 		<project.main.class>com.webnobis.alltime.Alltime</project.main.class>
 		<project.author>Steffen Nobis</project.author>
 		<java.fx.version>17.0.0.1</java.fx.version>
@@ -193,6 +194,26 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M5</version>
+				<configuration>
+					<argLine>--add-opens
+						${project.module}/${project.module}=ALL-UNNAMED
+						--add-opens ${project.module}/${project.module}.config=ALL-UNNAMED
+						--add-opens ${project.module}/${project.module}.export=ALL-UNNAMED
+						--add-opens ${project.module}/${project.module}.model=ALL-UNNAMED
+						--add-opens
+						${project.module}/${project.module}.persistence=ALL-UNNAMED
+						--add-opens
+						${project.module}/${project.module}.service=ALL-UNNAMED
+						--add-opens ${project.module}/${project.module}.view=ALL-UNNAMED
+						--add-opens
+						${project.module}/${project.module}.view.entry=ALL-UNNAMED
+						--add-opens
+						${project.module}/${project.module}.view.items=ALL-UNNAMED</argLine>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
