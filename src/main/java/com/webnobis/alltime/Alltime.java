@@ -30,8 +30,6 @@ public class Alltime extends Application {
 
 	private static final Supplier<LocalDateTime> now = LocalDateTime::now;
 
-	static
-
 	FindService findService;
 
 	CalculationService calculationService;
