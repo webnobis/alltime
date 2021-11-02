@@ -46,7 +46,7 @@ class ConfigTest {
 
 	private static final Path FILE_EXPORT_ROOT_PATH = Paths.get("the", "export", "path");
 
-	private static final String CONFIG_FILE = ConfigTest.class.getSimpleName().toLowerCase() + ".properties";
+	private static final String CONFIG_FILE = "configtest.properties";
 
 	private Config config;
 

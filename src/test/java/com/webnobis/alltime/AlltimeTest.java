@@ -10,10 +10,13 @@ import org.junit.jupiter.api.Test;
 
 class AlltimeTest {
 
+	private static final String CONFIG_FILE = "configtest.properties";
+
 	private Alltime alltime;
 
 	@BeforeEach
 	void setUp() {
+		Alltime.configReaderBuilder = () -> ClassLoader.getSystemResourceAsStream(CONFIG_FILE);
 		alltime = new Alltime();
 	}
 

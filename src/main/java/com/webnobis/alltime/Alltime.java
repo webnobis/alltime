@@ -1,5 +1,10 @@
 package com.webnobis.alltime;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.function.Supplier;
 
@@ -29,6 +34,8 @@ import javafx.stage.Stage;
 public class Alltime extends Application {
 
 	private static final Supplier<LocalDateTime> now = LocalDateTime::now;
+	
+	static ConfigReaderBuilder configReaderBuilder = () -> Files.newInputStream(Paths.get(Release.CONFIG.getValue()));
 
 	FindService findService;
 
@@ -52,7 +59,7 @@ public class Alltime extends Application {
 	public void init() throws Exception {
 		super.init();
 
-		Config config = new Config(ClassLoader.getSystemResourceAsStream(Release.CONFIG.getValue()));
+		Config config = new Config(configReaderBuilder.build());
 		EntryService service = createService(config, createStore(config));
 		findService = service;
 		calculationService = service;
@@ -80,6 +87,13 @@ public class Alltime extends Application {
 		Dialog<Void> dialog = new AlltimeDialog(now.get().toLocalDate(), findService, calculationService,
 				bookingService, entryExport, timeTransformer, itemDurationRasterMinutes, maxCountOfRangeBookingDays);
 		dialog.showAndWait();
+	}
+	
+	@FunctionalInterface
+	static interface ConfigReaderBuilder {
+		
+		InputStream build() throws IOException;
+		
 	}
 
 }
