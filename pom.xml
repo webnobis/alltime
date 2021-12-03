@@ -14,7 +14,7 @@
 		<project.main.class>com.webnobis.alltime.Alltime</project.main.class>
 		<project.author>Steffen Nobis</project.author>
 		<java.fx.version>17.0.0.1</java.fx.version>
-		<itext.version>7.1.16</itext.version>
+		<itext.version>7.2.0</itext.version>
 		<junit.version>5.8.1</junit.version>
 	</properties>
 
