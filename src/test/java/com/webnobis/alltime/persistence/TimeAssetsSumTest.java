@@ -38,8 +38,8 @@ class TimeAssetsSumTest {
 	private static final List<LocalDate> days = IntStream.rangeClosed(1, 5).mapToObj(d -> LocalDate.of(2000, 1, d))
 			.collect(Collectors.toList());
 
-	private static final Function<TimeAssetsSum, String> timeAssetsSumSerializer = sum -> sum.getDay()
-			.format(DateTimeFormatter.ISO_LOCAL_DATE).concat(SPLIT).concat(sum.getTimeAssetsSum().toString());
+	private static final Function<TimeAssetsSum, String> timeAssetsSumSerializer = sum -> sum.day()
+			.format(DateTimeFormatter.ISO_LOCAL_DATE).concat(SPLIT).concat(sum.timeAssetsSum().toString());
 
 	private static final Function<String, TimeAssetsSum> timeAssetsSumDeserializer = text -> {
 		String[] split = text.split(SPLIT);
@@ -115,7 +115,7 @@ class TimeAssetsSumTest {
 				.forEach(store::storeEntry);
 
 		Duration expected = d1.plus(d2).plus(d3).plus(d4);
-		assertEquals(expected, store.getTimeAssetsSumBefore(now.get()).getTimeAssetsSum());
+		assertEquals(expected, store.getTimeAssetsSumBefore(now.get()).timeAssetsSum());
 	}
 
 	@Test
@@ -136,8 +136,8 @@ class TimeAssetsSumTest {
 		TimeAssetsSum s3 = new TimeAssetsSum(day.minusDays(3), Duration.ZERO);
 		TimeAssetsSum s4 = new TimeAssetsSum(day, Duration.ZERO);
 
-		Stream.of(s3, s1, s2, s4).map(s -> new DayEntry(s.getDay(), EntryType.KR, Collections.emptyMap()))
+		Stream.of(s3, s1, s2, s4).map(s -> new DayEntry(s.day(), EntryType.KR, Collections.emptyMap()))
 				.peek(store::storeEntry).map(DayEntry::getDay)
-				.forEach(d -> assertEquals(d.minusDays(1), store.getTimeAssetsSumBefore(d).getDay()));
+				.forEach(d -> assertEquals(d.minusDays(1), store.getTimeAssetsSumBefore(d).day()));
 	}
 }

@@ -11,15 +11,12 @@ import java.util.Objects;
 import com.webnobis.alltime.model.TimeAssetsSum;
 import com.webnobis.alltime.service.DurationFormatter;
 
-public abstract class TimeAssetsSumSerializer {
-
-	private TimeAssetsSumSerializer() {
-	}
+public record TimeAssetsSumSerializer() {
 
 	public static String toLine(TimeAssetsSum timeAssetsSum) {
 		Objects.requireNonNull(timeAssetsSum, "timeAssetsSum is null");
-		return toText(timeAssetsSum.getDay()).concat(ATTRIBUTE_SEPARATOR)
-				.concat(toText(timeAssetsSum.getTimeAssetsSum()));
+		return toText(timeAssetsSum.day()).concat(ATTRIBUTE_SEPARATOR)
+				.concat(toText(timeAssetsSum.timeAssetsSum()));
 	}
 
 	private static String toText(LocalDate day) {

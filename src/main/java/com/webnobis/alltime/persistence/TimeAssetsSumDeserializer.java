@@ -8,10 +8,7 @@ import java.util.Objects;
 import com.webnobis.alltime.model.TimeAssetsSum;
 import com.webnobis.alltime.service.DurationFormatter;
 
-public abstract class TimeAssetsSumDeserializer {
-
-	private TimeAssetsSumDeserializer() {
-	}
+public interface TimeAssetsSumDeserializer {
 
 	public static TimeAssetsSum toTimeAssetsSum(String line) {
 		Objects.requireNonNull(line, "line is null");

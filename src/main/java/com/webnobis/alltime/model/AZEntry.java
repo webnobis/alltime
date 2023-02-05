@@ -58,4 +58,28 @@ public class AZEntry extends AbstractEntry implements Entry {
 		return getRealTime().minus(expectedTime).minus(idleTime);
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + Objects.hash(end, expectedTime, idleTime, start);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!super.equals(obj)) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		AZEntry other = (AZEntry) obj;
+		return Objects.equals(end, other.end) && Objects.equals(expectedTime, other.expectedTime)
+				&& Objects.equals(idleTime, other.idleTime) && Objects.equals(start, other.start);
+	}
+
 }

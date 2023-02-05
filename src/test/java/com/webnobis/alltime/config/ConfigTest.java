@@ -95,9 +95,9 @@ class ConfigTest {
 		Map<DayOfWeek, Duration> map = config.getExpectedTimes();
 		assertEquals(7, map.size());
 
-		assertEquals(map.remove(DayOfWeek.TUESDAY), EXPECTED_TIME_DI);
-		assertEquals(map.remove(DayOfWeek.WEDNESDAY), EXPECTED_TIME_MI);
-		assertEquals(map.remove(DayOfWeek.FRIDAY), EXPECTED_TIME_FR);
+		assertEquals(EXPECTED_TIME_DI, map.remove(DayOfWeek.TUESDAY));
+		assertEquals(EXPECTED_TIME_MI, map.remove(DayOfWeek.WEDNESDAY));
+		assertEquals(EXPECTED_TIME_FR,map.remove(DayOfWeek.FRIDAY));
 		assertTrue(map.values().stream().allMatch(Duration.ZERO::equals));
 	}
 
@@ -106,8 +106,8 @@ class ConfigTest {
 		Map<Duration, Duration> map = config.getIdleTimes();
 		assertEquals(2, map.size());
 
-		assertEquals(map.get(IDLE_TIME_LIMIT_1), IDLE_TIME_1);
-		assertEquals(map.get(IDLE_TIME_LIMIT_2), IDLE_TIME_2);
+		assertEquals(IDLE_TIME_1, map.get(IDLE_TIME_LIMIT_1));
+		assertEquals(IDLE_TIME_2,map.get(IDLE_TIME_LIMIT_2));
 	}
 
 	@Test

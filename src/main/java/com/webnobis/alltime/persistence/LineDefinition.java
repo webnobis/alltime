@@ -4,12 +4,12 @@ public enum LineDefinition {
 
 	R, E, I, A;
 
-	public static String ATTRIBUTE_SEPARATOR = ";";
+	public static final String ATTRIBUTE_SEPARATOR = ";";
 
-	public static String MISSING_VALUE = "-";
+	public static final String MISSING_VALUE = "-";
 
-	public static String DAY_FORMAT = "dd.MM.yyyy";
+	public static final String DAY_FORMAT = "dd.MM.yyyy";
 
-	public static String TIME_FORMAT = "HH:mm";
+	public static final String TIME_FORMAT = "HH:mm";
 
 }

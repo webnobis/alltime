@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import com.webnobis.alltime.config.Release;
@@ -81,7 +80,7 @@ public class AlltimeDialog extends Dialog<Void> {
 
 	private final CheckBox bookRange;
 
-	private final TextField stored;
+	private final TextField storedText;
 
 	public AlltimeDialog(LocalDate now, FindService findService, CalculationService calculationService,
 			BookingService bookingService, EntryExport entryExport, TimeTransformer timeTransformer,
@@ -120,10 +119,10 @@ public class AlltimeDialog extends Dialog<Void> {
 		bookRange = new CheckBox("ganzen Zeitraum buchen");
 		bookRange.setOnAction(this::switchDialog);
 
-		stored = new TextField();
-		stored.setPrefWidth(300);
-		stored.setAlignment(Pos.CENTER);
-		stored.setStyle(ViewStyle.READONLY);
+		storedText = new TextField();
+		storedText.setPrefWidth(300);
+		storedText.setAlignment(Pos.CENTER);
+		storedText.setStyle(ViewStyle.READONLY);
 
 		GridPane pane = new GridPane();
 		pane.setHgap(10);
@@ -134,7 +133,7 @@ public class AlltimeDialog extends Dialog<Void> {
 		pane.add(untilDaysLabel, 0, 1);
 		pane.add(untilDays, 1, 1);
 		pane.add(bookRange, 2, 1);
-		pane.add(stored, 0, 2, 3, 1);
+		pane.add(storedText, 0, 2, 3, 1);
 
 		DialogPane dialogPane = super.getDialogPane();
 		ExportMonthButton exportMonthButton = new ExportMonthButton(dialogPane, this::exportMonth);
@@ -157,13 +156,13 @@ public class AlltimeDialog extends Dialog<Void> {
 		return FXCollections.observableArrayList(findService.getLastDays().stream().min(dayComparator)
 				.map(minDay -> ChronoUnit.DAYS.between(minDay, now))
 				.map(count -> LongStream.rangeClosed(0, count).mapToObj(now::minusDays)
-						.filter(day -> !onlyUnfinishedDays.isSelected() || !isFinish(day)).collect(Collectors.toList()))
+						.filter(day -> !onlyUnfinishedDays.isSelected() || !isFinish(day)).toList())
 				.orElse(Collections.singletonList(now)));
 	}
 
 	private ObservableList<LocalDate> getDaysAfterFirstDay(LocalDate firstDay) {
 		return FXCollections.observableArrayList(LongStream.rangeClosed(1, maxCountOfRangeBookingDays)
-				.mapToObj(firstDay::plusDays).collect(Collectors.toList()));
+				.mapToObj(firstDay::plusDays).toList());
 	}
 
 	private boolean isFinish(LocalDate day) {
@@ -190,14 +189,14 @@ public class AlltimeDialog extends Dialog<Void> {
 	}
 
 	private void showEntryDialog(LocalDate selectedDay) {
-		stored.setVisible(false);
+		storedText.setVisible(false);
 		Optional.ofNullable(selectedDay).ifPresent(day -> {
 			Dialog<Entry> entryDialog = new EntryDialog(calculationService, bookingService, timeTransformer,
 					itemDurationRasterMinutes, day, findService.getTimeAssetsSumBefore(day),
 					findService.getLastDescriptions(), Optional.ofNullable(findService.getEntry(day)));
 			entryDialog.showAndWait().ifPresent(entry -> {
-				stored.setText(String.format(STORED, entry.getType().name(), DayTransformer.toText(day)));
-				stored.setVisible(true);
+				storedText.setText(String.format(STORED, entry.getType().name(), DayTransformer.toText(day)));
+				storedText.setVisible(true);
 			});
 		});
 	}
@@ -221,24 +220,24 @@ public class AlltimeDialog extends Dialog<Void> {
 	}
 
 	private void showEntryRangeDialog(LocalDate selectedFromDay, LocalDate selectedUntilDay) {
-		stored.setVisible(false);
+		storedText.setVisible(false);
 		Optional.ofNullable(selectedFromDay).ifPresent(
 				fromDay -> Optional.ofNullable(selectedUntilDay).filter(fromDay::isBefore).ifPresent(untilDay -> {
 					Dialog<List<Entry>> entryRangeDialog = new EntryRangeDialog(bookingService,
 							itemDurationRasterMinutes, fromDay, untilDay, findService.getTimeAssetsSumBefore(fromDay),
 							findService.getLastDescriptions(), Optional.ofNullable(findService.getEntry(fromDay)));
 					entryRangeDialog.showAndWait().ifPresent(entries -> {
-						stored.setText(String.format(RANGE_STORED, entries.size(), entries.get(0).getType().name(),
+						storedText.setText(String.format(RANGE_STORED, entries.size(), entries.get(0).getType().name(),
 								DayTransformer.toText(fromDay), DayTransformer.toText(untilDay)));
-						stored.setVisible(true);
+						storedText.setVisible(true);
 					});
 				}));
 	}
 
 	private void exportMonth(YearMonth month, String monthText) {
 		List<Entry> entries = entryExport.exportMonth(month);
-		stored.setText(String.format(MONTH_EXPORTED, monthText, entries.size()));
-		stored.setVisible(true);
+		storedText.setText(String.format(MONTH_EXPORTED, monthText, entries.size()));
+		storedText.setVisible(true);
 	}
 
 }

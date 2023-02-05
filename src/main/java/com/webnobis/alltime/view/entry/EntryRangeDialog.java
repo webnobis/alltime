@@ -60,12 +60,12 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 		this.bookingService = bookingService;
 
 		timeAssetsSum = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString,
-				sum.getTimeAssetsSum());
+				sum.timeAssetsSum());
 		timeAssetsSum.setEditable(false);
 		timeAssetsSum.setStyle(ViewStyle.READONLY + ViewStyle.BIG);
-		timeAssetsSum.setPrefWidth(PREF_WIDTH * 2);
+		timeAssetsSum.setPrefWidth(PREF_WIDTH * 2.0);
 		timeAssetsSum.setAlignment(Pos.CENTER);
-		timeAssetsSum.setTooltip(new Tooltip(String.format("Stand: %s", DayTransformer.toText(sum.getDay()))));
+		timeAssetsSum.setTooltip(new Tooltip(String.format("Stand: %s", DayTransformer.toText(sum.day()))));
 
 		this.fromDay = new ValueField<>(DayTransformer::toDay, DayTransformer::toText, fromDay);
 		this.fromDay.setEditable(false);
@@ -116,23 +116,19 @@ public class EntryRangeDialog extends Dialog<List<Entry>> {
 
 	List<Entry> get(ButtonType button) {
 		if (Optional.ofNullable(button).filter(ButtonType.APPLY::equals).isPresent()) {
-			Map<String, Duration> items = this.items.getItems().stream()
+			Map<String, Duration> itemMap = this.items.getItems().stream()
 					.filter(item -> !ItemListView.NEW_TRIGGER.equals(item))
 					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-			return bookingService.book(fromDay.getValue(), untilDay.getValue(), type.getValue(), items);
+			return bookingService.book(fromDay.getValue(), untilDay.getValue(), type.getValue(), itemMap);
 		}
 		return null;
 	}
 
 	private static EntryType getDefaultType(LocalDate fromDay, LocalDate untilDay) {
-		if (fromDay != null && untilDay != null) {
-			if (Period.between(fromDay, untilDay).getDays() < 3) {
-				if (DayOfWeek.SATURDAY.equals(fromDay.getDayOfWeek())
+		if (fromDay != null && untilDay != null && Period.between(fromDay, untilDay).getDays() < 3 && DayOfWeek.SATURDAY.equals(fromDay.getDayOfWeek())
 						&& DayOfWeek.SUNDAY.equals(untilDay.getDayOfWeek())) {
 					return EntryType.WE;
 				}
-			}
-		}
 		return EntryType.UR;
 	}
 

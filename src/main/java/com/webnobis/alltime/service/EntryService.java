@@ -5,11 +5,10 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import com.webnobis.alltime.model.AZEntry;
@@ -63,8 +62,8 @@ public class EntryService implements FindService, CalculationService, BookingSer
 		Objects.requireNonNull(untilDay, "untilDay is null");
 
 		long days = Duration.between(fromDay.atStartOfDay(), untilDay.atStartOfDay()).toDays();
-		return LongStream.rangeClosed(0, days).mapToObj(l -> fromDay.plusDays(l))
-				.map(day -> createDayEntry(day, type, items)).map(store::storeEntry).collect(Collectors.toList());
+		return LongStream.rangeClosed(0, days).mapToObj(fromDay::plusDays)
+				.map(day -> createDayEntry(day, type, items)).map(store::storeEntry).toList();
 	}
 
 	private Entry createDayEntry(LocalDate day, EntryType type, Map<String, Duration> items) {
@@ -98,13 +97,8 @@ public class EntryService implements FindService, CalculationService, BookingSer
 		} else {
 			entry = createDayEntry(day, type, Collections.emptyMap());
 		}
-
-		if (entry == null) {
-			return Collections.emptyMap();
-		}
-
-		Map<CalculationType, Duration> calculations = new HashMap<>();
-		calculations.put(CalculationType.EXPECTED_TIME, entry.getExpectedTime());
+		Map<CalculationType, Duration> calculations = new EnumMap<>(CalculationType.class);
+		calculations.put(CalculationType.EXPECTED_TIME, Objects.requireNonNull(entry).getExpectedTime());
 		calculations.put(CalculationType.IDLE_TIME, entry.getIdleTime());
 		calculations.put(CalculationType.REAL_TIME, entry.getRealTime());
 		calculations.put(CalculationType.TIME_ASSETS, entry.getTimeAssets());

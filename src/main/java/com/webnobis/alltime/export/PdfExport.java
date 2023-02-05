@@ -10,7 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import com.itextpdf.io.font.constants.StandardFonts;
@@ -122,7 +121,7 @@ public class PdfExport implements EntryExport {
 	private List<Entry> findEntries(LocalDate fromDay, LocalDate untilDay) {
 		long days = Duration.between(fromDay.atStartOfDay(), untilDay.atStartOfDay()).toDays();
 		return LongStream.rangeClosed(0, days).mapToObj(fromDay::plusDays).map(findService::getEntry)
-				.filter(entry -> entry != null).collect(Collectors.toList());
+				.filter(Objects::nonNull).toList();
 	}
 
 	private void addDocumentHeader(PdfDocumentInfo pdfDocumentInfo) {

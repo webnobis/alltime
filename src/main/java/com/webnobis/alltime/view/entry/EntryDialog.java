@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.webnobis.alltime.config.Release;
 import com.webnobis.alltime.model.CalculationType;
@@ -79,16 +80,16 @@ public class EntryDialog extends Dialog<Entry> {
 		super();
 		this.calculationService = calculationService;
 		this.bookingService = bookingService;
-		sumBeforeDay = sum.getTimeAssetsSum();
+		sumBeforeDay = sum.timeAssetsSum();
 
 		disabledIdleTimeAndEndAZ = !entry.map(Entry::getStart).isPresent();
 
 		timeAssetsSum = new ValueField<>(DurationFormatter::toDuration, DurationFormatter::toString, sumBeforeDay);
 		timeAssetsSum.setEditable(false);
 		timeAssetsSum.setStyle(ViewStyle.READONLY + ViewStyle.BIG);
-		timeAssetsSum.setPrefWidth(PREF_WIDTH * 2);
+		timeAssetsSum.setPrefWidth(PREF_WIDTH * 2.0);
 		timeAssetsSum.setAlignment(Pos.CENTER);
-		setTimeAssetsSumTooltip(sum.getDay());
+		setTimeAssetsSumTooltip(sum.day());
 
 		this.day = new ValueField<>(DayTransformer::toDay, DayTransformer::toText, day);
 		this.day.setEditable(false);
@@ -113,7 +114,7 @@ public class EntryDialog extends Dialog<Entry> {
 		bookableTime.setEditable(false);
 		bookableTime.setStyle(ViewStyle.READONLY);
 
-		items = new ItemListView(itemDurationRasterMinutes, lastDescriptions, () -> bookableTime.getValue(),
+		items = new ItemListView(itemDurationRasterMinutes, lastDescriptions, bookableTime::getValue,
 				entry.map(Entry::getItems).orElse(Collections.emptyMap()));
 
 		ToggleGroup group = new ToggleGroup();
@@ -180,11 +181,9 @@ public class EntryDialog extends Dialog<Entry> {
 	}
 
 	private static EntryType getDefaultType(DayOfWeek weekday) {
-		switch (weekday) {
-		case SATURDAY:
-		case SUNDAY:
+		if (Stream.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY).anyMatch(weekday::equals)) {
 			return EntryType.WE;
-		default:
+		}else {
 			return EntryType.AZ;
 		}
 	}
@@ -237,14 +236,14 @@ public class EntryDialog extends Dialog<Entry> {
 			if (startAZ.isSelected()) {
 				return bookingService.startAZ(day.getValue(), startTime.getValue());
 			} else {
-				Map<String, Duration> items = this.items.getItems().stream()
+				Map<String, Duration> itemMap = this.items.getItems().stream()
 						.filter(item -> !ItemListView.NEW_TRIGGER.equals(item))
 						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 				if (endAZ.isSelected()) {
 					return bookingService.endAZ(day.getValue(), startTime.getValue(), endTime.getValue(),
-							idleTime.getValue(), items);
+							idleTime.getValue(), itemMap);
 				} else {
-					return bookingService.book(day.getValue(), type.getValue(), items);
+					return bookingService.book(day.getValue(), type.getValue(), itemMap);
 				}
 			}
 		}

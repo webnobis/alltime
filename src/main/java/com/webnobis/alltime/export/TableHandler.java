@@ -137,17 +137,17 @@ public class TableHandler {
 			Duration duration;
 			switch (row) {
 			case SUM_BEFORE:
-				description = String.format(row.getDescription(), DayTransformer.toText(sumBefore.getDay()));
-				duration = sumBefore.getTimeAssetsSum();
+				description = String.format(row.getDescription(), DayTransformer.toText(sumBefore.day()));
+				duration = sumBefore.timeAssetsSum();
 				break;
 			case SUM_NEW:
-				description = String.format(row.getDescription(), DayTransformer.toText(sumNow.getDay()));
-				duration = sumNow.getTimeAssetsSum();
+				description = String.format(row.getDescription(), DayTransformer.toText(sumNow.day()));
+				duration = sumNow.timeAssetsSum();
 				break;
 			default:
 				description = row.getDescription();
-				duration = Optional.ofNullable(sumNow.getTimeAssetsSum())
-						.flatMap(d -> Optional.ofNullable(sumBefore.getTimeAssetsSum()).map(d::minus)).orElse(null);
+				duration = Optional.ofNullable(sumNow.timeAssetsSum())
+						.flatMap(d -> Optional.ofNullable(sumBefore.timeAssetsSum()).map(d::minus)).orElse(null);
 			}
 			return Stream.of(contentToCell(i, description), contentToCell(i, DurationFormatter.toString(duration)));
 		}).forEach(table::addCell);

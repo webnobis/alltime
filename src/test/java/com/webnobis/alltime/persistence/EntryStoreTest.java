@@ -72,7 +72,7 @@ class EntryStoreTest {
 	private static final Function<Entry, String> entrySerializer = entry -> entry.getDay()
 			.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-	private static final Function<TimeAssetsSum, String> timeAssetsSumSerializer = sum -> sum.getDay()
+	private static final Function<TimeAssetsSum, String> timeAssetsSumSerializer = sum -> sum.day()
 			.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
 	private static final Function<LocalDate, TimeAssetsSum> testTransformer = day -> new TimeAssetsSum(day,

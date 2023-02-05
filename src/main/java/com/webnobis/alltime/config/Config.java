@@ -37,7 +37,7 @@ public class Config {
 					.collect(Collectors.toMap(array -> array[0], array -> array[1]));
 		} catch (IOException e) {
 			log.error(e.getMessage(), e);
-			throw new UncheckedIOException(e);
+			throw new UncheckedIOException(e.getMessage(), e);
 		}
 	}
 

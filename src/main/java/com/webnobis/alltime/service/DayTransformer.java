@@ -3,12 +3,9 @@ package com.webnobis.alltime.service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-public abstract class DayTransformer {
+public record DayTransformer() {
 
 	private static final String DAY_FORMAT = "dd.MM.yyyy";
-
-	private DayTransformer() {
-	};
 
 	public static LocalDate toDay(String text) {
 		if (text == null || text.isEmpty()) {

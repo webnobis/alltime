@@ -5,10 +5,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class WeekDayTransformer {
-
-	private WeekDayTransformer() {
-	};
+public record WeekDayTransformer() {
 
 	private static final List<String> WEEKDAYS = Arrays.asList("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So");
 

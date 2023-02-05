@@ -47,7 +47,7 @@ public abstract class LineToEntryDeserializer {
 		}
 
 		LocalDate day = LineToDayDeserializer.toDay(line);
-		EntryType type = toType(attributes[1]);
+		EntryType type = Objects.requireNonNull(toType(attributes[1]));
 		Duration expectedTime = toDuration(attributes[5]);
 		Map<String, Duration> items;
 		if (attributes.length > MIN_ATTRIBUTE_SEPARATOR) {

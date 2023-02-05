@@ -23,10 +23,7 @@ import com.webnobis.alltime.model.Entry;
 import com.webnobis.alltime.model.EntryType;
 import com.webnobis.alltime.service.DurationFormatter;
 
-public abstract class EntryToLineSerializer {
-
-	private EntryToLineSerializer() {
-	}
+public record EntryToLineSerializer() {
 
 	public static String toLine(Entry entry) {
 		Objects.requireNonNull(entry, "entry is null");

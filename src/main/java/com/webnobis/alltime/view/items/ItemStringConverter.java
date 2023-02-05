@@ -21,9 +21,12 @@ public class ItemStringConverter extends StringConverter<Item> {
 	public Item fromString(String text) {
 		Matcher matcher = textPattern.matcher(text);
 		return (matcher.find())
-				? new Item(matcher.group(2),
-						(matcher.group(1).isEmpty()) ? Duration.ZERO : DurationFormatter.toDuration(matcher.group(1)))
+				? new Item(matcher.group(2), getDuration(matcher))
 				: null;
+	}
+
+	private static Duration getDuration(Matcher matcher) {
+		return (matcher.group(1).isEmpty()) ? Duration.ZERO : DurationFormatter.toDuration(matcher.group(1));
 	}
 
 }

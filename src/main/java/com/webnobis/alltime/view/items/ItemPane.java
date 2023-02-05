@@ -3,9 +3,9 @@ package com.webnobis.alltime.view.items;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import javafx.collections.FXCollections;
@@ -32,12 +32,11 @@ public class ItemPane extends GridPane implements Supplier<Item> {
 	public ItemPane(int itemDurationRasterMinutes, List<String> lastDescriptions, Duration durationRange, Item item,
 			EventHandler<ActionEvent> deleteHandler) {
 		super();
-
+Objects.requireNonNull(item);
 		duration = new ComboBox<>(
 				FXCollections.observableArrayList(getSelectableDurations(itemDurationRasterMinutes, durationRange)));
 		duration.setConverter(new DurationStringConverter());
-		duration.setValue(
-				Optional.ofNullable(item.getValue()).orElse(duration.getItems().stream().findFirst().orElse(null)));
+		duration.setValue(Optional.ofNullable(item.getValue()).orElse(duration.getItems().stream().findFirst().orElse(null)));
 		duration.setPrefWidth(PREF_WIDTH);
 
 		delete = new Button("Löschen");
@@ -45,8 +44,8 @@ public class ItemPane extends GridPane implements Supplier<Item> {
 		delete.setDisable(ItemListView.NEW_TRIGGER.equals(item));
 		delete.setPrefWidth(PREF_WIDTH);
 
-		description = new TextField((item != null) ? item.getKey() : "Beschreibung");
-		description.setPrefWidth(PREF_WIDTH * 3);
+		description = new TextField(item.getKey());
+		description.setPrefWidth(PREF_WIDTH * 3.0);
 
 		this.lastDescriptions = new ComboBox<>(FXCollections.observableArrayList(lastDescriptions));
 		this.lastDescriptions.setOnAction(this::setDescription);
@@ -72,7 +71,7 @@ public class ItemPane extends GridPane implements Supplier<Item> {
 		return Optional.ofNullable(durationRange).filter(range -> !range.isNegative())
 				.map(range -> LongStream.rangeClosed(-range.toMinutes(), 0).map(Math::abs)
 						.filter(minutes -> minutes % rasterMinutes < 1).mapToObj(Duration::ofMinutes)
-						.collect(Collectors.toList()))
+						.toList())
 				.orElse(Collections.emptyList());
 	}
 

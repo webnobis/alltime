@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
@@ -18,7 +17,7 @@ public class ItemListView extends ListView<Item> {
 	public ItemListView(int itemDurationRasterMinutes, List<String> lastDescriptions,
 			Supplier<Duration> maxDurationRange, Map<String, Duration> items) {
 		super(FXCollections
-				.observableArrayList(items.entrySet().stream().map(Item::new).sorted().collect(Collectors.toList())));
+				.observableArrayList(items.entrySet().stream().map(Item::new).sorted().toList()));
 		addNewTrigger();
 		super.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 		super.setCellFactory(unused -> new ItemListCell(itemDurationRasterMinutes, lastDescriptions, maxDurationRange));

@@ -9,12 +9,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-public abstract class LineToDayDeserializer {
+public interface LineToDayDeserializer {
 
-	private LineToDayDeserializer() {
-	}
-
-	public static LocalDate toDay(String line) {
+	static LocalDate toDay(String line) {
 		Objects.requireNonNull(line, "line is null");
 
 		if (!line.contains(ATTRIBUTE_SEPARATOR)) {
