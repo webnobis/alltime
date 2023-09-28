@@ -13,7 +13,7 @@
 		<project.module>com.webnobis.alltime</project.module>
 		<project.main.class>com.webnobis.alltime.Alltime</project.main.class>
 		<project.author>Steffen Nobis</project.author>
-		<java.fx.version>21-ea+24</java.fx.version>
+		<java.fx.version>21-ea+31</java.fx.version>
 		<itext.version>8.0.1</itext.version>
 		<junit.version>5.10.0</junit.version>
 	</properties>
